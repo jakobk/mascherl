@@ -11,4 +11,8 @@ out/
 .idea/
 *.versionsBackup
 .DS_Store
+*.aux
+*.out
+*.synctex.gz
+*.toc
 
