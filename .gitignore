@@ -1,0 +1,14 @@
+*.iml
+*.jar
+*.war
+*.ear
+*.zip
+*.log
+classes
+target
+0_idea_files/
+out/
+.idea/
+*.versionsBackup
+.DS_Store
+
