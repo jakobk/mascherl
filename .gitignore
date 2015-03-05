@@ -17,3 +17,4 @@ out/
 *.toc
 *.bbl
 *.blg
+bower_components
