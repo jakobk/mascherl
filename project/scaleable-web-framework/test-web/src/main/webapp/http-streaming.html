@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Http Streaming</title>
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script language="javascript">
+        var last_response_len = false;
+        $.ajax('StreamingServlet', {
+            xhrFields: {
+                onprogress: function (e) {
+                    var this_response, response = e.currentTarget.response;
+                    if (last_response_len === false) {
+                        this_response = response;
+                        last_response_len = response.length;
+                    }
+                    else {
+                        this_response = response.substring(last_response_len);
+                        last_response_len = response.length;
+                    }
+                    $(output).append(this_response);
+                }
+            }
+        })
+            .done(function (data) {
+                console.log('Complete response = ' + data);
+            })
+            .fail(function (data) {
+                console.log('Error: ', data);
+            });
+        console.log('Request Sent');
+    </script>
+</head>
+<body>
+Static content
+<div id="output"></div>
+</body>
+</html>

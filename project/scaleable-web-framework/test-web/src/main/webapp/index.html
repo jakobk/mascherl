@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>{{title}}</title>
+
+    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/bower_components/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            addClickHandlers("body");
+        });
+
+        function navigate(url, container, page) {
+            $.ajax({
+                url: url,
+                data: {
+                    "m-container": container,
+                    "m-page": page
+                },
+                type: "GET",
+                dataType: "html",
+                success: function (data, status, xhr) {
+                    container = xhr.getResponseHeader("X-Mascherl-Container");
+                    var containerDiv = $("#" + container);
+                    containerDiv.html(data);
+                    containerDiv.attr("m-page", xhr.getResponseHeader("X-Mascherl-Page"));
+                    addClickHandlers("#" + container);
+                    document.title = xhr.getResponseHeader("X-Mascherl-Title");
+                },
+                error: function (xhr, status, errorThrown) {
+                    var containerDiv = $("#main");
+                    containerDiv.html(status);
+                    containerDiv.attr("m-page", "Error");
+                    History.replaceState({error: true}, null, "/error.html");
+                    document.title = "Error";
+                }
+            });
+        }
+
+        function addClickHandlers(id) {
+            $(id + " a:not([m-ignore])").click(function(event) {
+                event.preventDefault();
+                var container = $(this).attr("m-target");
+                if (typeof container === "undefined") {
+                    container = "main";
+                }
+                History.pushState({"container": container}, null, event.target.href);
+            });
+        }
+
+        History.Adapter.bind(window, 'statechange', function() {
+            if (History.getState().data.error === true) {
+                return;
+            }
+
+            var container = History.getState().data.container;
+            var page;
+            if (typeof container === "undefined") {
+                container = "main";
+            } else if (container !== "main") {
+                var containerDiv = $("#" + container);
+                if (containerDiv.length === 0) {
+                    container = "main";
+                } else {
+                    // container found in DOM, but page may not necessarily fit, this must be decided by the server
+                    page = containerDiv.attr("m-page");
+                }
+            }
+            navigate(History.getState().url, container, page);
+        });
+
+
+    </script>
+</head>
+<body>
+<h1>Mascherl &#x29d3;</h1>
+
+<div>Static content</div>
+
+{{{main}}}
+</body>
+</html>

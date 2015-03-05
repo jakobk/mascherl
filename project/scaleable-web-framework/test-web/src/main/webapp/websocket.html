@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Title of the document</title>
+    <script language="javascript" type="text/javascript">
+        var wsUri = "ws://localhost:8080/hello";
+        var websocket = new WebSocket(wsUri);
+        websocket.onopen = function(evt) { onOpen(evt) };
+        websocket.onmessage = function(evt) { onMessage(evt) };
+        websocket.onerror = function(evt) { onError(evt) };
+
+        function init() {
+            output = document.getElementById("output");
+        }
+
+        function say_hello() {
+            websocket.send(nameField.value);
+        }
+        function onOpen(event) {
+            alert("open");
+        }
+        function onMessage(event) {
+            alert("message: " + event.data);
+        }
+        function onError(event) {
+            alert("error");
+
+        }
+    </script>
+</head>
+<body>
+    <form method="post" action="TestServlet">
+        <input type="text" name="my-name" />
+        <input type="submit" />
+    </form>
+
+    <div style="text-align: center;">
+        <form action="">
+            <input onclick="say_hello()" value="Say Hello" type="button">
+            <input id="nameField" name="name" value="WebSocket" type="text"><br>
+        </form>
+    </div>
+    <div id="output"></div>
+</body>
+</html>
