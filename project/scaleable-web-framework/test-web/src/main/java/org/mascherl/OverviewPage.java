@@ -1,6 +1,7 @@
 package org.mascherl;
 
 import org.mascherl.page.Container;
+import org.mascherl.page.Form;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.Page;
 import org.mascherl.page.PageTitle;
@@ -22,6 +23,11 @@ public class OverviewPage {  // request scoped
     public Mascherl main() {
         return new Mascherl("/templates/overview.html")
                 .set("welcome", "Welcome to Mascherl!");
+    }
+
+    @Form("overview-form")
+    public void submit(Object formData) {
+
     }
 
 }

@@ -11,6 +11,7 @@ import org.scannotation.AnnotationDB;
 import org.scannotation.WarUrlFinder;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ import java.util.Set;
  *
  * @author Jakob Korherr
  */
+@MultipartConfig(location = "/tmp")
 public class MascherlServlet extends HttpServlet {
 
     private MustacheFactory mustacheFactory;

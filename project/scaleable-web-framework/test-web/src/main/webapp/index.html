@@ -5,6 +5,7 @@
     <title>{{title}}</title>
 
     <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/bower_components/jquery-serialize-object/dist/jquery.serialize-object.min.js"></script>
     <script src="/bower_components/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
 
     <script>
@@ -15,11 +16,11 @@
         function navigate(url, container, page) {
             $.ajax({
                 url: url,
+                type: "GET",
                 data: {
                     "m-container": container,
                     "m-page": page
                 },
-                type: "GET",
                 dataType: "html",
                 success: function (data, status, xhr) {
                     container = xhr.getResponseHeader("X-Mascherl-Container");
@@ -39,18 +40,88 @@
             });
         }
 
+        function submitForm(url, form, container, page) {
+            var formData = new FormData($("#" + form)[0]);
+            formData.append("m-form", form);
+            formData.append("m-container", container);
+            if (typeof page !== "undefined") {
+                formData.append("m-page", page);
+            }
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: "html",
+                success: function (data, status, xhr) {
+                    container = xhr.getResponseHeader("X-Mascherl-Container");
+                    var containerDiv = $("#" + container);
+                    containerDiv.html(data);
+                    containerDiv.attr("m-page", xhr.getResponseHeader("X-Mascherl-Page"));
+                    addClickHandlers("#" + container);
+                    document.title = xhr.getResponseHeader("X-Mascherl-Title");
+                },
+                error: function (xhr, status, errorThrown) {
+                    var containerDiv = $("#main");
+                    containerDiv.html(status);
+                    containerDiv.attr("m-page", "Error");
+                    History.replaceState({error: true}, null, "/error.html");
+                    document.title = "Error";
+                },
+                xhr: function() {  // custom xhr
+                    myXhr = $.ajaxSettings.xhr();
+                    if(myXhr.upload){ // check if upload property exists
+                        myXhr.upload.addEventListener('progress',updateProgress, false); // for handling the progress of the upload
+                    }
+                    return myXhr;
+                }
+            });
+        }
+
+        function updateProgress(evt) {
+            console.log('updateProgress');
+            if (evt.lengthComputable) {
+                var percentComplete = evt.loaded / evt.total;
+                console.log(percentComplete);
+            } else {
+                // Unable to compute progress information since the total size is unknown
+                console.log('unable to complete');
+            }
+        }
+
         function addClickHandlers(id) {
             $(id + " a:not([m-ignore])").click(function(event) {
-                event.preventDefault();
                 var container = $(this).attr("m-target");
                 if (typeof container === "undefined") {
                     container = "main";
                 }
+                if (event.target.href === History.getState().url) {  // not a new URL, thus no history change event
+                    onStateChange();   // trigger state change manually
+                }
                 History.pushState({"container": container}, null, event.target.href);
+                return false; // stop handling event
+            });
+
+            $(id + " form:not([m-ignore])").submit(function(event) {
+                var container = $(this).attr("m-target");
+                if (typeof container === "undefined") {
+                    container = "main";
+                }
+                if (event.target.action === History.getState().url) {  // not a new URL, thus no history change event
+                    onStateChange();   // trigger state change manually
+                }
+                History.pushState({"container": container, "form": $(this).attr("id")}, null, event.target.action);
+                return false;  // stop handling event
             });
         }
 
         History.Adapter.bind(window, 'statechange', function() {
+            onStateChange();
+        });
+
+        function onStateChange() {
             if (History.getState().data.error === true) {
                 return;
             }
@@ -68,8 +139,13 @@
                     page = containerDiv.attr("m-page");
                 }
             }
-            navigate(History.getState().url, container, page);
-        });
+
+            if (typeof History.getState().data.form !== "undefined") {
+                submitForm(History.getState().url, History.getState().data.form, container, page);
+            } else {
+                navigate(History.getState().url, container, page);
+            }
+        }
 
 
     </script>
