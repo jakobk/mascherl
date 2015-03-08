@@ -1,20 +1,21 @@
 package org.mascherl;
 
+import org.mascherl.jaxrs.MascherlPage;
 import org.mascherl.page.Container;
 import org.mascherl.page.Form;
 import org.mascherl.page.Mascherl;
-import org.mascherl.page.Page;
-import org.mascherl.page.PageTitle;
+
+import javax.ws.rs.Path;
 
 /**
  * TODO
  *
  * @author Jakob Korherr
  */
-@Page("/")
-public class OverviewPage {  // request scoped
+@Path("/")
+public class OverviewPage implements MascherlPage {  // request scoped
 
-    @PageTitle
+    @Override
     public String getTitle() {
         return "Overview";
     }

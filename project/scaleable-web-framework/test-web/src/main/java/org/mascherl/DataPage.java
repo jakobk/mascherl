@@ -1,21 +1,22 @@
 package org.mascherl;
 
+import org.mascherl.jaxrs.MascherlPage;
 import org.mascherl.page.Container;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.Page;
-import org.mascherl.page.PageTitle;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Path;
 
 /**
  * TODO
  *
  * @author Jakob Korherr
  */
-@Page("/data")
-public class DataPage {  // request scoped
+@Path("/data")
+public class DataPage implements MascherlPage {  // request scoped
 
-    @PageTitle
+    @Override
     public String getTitle() {
         return "Data";
     }

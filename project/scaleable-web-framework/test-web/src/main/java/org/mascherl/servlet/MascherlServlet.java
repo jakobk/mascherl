@@ -132,19 +132,12 @@ public class MascherlServlet extends HttpServlet {
             mascherl = null;
             resourcePath = "/index.html";
         }
-        URL resource = getServletContext().getResource(resourcePath);
-        if (resource == null) {
+        String realPath = getServletContext().getRealPath(resourcePath);
+        if (realPath == null) {
             response.sendError(404);
             return;
         }
-        Path path;
-        try {
-            path = Paths.get(resource.toURI());
-        } catch (URISyntaxException e) {
-            response.sendError(404);
-            return;
-        }
-
+        Path path = Paths.get(realPath);
         if (Files.isReadable(path)) {
             response.setHeader("Content-type", "text/html; charset=utf-8");
 
@@ -203,8 +196,8 @@ public class MascherlServlet extends HttpServlet {
                 }
 
                 try {
-                    URL resource = getServletContext().getResource(mascherl.getTemplate());
-                    Path path = Paths.get(resource.toURI());
+                    String realPath = getServletContext().getRealPath(mascherl.getTemplate());
+                    Path path = Paths.get(realPath);
                     Mustache mustache = mustacheFactory.compile(Files.newBufferedReader(path), path.toString());
                     StringWriter mustacheOutput = new StringWriter();
 
@@ -212,7 +205,7 @@ public class MascherlServlet extends HttpServlet {
 
                     mustacheOutput.close();
                     return "<div id=\"" + key + "\" m-page=\"" + pageInstance.getClass().getName() + "\">" + mustacheOutput.toString() + "</div>";
-                } catch (URISyntaxException | IOException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
