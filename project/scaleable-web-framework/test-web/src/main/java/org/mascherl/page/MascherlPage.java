@@ -3,22 +3,11 @@ package org.mascherl.page;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import org.apache.cxf.jaxrs.model.BeanParamInfo;
-import org.apache.cxf.jaxrs.model.ClassResourceInfo;
-import org.apache.cxf.jaxrs.model.OperationResourceInfo;
-import org.apache.cxf.jaxrs.model.URITemplate;
-import org.apache.cxf.jaxrs.provider.ServerProviderFactory;
-import org.apache.cxf.jaxrs.utils.JAXRSUtils;
-import org.apache.cxf.message.Message;
 import org.mascherl.context.MascherlContext;
 import org.mascherl.context.PageClassMeta;
-import org.mascherl.page.Mascherl;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -28,7 +17,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
@@ -36,16 +24,25 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
+
+import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
+import static org.mascherl.MascherlConstants.M_CLIENT_URL;
+import static org.mascherl.MascherlConstants.M_CONTAINER;
+import static org.mascherl.MascherlConstants.M_FORM;
+import static org.mascherl.MascherlConstants.M_PAGE;
+import static org.mascherl.MascherlConstants.X_MASCHERL_CONTAINER;
+import static org.mascherl.MascherlConstants.X_MASCHERL_PAGE;
+import static org.mascherl.MascherlConstants.X_MASCHERL_TITLE;
+import static org.mascherl.MascherlConstants.X_MASCHERL_URL;
+import static org.mascherl.page.MascherlPageUtils.createUriBuilder;
+import static org.mascherl.page.MascherlPageUtils.forwardAsGetRequest;
+import static org.mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParameters;
 
 /**
  * Interface for all Mascherl page controllers.
@@ -59,92 +56,45 @@ public interface MascherlPage {
     @Produces(MediaType.TEXT_HTML)
     public default Response post(@Context HttpServletRequest request,
                                  @Context HttpServletResponse response,
-                                 @FormParam("m-form") String form,
-                                 @FormParam("m-container") String container,
-                                 @FormParam("m-page") String page) {
+                                 @FormParam(M_FORM) String form,
+                                 @FormParam(M_CONTAINER) String container,
+                                 @FormParam(M_PAGE) String page) {
         MascherlContext mascherlContext = MascherlContext.getInstance();
         PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(getClass());
 
         Method formMethod = pageClassMeta.getFormMethod(form);
-        Message message = JAXRSUtils.getCurrentMessage();
-        ClassResourceInfo rootResource = JAXRSUtils.getRootResource(message);
-
-        ServerProviderFactory serverProviderFactory = ServerProviderFactory.getInstance(message);
-        for (Parameter parameter : formMethod.getParameters()) {
-            if (parameter.isAnnotationPresent(BeanParam.class)) {
-                if (serverProviderFactory.getBeanParamInfo(parameter.getType()) == null) {
-                    serverProviderFactory.addBeanParamInfo(new BeanParamInfo(parameter.getType(), rootResource.getBus()));
-                }
-            }
+        if (formMethod == null) {
+            // no form method found, thus POST is not supported by this page
+            throw new WebApplicationException(Response.status(Response.Status.METHOD_NOT_ALLOWED).allow("GET").build());
         }
 
-        @SuppressWarnings("unchecked")
-        MultivaluedMap<String, String> matchedPathValues = (MultivaluedMap<String, String>) message.get(URITemplate.TEMPLATE_PARAMETERS);
-        List<Object> parameterValues;
-        try {
-            parameterValues = JAXRSUtils.processParameters(new OperationResourceInfo(formMethod, rootResource), matchedPathValues, message);
-        } catch (IOException e) {
-            throw new WebApplicationException(e);
-        }
+        Object formMethodResult = invokeWithInjectedJaxRsParameters(this, formMethod);
 
-        Object formMethodResult;
-        try {
-            formMethodResult = formMethod.invoke(this, parameterValues.toArray());
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new WebApplicationException(e);
-        }
-
-        UriBuilder uriBuilder;
-        if (formMethodResult instanceof String) {
-            uriBuilder = UriBuilder.fromUri((String) formMethodResult);
-        } else if (formMethodResult instanceof URI) {
-            uriBuilder = UriBuilder.fromUri((URI) formMethodResult);
-        } else if (formMethodResult instanceof Class) {
-            uriBuilder = UriBuilder.fromResource((Class) formMethodResult);
-        } else if (formMethodResult == null) {
-            uriBuilder = null;
-        } else {
-            return Response.serverError().build();
-        }
-
+        UriBuilder uriBuilder = createUriBuilder(formMethodResult);
         if (uriBuilder != null) {
             String clientUrl = uriBuilder.build().toString();
-            request.setAttribute("m-client-url", clientUrl);
+            request.setAttribute(M_CLIENT_URL, clientUrl);
 
-            uriBuilder.queryParam("m-container", "main");
-            HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
-
-                @Override
-                public String getMethod() {
-                    return "GET";  // emulate GET request
-                }
-
-            };
-            try {
-                request.getServletContext().getRequestDispatcher(uriBuilder.build().toString()).forward(requestWrapper, response);
-            } catch (ServletException | IOException e) {
-                throw new WebApplicationException(e);
-            }
-            return null;
+            uriBuilder.queryParam(M_CONTAINER, MAIN_CONTAINER);
+            return forwardAsGetRequest(request, response, uriBuilder);
         } else {
-            // just render this page
-            return get(request, container, page, false);
+            // no forward necessary
+            return get(request, container, page);
         }
     }
 
     @GET
     @Produces(MediaType.TEXT_HTML)
     public default Response get(@Context HttpServletRequest request,
-                                @QueryParam("m-container") String container,
-                                @QueryParam("m-page") String page,
-                                @QueryParam("m-server-redirect") Boolean serverRedirect) {
+                                @QueryParam(M_CONTAINER) String container,
+                                @QueryParam(M_PAGE) String page) {
         MascherlContext mascherlContext = MascherlContext.getInstance();
         PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(getClass());
 
         final boolean partialRequest = (container != null);
 
         if (page != null && !Objects.equals(page, getClass().getName())) {
-            container = "main";
+            container = MAIN_CONTAINER;
         }
 
         String pageTitle = getTitle();
@@ -152,12 +102,8 @@ public interface MascherlPage {
         String resourcePath;
         Mascherl mascherl;
         if (partialRequest) {
-            Method method = pageClassMeta.getContainerMethod(container);
-            try {
-                mascherl = (Mascherl) method.invoke(this);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                return Response.serverError().build();
-            }
+            Method containerMethod = pageClassMeta.getContainerMethod(container);
+            mascherl = (Mascherl) invokeWithInjectedJaxRsParameters(this, containerMethod);
             resourcePath = mascherl.getTemplate();
 
         } else {
@@ -171,7 +117,7 @@ public interface MascherlPage {
         Path path = Paths.get(realPath);
         if (Files.isReadable(path)) {
             MustacheFactory mustacheFactory = new DefaultMustacheFactory();
-            BufferedReader reader = null;
+            BufferedReader reader;
             try {
                 reader = Files.newBufferedReader(path);
             } catch (IOException e) {
@@ -181,12 +127,12 @@ public interface MascherlPage {
 
             Response.ResponseBuilder response = Response.ok();
             if (partialRequest) {
-                response.header("X-Mascherl-Title", pageTitle);
-                response.header("X-Mascherl-Page", getClass().getName());
-                response.header("X-Mascherl-Container", container);
-                String clientUrl = (String) request.getAttribute("m-client-url");
+                response.header(X_MASCHERL_TITLE, pageTitle);
+                response.header(X_MASCHERL_PAGE, getClass().getName());
+                response.header(X_MASCHERL_CONTAINER, container);
+                String clientUrl = (String) request.getAttribute(M_CLIENT_URL);
                 if (clientUrl != null) {
-                    response.header("X-Mascherl-Url", clientUrl);
+                    response.header(X_MASCHERL_URL, clientUrl);
                 }
             }
 
@@ -206,13 +152,13 @@ public interface MascherlPage {
     class MascherlScope extends HashMap<String, Object> {
 
         private final String pageTitle;
-        private final Object pageInstance;
+        private final MascherlPage pageInstance;
         private final Mascherl mascherl;
         private final PageClassMeta pageClassMeta;
         private final HttpServletRequest request;
         private final MustacheFactory mustacheFactory;
 
-        MascherlScope(String pageTitle, Object pageInstance, Mascherl mascherl, PageClassMeta pageClassMeta, HttpServletRequest request, MustacheFactory mustacheFactory) {
+        MascherlScope(String pageTitle, MascherlPage pageInstance, Mascherl mascherl, PageClassMeta pageClassMeta, HttpServletRequest request, MustacheFactory mustacheFactory) {
             this.pageTitle = pageTitle;
             this.pageInstance = pageInstance;
             this.mascherl = mascherl;
@@ -234,14 +180,9 @@ public interface MascherlPage {
             if (key.startsWith("containers.")) {
                 String containerName = key.substring("containers.".length());
 
-                Method method = pageClassMeta.getContainerMethod(containerName);
-                if (method != null) {
-                    Mascherl mascherl;
-                    try {
-                        mascherl = (Mascherl) method.invoke(pageInstance);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new RuntimeException(e);
-                    }
+                Method containerMethod = pageClassMeta.getContainerMethod(containerName);
+                if (containerMethod != null) {
+                    Mascherl mascherl = (Mascherl) invokeWithInjectedJaxRsParameters(pageInstance, containerMethod);
 
                     try {
                         String realPath = request.getServletContext().getRealPath(mascherl.getTemplate());

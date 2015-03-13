@@ -1,6 +1,7 @@
 package org.mascherl.context;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,10 @@ public class PageClassMeta {
         return formIndex.get(formName);
     }
 
+    public Collection<Method> getFormMethods() {
+        return formIndex.values();
+    }
+
     public boolean containerExists(String containerName) {
         return containerIndex.containsKey(containerName);
     }
@@ -43,4 +48,7 @@ public class PageClassMeta {
         return containerIndex.get(containerName);
     }
 
+    public Collection<Method> getContainerMethods() {
+        return containerIndex.values();
+    }
 }

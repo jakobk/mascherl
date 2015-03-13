@@ -15,7 +15,9 @@ import java.net.URI;
 import java.util.Set;
 
 /**
- * Initializes Mascherl by creating all necessary class metadata.
+ * Initializes Mascherl by creating the MascherlContext and adding all necessary class metadata to it.
+ *
+ * Furthermore, adds additional metadata to CXF for correct processing.
  *
  * @author Jakob Korherr
  */
@@ -30,8 +32,11 @@ public class MascherlInitializer {
     public void initialize() {
         MascherlContext mascherlContext = MascherlContext.createInstance(servletContext);
 
-        AnnotationDB annotationDB = buildAnnotationDb(servletContext);
+        buildPageClassMeta(mascherlContext);
+    }
 
+    private void buildPageClassMeta(MascherlContext mascherlContext) {
+        AnnotationDB annotationDB = buildAnnotationDb();
         Set<String> pageClasses = annotationDB.getAnnotationIndex().get(Container.class.getName());
         for (String pageClass : pageClasses) {
             Class<?> clazz = instantiateClass(pageClass);
@@ -55,6 +60,17 @@ public class MascherlInitializer {
         }
     }
 
+    private AnnotationDB buildAnnotationDb() {
+        AnnotationDB annotationDB = new AnnotationDB();
+        try {
+            annotationDB.scanArchives(WarUrlFinder.findWebInfClassesPath(servletContext));
+            annotationDB.scanArchives(WarUrlFinder.findWebInfLibClasspaths(servletContext));
+        } catch (IOException e) {
+            throw new IllegalStateException("Cound not initialize Mascherl", e);
+        }
+        return annotationDB;
+    }
+
     private static void verifyReturnType(Class<?> annotationType, Method method, Class<?>... expectedReturnTypes) {
         for (Class<?> expectedReturnType : expectedReturnTypes) {
             if (expectedReturnType.isAssignableFrom(method.getReturnType())) {
@@ -75,17 +91,6 @@ public class MascherlInitializer {
         }
         sb.delete(sb.length() - 2, sb.length());
         return sb.toString();
-    }
-
-    private static AnnotationDB buildAnnotationDb(ServletContext servletContext) {
-        AnnotationDB annotationDB = new AnnotationDB();
-        try {
-            annotationDB.scanArchives(WarUrlFinder.findWebInfClassesPath(servletContext));
-            annotationDB.scanArchives(WarUrlFinder.findWebInfLibClasspaths(servletContext));
-        } catch (IOException e) {
-            throw new IllegalStateException("Cound not initialize Mascherl", e);
-        }
-        return annotationDB;
     }
 
     private static Class<?> instantiateClass(String clazz) {
