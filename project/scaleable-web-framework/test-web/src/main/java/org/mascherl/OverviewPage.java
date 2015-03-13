@@ -1,11 +1,14 @@
 package org.mascherl;
 
-import org.mascherl.jaxrs.MascherlPage;
+import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Container;
-import org.mascherl.page.Form;
+import org.mascherl.page.FormSubmission;
 import org.mascherl.page.Mascherl;
 
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 
 /**
  * TODO
@@ -26,9 +29,10 @@ public class OverviewPage implements MascherlPage {  // request scoped
                 .set("welcome", "Welcome to Mascherl!");
     }
 
-    @Form("overview-form")
-    public void submit(Object formData) {
-
+    @FormSubmission("overview-form")
+    public URI submit(@BeanParam OverviewForm overviewForm) {
+        System.out.println(overviewForm.getFirstname() + " " + overviewForm.getLastname());
+        return UriBuilder.fromResource(Page1.class).build();
     }
 
 }

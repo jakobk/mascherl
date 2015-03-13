@@ -1,9 +1,8 @@
 package org.mascherl;
 
-import org.mascherl.jaxrs.MascherlPage;
+import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Container;
 import org.mascherl.page.Mascherl;
-import org.mascherl.page.Page;
 
 import javax.ws.rs.Path;
 

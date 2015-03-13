@@ -10,8 +10,10 @@
 
     <script>
         $(document).ready(function() {
-            addClickHandlers("body");
+            addNavigationHandlers("body");
         });
+
+        window.fireHistoryChange = true;
 
         function navigate(url, container, page) {
             $.ajax({
@@ -27,7 +29,7 @@
                     var containerDiv = $("#" + container);
                     containerDiv.html(data);
                     containerDiv.attr("m-page", xhr.getResponseHeader("X-Mascherl-Page"));
-                    addClickHandlers("#" + container);
+                    addNavigationHandlers("#" + container);
                     document.title = xhr.getResponseHeader("X-Mascherl-Title");
                 },
                 error: function (xhr, status, errorThrown) {
@@ -41,26 +43,28 @@
         }
 
         function submitForm(url, form, container, page) {
-            var formData = new FormData($("#" + form)[0]);
-            formData.append("m-form", form);
-            formData.append("m-container", container);
-            if (typeof page !== "undefined") {
-                formData.append("m-page", page);
-            }
-
             $.ajax({
                 url: url,
+                data: $("#" + form).serialize()
+                        + "&m-form=" + form
+                        + "&m-container=" + container
+                        + (typeof page === "undefined" ? "" : "&m-page=" + page),
                 type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
                 dataType: "html",
+                //contentType: "application/json; charset=UTF-8",
                 success: function (data, status, xhr) {
                     container = xhr.getResponseHeader("X-Mascherl-Container");
+
+                    if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
+                        window.fireHistoryChange = false;
+                        History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));
+                        window.fireHistoryChange = true;
+                    }
+
                     var containerDiv = $("#" + container);
                     containerDiv.html(data);
                     containerDiv.attr("m-page", xhr.getResponseHeader("X-Mascherl-Page"));
-                    addClickHandlers("#" + container);
+                    addNavigationHandlers("#" + container);
                     document.title = xhr.getResponseHeader("X-Mascherl-Title");
                 },
                 error: function (xhr, status, errorThrown) {
@@ -69,38 +73,21 @@
                     containerDiv.attr("m-page", "Error");
                     History.replaceState({error: true}, null, "/error.html");
                     document.title = "Error";
-                },
-                xhr: function() {  // custom xhr
-                    myXhr = $.ajaxSettings.xhr();
-                    if(myXhr.upload){ // check if upload property exists
-                        myXhr.upload.addEventListener('progress',updateProgress, false); // for handling the progress of the upload
-                    }
-                    return myXhr;
                 }
             });
         }
 
-        function updateProgress(evt) {
-            console.log('updateProgress');
-            if (evt.lengthComputable) {
-                var percentComplete = evt.loaded / evt.total;
-                console.log(percentComplete);
-            } else {
-                // Unable to compute progress information since the total size is unknown
-                console.log('unable to complete');
-            }
-        }
-
-        function addClickHandlers(id) {
+        function addNavigationHandlers(id) {
             $(id + " a:not([m-ignore])").click(function(event) {
                 var container = $(this).attr("m-target");
                 if (typeof container === "undefined") {
                     container = "main";
                 }
-                if (event.target.href === History.getState().url) {  // not a new URL, thus no history change event
+                var shouldTriggerManualStateChange = (event.target.href === History.getState().url); // not a new URL, thus no history change event
+                History.pushState({"container": container}, null, event.target.href);
+                if (shouldTriggerManualStateChange) {
                     onStateChange();   // trigger state change manually
                 }
-                History.pushState({"container": container}, null, event.target.href);
                 return false; // stop handling event
             });
 
@@ -109,10 +96,8 @@
                 if (typeof container === "undefined") {
                     container = "main";
                 }
-                if (event.target.action === History.getState().url) {  // not a new URL, thus no history change event
-                    onStateChange();   // trigger state change manually
-                }
-                History.pushState({"container": container, "form": $(this).attr("id")}, null, event.target.action);
+                var navMeta = calculateNavigationMeta(container);
+                submitForm(event.target.action, $(this).attr("id"), navMeta.container, navMeta.page);
                 return false;  // stop handling event
             });
         }
@@ -122,11 +107,15 @@
         });
 
         function onStateChange() {
-            if (History.getState().data.error === true) {
+            if (!window.fireHistoryChange || History.getState().data.error === true) {
                 return;
             }
 
-            var container = History.getState().data.container;
+            var navMeta = calculateNavigationMeta(History.getState().data.container);
+            navigate(History.getState().url, navMeta.container, navMeta.page);
+        }
+
+        function calculateNavigationMeta(container) {
             var page;
             if (typeof container === "undefined") {
                 container = "main";
@@ -139,12 +128,7 @@
                     page = containerDiv.attr("m-page");
                 }
             }
-
-            if (typeof History.getState().data.form !== "undefined") {
-                submitForm(History.getState().url, History.getState().data.form, container, page);
-            } else {
-                navigate(History.getState().url, container, page);
-            }
+            return {page: page, container: container};
         }
 
 
@@ -155,6 +139,6 @@
 
 <div>Static content</div>
 
-{{{main}}}
+{{{containers.main}}}
 </body>
 </html>

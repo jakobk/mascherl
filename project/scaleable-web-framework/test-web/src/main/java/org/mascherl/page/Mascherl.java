@@ -1,6 +1,5 @@
 package org.mascherl.page;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +27,6 @@ public class Mascherl {
     }
 
     public Map<String, Object> getScope() {
-        return Collections.unmodifiableMap(scope);
+        return scope;
     }
 }

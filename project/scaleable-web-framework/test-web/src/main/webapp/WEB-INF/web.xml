@@ -24,6 +24,14 @@
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>org.mascherl.jaxrs.MascherlJaxRsApplication</param-value>
         </init-param>
+        <init-param>
+            <param-name>jaxrs.features</param-name>
+            <param-value>org.apache.cxf.jaxrs.validation.JAXRSBeanValidationFeature</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jaxrs.invoker</param-name>
+            <param-value>org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInvoker</param-value>
+        </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>

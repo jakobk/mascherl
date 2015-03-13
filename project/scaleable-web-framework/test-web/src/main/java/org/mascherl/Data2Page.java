@@ -1,12 +1,12 @@
 package org.mascherl;
 
-import org.mascherl.jaxrs.MascherlPage;
 import org.mascherl.page.Container;
 import org.mascherl.page.Mascherl;
-import org.mascherl.page.Page;
+import org.mascherl.page.MascherlPage;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 
 /**
  * TODO
@@ -15,6 +15,10 @@ import javax.ws.rs.Path;
  */
 @Path("/data2")
 public class Data2Page implements MascherlPage {  // request scoped
+
+    @QueryParam("page")
+    @DefaultValue("1")
+    private String pageParam;
 
     @Override
     public String getTitle() {
@@ -27,13 +31,8 @@ public class Data2Page implements MascherlPage {  // request scoped
     }
 
     @Container("data-container")
-    public Mascherl dataContainer(HttpServletRequest request) {
-        String page = request.getParameter("page");
-        if (page == null) {
-            page = "1";
-        }
-
-        return new Mascherl("/templates/data-page" + page + ".html");
+    public Mascherl dataContainer() {
+        return new Mascherl("/templates/data-page" + pageParam + ".html");
     }
 
 }
