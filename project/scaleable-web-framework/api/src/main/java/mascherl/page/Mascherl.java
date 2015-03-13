@@ -1,4 +1,4 @@
-package org.mascherl.page;
+package mascherl.page;
 
 import java.util.HashMap;
 import java.util.Map;

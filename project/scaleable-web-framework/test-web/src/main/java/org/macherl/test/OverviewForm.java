@@ -1,4 +1,4 @@
-package org.mascherl;
+package org.macherl.test;
 
 import javax.ws.rs.FormParam;
 

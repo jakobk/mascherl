@@ -1,9 +1,9 @@
-package org.mascherl;
+package org.macherl.test;
 
-import org.mascherl.page.MascherlPage;
-import org.mascherl.page.Container;
-import org.mascherl.page.FormSubmission;
-import org.mascherl.page.Mascherl;
+import mascherl.page.MascherlPage;
+import mascherl.page.Container;
+import mascherl.page.FormSubmission;
+import mascherl.page.Mascherl;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Path;

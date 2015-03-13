@@ -3,15 +3,6 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
-    <!--servlet>
-        <servlet-name>MascherlServlet</servlet-name>
-        <servlet-class>org.mascherl.servlet.MascherlServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>MascherlServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping-->
-
     <servlet-mapping>
         <servlet-name>default</servlet-name>
         <url-pattern>/bower_components/*</url-pattern>
@@ -22,7 +13,7 @@
         <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>org.mascherl.jaxrs.MascherlJaxRsApplication</param-value>
+            <param-value>mascherl.jaxrs.MascherlJaxRsApplication</param-value>
         </init-param>
         <init-param>
             <param-name>jaxrs.features</param-name>

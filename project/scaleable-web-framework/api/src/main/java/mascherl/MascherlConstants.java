@@ -1,4 +1,4 @@
-package org.mascherl;
+package mascherl;
 
 /**
  * Public constants used in Mascherl.

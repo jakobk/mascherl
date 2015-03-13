@@ -1,6 +1,6 @@
-package org.mascherl.jaxrs;
+package mascherl.jaxrs;
 
-import org.mascherl.context.MascherlContext;
+import mascherl.context.MascherlContext;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Application;
