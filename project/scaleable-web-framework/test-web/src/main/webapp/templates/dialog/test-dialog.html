@@ -1,0 +1,21 @@
+<div id="opener">Open Dialog</div>
+
+<div id="dialog-wrapper">
+{{{containers.dialog-content}}}
+</div>
+
+<script>
+    $("#dialog-wrapper").dialog({
+        autoOpen: false,
+        closeOnEscape: true,
+        draggable: false,
+        modal: true,
+        resizable: false,
+        appendTo: "#dialog"
+    });
+
+    $("#opener").click(function() {
+        $("#dialog-wrapper").dialog("open");
+        return false;
+    });
+</script>

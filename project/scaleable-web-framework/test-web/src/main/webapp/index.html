@@ -13,19 +13,6 @@
     <script>
         $(document).ready(function() {
             addNavigationHandlers("body");
-
-            $("#dialog").dialog({
-                autoOpen: false,
-                closeOnEscape: true,
-                draggable: false,
-                modal: true,
-                resizable: false
-            });
-
-            $("#opener").click(function() {
-                $("#dialog").dialog("open");
-                return false;
-            });
         });
 
         window.fireHistoryChange = true;
@@ -155,12 +142,6 @@
 <div>Static content</div>
 
 {{{containers.main}}}
-
-<a id="opener">Open Dialog</a>
-
-<div id="dialog">
-    TEST DIALOG
-</div>
 
 </body>
 </html>
