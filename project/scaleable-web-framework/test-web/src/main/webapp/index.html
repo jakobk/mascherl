@@ -4,13 +4,28 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>{{title}}</title>
 
+    <link rel="stylesheet" href="/bower_components/jquery-ui/themes/base/all.css" />
+
     <script src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="/bower_components/jquery-serialize-object/dist/jquery.serialize-object.min.js"></script>
+    <script src="/bower_components/jquery-ui/jquery-ui.min.js"></script>
     <script src="/bower_components/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
 
     <script>
         $(document).ready(function() {
             addNavigationHandlers("body");
+
+            $("#dialog").dialog({
+                autoOpen: false,
+                closeOnEscape: true,
+                draggable: false,
+                modal: true,
+                resizable: false
+            });
+
+            $("#opener").click(function() {
+                $("#dialog").dialog("open");
+                return false;
+            });
         });
 
         window.fireHistoryChange = true;
@@ -140,5 +155,12 @@
 <div>Static content</div>
 
 {{{containers.main}}}
+
+<a id="opener">Open Dialog</a>
+
+<div id="dialog">
+    TEST DIALOG
+</div>
+
 </body>
 </html>
