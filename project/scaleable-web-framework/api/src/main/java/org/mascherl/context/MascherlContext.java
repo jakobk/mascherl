@@ -1,4 +1,4 @@
-package mascherl.context;
+package org.mascherl.context;
 
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.cxf.message.Message;

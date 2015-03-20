@@ -1,8 +1,8 @@
 package org.macherl.test;
 
-import mascherl.page.MascherlPage;
-import mascherl.page.Container;
-import mascherl.page.Mascherl;
+import org.mascherl.page.Container;
+import org.mascherl.page.Mascherl;
+import org.mascherl.page.MascherlPage;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Path;
@@ -28,16 +28,6 @@ public class Page1 implements MascherlPage {
     @Container("main")
     public Mascherl main() {
         return new Mascherl("/templates/page1.html");
-    }
-
-    @Container("dialog")
-    public Mascherl dialog() {
-        return new Mascherl("/templates/dialog/test-dialog.html");
-    }
-
-    @Container("dialog-content")
-    public Mascherl dialogContent() {
-        return new Mascherl("/templates/dialog/test-dialog-content-" + dialogPage + ".html");
     }
 
 }

@@ -4,10 +4,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>{{title}}</title>
 
-    <link rel="stylesheet" href="/bower_components/jquery-ui/themes/base/all.css" />
+    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css" />
 
     <script src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="/bower_components/jquery-ui/jquery-ui.min.js"></script>
+    <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/bower_components/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
 
     <script>
@@ -28,6 +28,11 @@
                 dataType: "html",
                 success: function (data, status, xhr) {
                     container = xhr.getResponseHeader("X-Mascherl-Container");
+
+                    if (container !== "dialog-content") {
+                        $("div.modal-backdrop").remove();
+                    }
+
                     var containerDiv = $("#" + container);
                     containerDiv.html(data);
                     containerDiv.attr("m-page", xhr.getResponseHeader("X-Mascherl-Page"));
@@ -99,7 +104,7 @@
                     container = "main";
                 }
                 var navMeta = calculateNavigationMeta(container);
-                submitForm(event.target.action, $(this).attr("id"), navMeta.container, navMeta.page);
+                submitForm(History.getState().url, $(this).attr("id"), navMeta.container, navMeta.page);
                 return false;  // stop handling event
             });
         }

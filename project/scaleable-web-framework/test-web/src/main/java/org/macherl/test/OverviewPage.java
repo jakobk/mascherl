@@ -1,9 +1,9 @@
 package org.macherl.test;
 
-import mascherl.page.MascherlPage;
-import mascherl.page.Container;
-import mascherl.page.FormSubmission;
-import mascherl.page.Mascherl;
+import org.mascherl.page.MascherlPage;
+import org.mascherl.page.Container;
+import org.mascherl.page.FormSubmission;
+import org.mascherl.page.Mascherl;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Path;
@@ -30,9 +30,9 @@ public class OverviewPage implements MascherlPage {  // request scoped
     }
 
     @FormSubmission("overview-form")
-    public URI submit(@BeanParam OverviewForm overviewForm) {
+    public void submit(@BeanParam OverviewForm overviewForm) {
         System.out.println(overviewForm.getFirstname() + " " + overviewForm.getLastname());
-        return UriBuilder.fromResource(Page1.class).build();
+        // return UriBuilder.fromResource(Page1.class).build();
     }
 
 }

@@ -1,10 +1,10 @@
-package mascherl.page;
+package org.mascherl.page;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import mascherl.context.MascherlContext;
-import mascherl.context.PageClassMeta;
+import org.mascherl.context.MascherlContext;
+import org.mascherl.context.PageClassMeta;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,18 +31,18 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static mascherl.MascherlConstants.MAIN_CONTAINER;
-import static mascherl.MascherlConstants.M_CLIENT_URL;
-import static mascherl.MascherlConstants.M_CONTAINER;
-import static mascherl.MascherlConstants.M_FORM;
-import static mascherl.MascherlConstants.M_PAGE;
-import static mascherl.MascherlConstants.X_MASCHERL_CONTAINER;
-import static mascherl.MascherlConstants.X_MASCHERL_PAGE;
-import static mascherl.MascherlConstants.X_MASCHERL_TITLE;
-import static mascherl.MascherlConstants.X_MASCHERL_URL;
-import static mascherl.page.MascherlPageUtils.createUriBuilder;
-import static mascherl.page.MascherlPageUtils.forwardAsGetRequest;
-import static mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParameters;
+import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
+import static org.mascherl.MascherlConstants.M_CLIENT_URL;
+import static org.mascherl.MascherlConstants.M_CONTAINER;
+import static org.mascherl.MascherlConstants.M_FORM;
+import static org.mascherl.MascherlConstants.M_PAGE;
+import static org.mascherl.MascherlConstants.X_MASCHERL_CONTAINER;
+import static org.mascherl.MascherlConstants.X_MASCHERL_PAGE;
+import static org.mascherl.MascherlConstants.X_MASCHERL_TITLE;
+import static org.mascherl.MascherlConstants.X_MASCHERL_URL;
+import static org.mascherl.page.MascherlPageUtils.createUriBuilder;
+import static org.mascherl.page.MascherlPageUtils.forwardAsGetRequest;
+import static org.mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParameters;
 
 /**
  * Interface for all Mascherl page controllers.

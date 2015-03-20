@@ -1,4 +1,4 @@
-package mascherl.context;
+package org.mascherl.context;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

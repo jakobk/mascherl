@@ -1,4 +1,4 @@
-package mascherl.context;
+package org.mascherl.context;
 
 import java.lang.reflect.Method;
 import java.util.Collection;

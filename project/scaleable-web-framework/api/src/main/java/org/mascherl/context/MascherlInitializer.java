@@ -1,9 +1,9 @@
-package mascherl.context;
+package org.mascherl.context;
 
-import mascherl.page.Container;
-import mascherl.page.FormSubmission;
-import mascherl.page.Mascherl;
-import mascherl.page.MascherlPage;
+import org.mascherl.page.Container;
+import org.mascherl.page.FormSubmission;
+import org.mascherl.page.Mascherl;
+import org.mascherl.page.MascherlPage;
 import org.scannotation.AnnotationDB;
 import org.scannotation.WarUrlFinder;
 

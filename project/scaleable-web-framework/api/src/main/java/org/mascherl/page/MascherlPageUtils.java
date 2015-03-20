@@ -1,4 +1,4 @@
-package mascherl.page;
+package org.mascherl.page;
 
 import org.apache.cxf.jaxrs.model.BeanParamInfo;
 import org.apache.cxf.jaxrs.model.ClassResourceInfo;

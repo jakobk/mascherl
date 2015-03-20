@@ -1,21 +1,24 @@
-<div id="opener">Open Dialog</div>
-
-<div id="dialog-wrapper">
-{{{containers.dialog-content}}}
+<!-- Modal -->
+<div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            {{{containers.dialog-content}}}
+        </div>
+    </div>
 </div>
 
 <script>
-    $("#dialog-wrapper").dialog({
-        autoOpen: false,
-        closeOnEscape: true,
-        draggable: false,
-        modal: true,
-        resizable: false,
-        appendTo: "#dialog"
-    });
+    $("div.modal-backdrop").remove();
+    var dialog = $('#myModal');
+    dialog.modal('show');
+    dialog.on('hide.bs.modal', function (e) {
+        $("div.modal-backdrop").remove();
+        History.pushState({"container": "dialog"}, null, "http://localhost:8080/page1");
 
-    $("#opener").click(function() {
-        $("#dialog-wrapper").dialog("open");
-        return false;
-    });
+        /*window.fireHistoryChange = false;
+        History.pushState({"container": "main"}, null, "http://localhost:8080/page1");
+        window.fireHistoryChange = true;
+        document.title = "Page 1";
+        $('#dialog').remove();    */
+    })
 </script>
