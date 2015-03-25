@@ -1,10 +1,9 @@
 package org.mascherl.page;
 
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
 import org.mascherl.context.MascherlContext;
 import org.mascherl.context.PageClassMeta;
+import org.mascherl.jaxrs.JaxRs;
+import org.mascherl.render.MascherlPageRenderer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,17 +17,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Objects;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
@@ -36,10 +26,6 @@ import static org.mascherl.MascherlConstants.M_CLIENT_URL;
 import static org.mascherl.MascherlConstants.M_CONTAINER;
 import static org.mascherl.MascherlConstants.M_FORM;
 import static org.mascherl.MascherlConstants.M_PAGE;
-import static org.mascherl.MascherlConstants.X_MASCHERL_CONTAINER;
-import static org.mascherl.MascherlConstants.X_MASCHERL_PAGE;
-import static org.mascherl.MascherlConstants.X_MASCHERL_TITLE;
-import static org.mascherl.MascherlConstants.X_MASCHERL_URL;
 import static org.mascherl.page.MascherlPageUtils.createUriBuilder;
 import static org.mascherl.page.MascherlPageUtils.forwardAsGetRequest;
 import static org.mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParameters;
@@ -93,137 +79,22 @@ public interface MascherlPage {
     public default Response get(@Context HttpServletRequest request,
                                 @QueryParam(M_CONTAINER) String container,
                                 @QueryParam(M_PAGE) String page) {
-        MascherlContext mascherlContext = MascherlContext.getInstance();
-        PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(getClass());
-
         final boolean partialRequest = (container != null);
 
-        if (page != null && !Objects.equals(page, getClass().getName())) {
-            container = MAIN_CONTAINER;
-        }
-
-        String pageTitle = getTitle();
-
-        String resourcePath;
-        Partial partial;
+        MascherlPageRenderer renderer = new MascherlPageRenderer(JaxRs.getServletContextOfCurrentRequest());
         if (partialRequest) {
-            Method containerMethod = pageClassMeta.getContainerMethod(container);
-            partial = (Partial) invokeWithInjectedJaxRsParameters(this, containerMethod);
-            resourcePath = partial.getTemplate();
-
-        } else {
-            partial = null;
-            resourcePath = "/index.html";
-        }
-        String realPath = request.getServletContext().getRealPath(resourcePath);
-        if (realPath == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        Path path = Paths.get(realPath);
-        if (Files.isReadable(path)) {
-            MustacheFactory mustacheFactory = new DefaultMustacheFactory();
-            BufferedReader reader;
-            try {
-                reader = Files.newBufferedReader(path);
-            } catch (IOException e) {
-                throw new WebApplicationException(e);
+            if (page != null && !Objects.equals(page, getClass().getName())) {
+                container = MAIN_CONTAINER;
             }
-            Mustache mustache = mustacheFactory.compile(reader, path.toString());
-
-            Response.ResponseBuilder response = Response.ok();
-            if (partialRequest) {
-                response.header(X_MASCHERL_TITLE, pageTitle);
-                response.header(X_MASCHERL_PAGE, getClass().getName());
-                response.header(X_MASCHERL_CONTAINER, container);
-                String clientUrl = (String) request.getAttribute(M_CLIENT_URL);
-                if (clientUrl != null) {
-                    response.header(X_MASCHERL_URL, clientUrl);
-                }
-            }
-
-            final Partial finalPartial = partial;
-            return response.entity((StreamingOutput) outputStream -> {
-                mustache.execute(new OutputStreamWriter(outputStream), new MascherlScope(pageTitle, this, finalPartial, pageClassMeta, request, mustacheFactory)).flush();
-            }).build();
+            String clientUrl = (String) request.getAttribute(M_CLIENT_URL);
+            return renderer.renderContainer(this, container, clientUrl);
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return renderer.renderFull(this);
         }
     }
 
     public default String getTitle() {
         return getClass().getSimpleName();
     }
-
-    class MascherlScope extends HashMap<String, Object> {
-
-        private final String pageTitle;
-        private final MascherlPage pageInstance;
-        private final Partial partial;
-        private final PageClassMeta pageClassMeta;
-        private final HttpServletRequest request;
-        private final MustacheFactory mustacheFactory;
-
-        MascherlScope(String pageTitle, MascherlPage pageInstance, Partial partial, PageClassMeta pageClassMeta, HttpServletRequest request, MustacheFactory mustacheFactory) {
-            this.pageTitle = pageTitle;
-            this.pageInstance = pageInstance;
-            this.partial = partial;
-            this.pageClassMeta = pageClassMeta;
-            this.request = request;
-            this.mustacheFactory = mustacheFactory;
-        }
-
-        @Override
-        public Object get(Object keyObject) {
-            final String key = (String) keyObject;
-
-            if (partial != null && partial.getScope().containsKey(key)) {
-                return partial.getScope().get(key);
-            }
-            if (Objects.equals(key, "title")) {
-                return pageTitle;
-            }
-            if (key.startsWith("@")) {
-                String containerName = key.substring(1);
-
-                Method containerMethod = pageClassMeta.getContainerMethod(containerName);
-                if (containerMethod != null) {
-                    Partial partial = (Partial) invokeWithInjectedJaxRsParameters(pageInstance, containerMethod);
-                    if (partial != null) {
-                        try {
-                            String realPath = request.getServletContext().getRealPath(partial.getTemplate());
-                            Path path = Paths.get(realPath);
-                            Mustache mustache = mustacheFactory.compile(Files.newBufferedReader(path), path.toString());
-                            StringWriter mustacheOutput = new StringWriter();
-
-                            mustache.execute(mustacheOutput, new MascherlScope(pageTitle, pageInstance, partial, pageClassMeta, request, mustacheFactory)).flush();
-
-                            mustacheOutput.close();
-                            return "<div id=\"" + containerName + "\" m-page=\"" + pageInstance.getClass().getName() + "\">" + mustacheOutput.toString() + "</div>";
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    } else {
-                        return "<div id=\"" + containerName + "\" m-page=\"" + pageInstance.getClass().getName() + "\"></div>";
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public boolean containsKey(Object keyObject) {
-            final String key = (String) keyObject;
-            return (partial != null && partial.getScope().containsKey(key))
-                    || (key.startsWith("@") && pageClassMeta.containerExists(key.substring(1)))
-                    || (Objects.equals(key, "title"));
-        }
-
-        @Override
-        public Object put(String key, Object value) {
-            throw new UnsupportedOperationException();
-        }
-    }
-
 
 }

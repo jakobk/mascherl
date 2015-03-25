@@ -31,7 +31,7 @@ import java.util.Set;
  *
  * @author Jakob Korherr
  */
-class MascherlPageUtils {
+public class MascherlPageUtils {
 
     public static Response forwardAsGetRequest(HttpServletRequest request, HttpServletResponse response, UriBuilder uriBuilder) {
         try {

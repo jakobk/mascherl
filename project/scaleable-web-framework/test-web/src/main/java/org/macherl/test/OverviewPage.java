@@ -32,16 +32,8 @@ public class OverviewPage implements MascherlPage {  // request scoped
 
     @Container("form")
     public Partial form() {
-        return new Partial("/templates/overviewform.html");
-    }
-
-    @Container("messages")
-    public Partial messages() {
-        if (message != null) {
-            return new Partial("/templates/messages.html")
-                    .set("message", message);
-        }
-        return null;
+        return new Partial("/templates/overviewform.html")
+                .set("message", message);
     }
 
     @FormSubmission("overview-form")
