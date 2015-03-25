@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Stores meta data about a mascherl page class.
@@ -12,20 +14,42 @@ import java.util.Map;
  */
 public class PageClassMeta {
 
-    private final Class<?> pageClass;
-    private final Map<String, Method> formIndex = new HashMap<>();
-    private final Map<String, Method> containerIndex = new HashMap<>();
+    public static class Builder {
 
-    public PageClassMeta(Class<?> pageClass) {
-        this.pageClass = pageClass;
+        private Class<?> pageClass;
+        private Map<String, Method> formIndex = new HashMap<>();
+        private Map<String, Method> containerIndex = new HashMap<>();
+
+        public void setPageClass(Class<?> pageClass) {
+            this.pageClass = pageClass;
+        }
+
+        public void addContainer(String containerName, Method method) {
+            containerIndex.put(containerName, method);
+        }
+
+        public void addForm(String formName, Method method) {
+            formIndex.put(formName, method);
+        }
+
+        public PageClassMeta build() {
+            return new PageClassMeta(this);
+        }
+
+    }
+
+    private final Class<?> pageClass;
+    private final ConcurrentMap<String, Method> formIndex;
+    private final ConcurrentMap<String, Method> containerIndex;
+
+    private PageClassMeta(Builder builder) {
+        pageClass = builder.pageClass;
+        formIndex = new ConcurrentHashMap<>(builder.formIndex);
+        containerIndex = new ConcurrentHashMap<>(builder.containerIndex);
     }
 
     public Class<?> getPageClass() {
         return pageClass;
-    }
-
-    public void addForm(String formName, Method method) {
-        formIndex.put(formName, method);
     }
 
     public Method getFormMethod(String formName) {
@@ -38,10 +62,6 @@ public class PageClassMeta {
 
     public boolean containerExists(String containerName) {
         return containerIndex.containsKey(containerName);
-    }
-
-    public void addContainer(String containerName, Method method) {
-        containerIndex.put(containerName, method);
     }
 
     public Method getContainerMethod(String containerName) {

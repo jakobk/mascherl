@@ -86,7 +86,7 @@
 
         function addNavigationHandlers(id) {
             $(id + " a:not([m-ignore])").click(function(event) {
-                var container = $(this).attr("m-target");
+                var container = $(this).attr("m-container");
                 if (typeof container === "undefined") {
                     container = "main";
                 }
@@ -99,7 +99,7 @@
             });
 
             $(id + " form:not([m-ignore])").submit(function(event) {
-                var container = $(this).attr("m-target");
+                var container = $(this).attr("m-container");
                 if (typeof container === "undefined") {
                     container = "main";
                 }
@@ -146,7 +146,7 @@
 
 <div>Static content</div>
 
-{{{containers.main}}}
+{{{@main}}}
 
 </body>
 </html>

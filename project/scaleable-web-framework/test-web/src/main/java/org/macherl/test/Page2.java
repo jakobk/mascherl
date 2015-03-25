@@ -2,7 +2,7 @@ package org.macherl.test;
 
 import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Container;
-import org.mascherl.page.Mascherl;
+import org.mascherl.page.Partial;
 
 import javax.ws.rs.Path;
 
@@ -20,8 +20,8 @@ public class Page2 implements MascherlPage {
     }
 
     @Container("main")
-    public Mascherl main() {
-        return new Mascherl("/templates/page2.html");
+    public Partial main() {
+        return new Partial("/templates/page2.html");
     }
 
 }

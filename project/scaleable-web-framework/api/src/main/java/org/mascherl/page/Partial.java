@@ -4,20 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * TODO
+ * A partial specifies the content of a container on the related page.
+ *
+ * It already contains the complete scope, which is needed to render the given template (push style).
  *
  * @author Jakob Korherr
  */
-public class Mascherl {
+public class Partial {
 
     private final String template;
     private final Map<String, Object> scope = new HashMap<>();
 
-    public Mascherl(String template) {
+    public Partial(String template) {
         this.template = template;
     }
 
-    public Mascherl set(String key, Object value) {
+    public Partial set(String key, Object value) {
         scope.put(key, value);
         return this;
     }

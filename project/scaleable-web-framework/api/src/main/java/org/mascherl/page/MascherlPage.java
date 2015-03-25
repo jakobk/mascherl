@@ -78,6 +78,11 @@ public interface MascherlPage {
             uriBuilder.queryParam(M_CONTAINER, MAIN_CONTAINER);
             return forwardAsGetRequest(request, response, uriBuilder);
         } else {
+            // adjust container, if available
+            if (formMethodResult instanceof ContainerRef) {
+                container = ((ContainerRef) formMethodResult).getContainer();
+            }
+
             // no forward necessary
             return get(request, container, page);
         }
@@ -100,14 +105,14 @@ public interface MascherlPage {
         String pageTitle = getTitle();
 
         String resourcePath;
-        Mascherl mascherl;
+        Partial partial;
         if (partialRequest) {
             Method containerMethod = pageClassMeta.getContainerMethod(container);
-            mascherl = (Mascherl) invokeWithInjectedJaxRsParameters(this, containerMethod);
-            resourcePath = mascherl.getTemplate();
+            partial = (Partial) invokeWithInjectedJaxRsParameters(this, containerMethod);
+            resourcePath = partial.getTemplate();
 
         } else {
-            mascherl = null;
+            partial = null;
             resourcePath = "/index.html";
         }
         String realPath = request.getServletContext().getRealPath(resourcePath);
@@ -136,9 +141,9 @@ public interface MascherlPage {
                 }
             }
 
-            final Mascherl finalMascherl = mascherl;
+            final Partial finalPartial = partial;
             return response.entity((StreamingOutput) outputStream -> {
-                mustache.execute(new OutputStreamWriter(outputStream), new MascherlScope(pageTitle, this, finalMascherl, pageClassMeta, request, mustacheFactory)).flush();
+                mustache.execute(new OutputStreamWriter(outputStream), new MascherlScope(pageTitle, this, finalPartial, pageClassMeta, request, mustacheFactory)).flush();
             }).build();
         } else {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -153,15 +158,15 @@ public interface MascherlPage {
 
         private final String pageTitle;
         private final MascherlPage pageInstance;
-        private final Mascherl mascherl;
+        private final Partial partial;
         private final PageClassMeta pageClassMeta;
         private final HttpServletRequest request;
         private final MustacheFactory mustacheFactory;
 
-        MascherlScope(String pageTitle, MascherlPage pageInstance, Mascherl mascherl, PageClassMeta pageClassMeta, HttpServletRequest request, MustacheFactory mustacheFactory) {
+        MascherlScope(String pageTitle, MascherlPage pageInstance, Partial partial, PageClassMeta pageClassMeta, HttpServletRequest request, MustacheFactory mustacheFactory) {
             this.pageTitle = pageTitle;
             this.pageInstance = pageInstance;
-            this.mascherl = mascherl;
+            this.partial = partial;
             this.pageClassMeta = pageClassMeta;
             this.request = request;
             this.mustacheFactory = mustacheFactory;
@@ -171,31 +176,34 @@ public interface MascherlPage {
         public Object get(Object keyObject) {
             final String key = (String) keyObject;
 
-            if (mascherl != null && mascherl.getScope().containsKey(key)) {
-                return mascherl.getScope().get(key);
+            if (partial != null && partial.getScope().containsKey(key)) {
+                return partial.getScope().get(key);
             }
             if (Objects.equals(key, "title")) {
                 return pageTitle;
             }
-            if (key.startsWith("containers.")) {
-                String containerName = key.substring("containers.".length());
+            if (key.startsWith("@")) {
+                String containerName = key.substring(1);
 
                 Method containerMethod = pageClassMeta.getContainerMethod(containerName);
                 if (containerMethod != null) {
-                    Mascherl mascherl = (Mascherl) invokeWithInjectedJaxRsParameters(pageInstance, containerMethod);
+                    Partial partial = (Partial) invokeWithInjectedJaxRsParameters(pageInstance, containerMethod);
+                    if (partial != null) {
+                        try {
+                            String realPath = request.getServletContext().getRealPath(partial.getTemplate());
+                            Path path = Paths.get(realPath);
+                            Mustache mustache = mustacheFactory.compile(Files.newBufferedReader(path), path.toString());
+                            StringWriter mustacheOutput = new StringWriter();
 
-                    try {
-                        String realPath = request.getServletContext().getRealPath(mascherl.getTemplate());
-                        Path path = Paths.get(realPath);
-                        Mustache mustache = mustacheFactory.compile(Files.newBufferedReader(path), path.toString());
-                        StringWriter mustacheOutput = new StringWriter();
+                            mustache.execute(mustacheOutput, new MascherlScope(pageTitle, pageInstance, partial, pageClassMeta, request, mustacheFactory)).flush();
 
-                        mustache.execute(mustacheOutput, new MascherlScope(pageTitle, pageInstance, mascherl, pageClassMeta, request, mustacheFactory)).flush();
-
-                        mustacheOutput.close();
-                        return "<div id=\"" + containerName + "\" m-page=\"" + pageInstance.getClass().getName() + "\">" + mustacheOutput.toString() + "</div>";
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                            mustacheOutput.close();
+                            return "<div id=\"" + containerName + "\" m-page=\"" + pageInstance.getClass().getName() + "\">" + mustacheOutput.toString() + "</div>";
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        return "<div id=\"" + containerName + "\" m-page=\"" + pageInstance.getClass().getName() + "\"></div>";
                     }
                 }
             }
@@ -206,8 +214,8 @@ public interface MascherlPage {
         @Override
         public boolean containsKey(Object keyObject) {
             final String key = (String) keyObject;
-            return (mascherl != null && mascherl.getScope().containsKey(key))
-                    || (key.startsWith("containers.") && pageClassMeta.containerExists(key.substring("containers.".length())))
+            return (partial != null && partial.getScope().containsKey(key))
+                    || (key.startsWith("@") && pageClassMeta.containerExists(key.substring(1)))
                     || (Objects.equals(key, "title"));
         }
 

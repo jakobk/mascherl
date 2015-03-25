@@ -1,7 +1,7 @@
 package org.macherl.test;
 
 import org.mascherl.page.Container;
-import org.mascherl.page.Mascherl;
+import org.mascherl.page.Partial;
 import org.mascherl.page.MascherlPage;
 
 import javax.ws.rs.DefaultValue;
@@ -26,13 +26,13 @@ public class DataPage implements MascherlPage {  // request scoped
     }
 
     @Container("main")
-    public Mascherl main() {
-        return new Mascherl("/templates/data.html");
+    public Partial main() {
+        return new Partial("/templates/data.html");
     }
 
     @Container("data-container")
-    public Mascherl dataContainer() {
-        return new Mascherl("/templates/data-page" + pageParam + ".html");
+    public Partial dataContainer() {
+        return new Partial("/templates/data-page" + pageParam + ".html");
     }
 
 }

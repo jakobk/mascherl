@@ -45,14 +45,14 @@ class MascherlPageUtils {
 
     public static UriBuilder createUriBuilder(Object formMethodResult) {
         UriBuilder uriBuilder;
-        if (formMethodResult instanceof String) {
+        if (formMethodResult == null || formMethodResult instanceof ContainerRef) {
+            return null;
+        } else if (formMethodResult instanceof String) {
             uriBuilder = UriBuilder.fromUri((String) formMethodResult);
         } else if (formMethodResult instanceof URI) {
             uriBuilder = UriBuilder.fromUri((URI) formMethodResult);
         } else if (formMethodResult instanceof Class) {
             uriBuilder = UriBuilder.fromResource((Class) formMethodResult);
-        } else if (formMethodResult == null) {
-            uriBuilder = null;
         } else {
             throw new WebApplicationException("Illegal return value of method annotated with " +
                     FormSubmission.class.getName() + ": " + formMethodResult);

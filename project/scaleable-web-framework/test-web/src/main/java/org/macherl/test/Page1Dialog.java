@@ -1,7 +1,8 @@
 package org.macherl.test;
 
 import org.mascherl.page.Container;
-import org.mascherl.page.Mascherl;
+import org.mascherl.page.Partial;
+import org.mascherl.page.MascherlPage;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Path;
@@ -13,7 +14,7 @@ import javax.ws.rs.QueryParam;
  * @author Jakob Korherr
  */
 @Path("/page1/dialog")
-public class Page1Dialog extends Page1 {
+public class Page1Dialog implements MascherlPage {
 
     @QueryParam("dialog-page")
     @DefaultValue("1")
@@ -24,14 +25,19 @@ public class Page1Dialog extends Page1 {
         return "Page1 - Dialog";
     }
 
+    @Container("main")
+    public Partial main() {
+        return new Partial("/templates/page1.html");
+    }
+
     @Container("dialog")
-    public Mascherl dialog() {
-        return new Mascherl("/templates/dialog/test-dialog.html");
+    public Partial dialog() {
+        return new Partial("/templates/dialog/test-dialog.html");
     }
 
     @Container("dialog-content")
-    public Mascherl dialogContent() {
-        return new Mascherl("/templates/dialog/test-dialog-content-" + dialogPage + ".html");
+    public Partial dialogContent() {
+        return new Partial("/templates/dialog/test-dialog-content-" + dialogPage + ".html");
     }
 
 }

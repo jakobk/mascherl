@@ -1,13 +1,13 @@
 package org.mascherl.context;
 
-import org.apache.cxf.jaxrs.utils.JAXRSUtils;
-import org.apache.cxf.message.Message;
-import org.apache.cxf.transport.http.AbstractHTTPDestination;
-
 import javax.servlet.ServletContext;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static org.mascherl.jaxrs.JaxRs.getServletContextOfCurrentRequest;
 
 /**
  * The singleton context of Mascherl (one instance for the whole web application).
@@ -21,15 +21,7 @@ public class MascherlContext {
     private static final String MASCHERL_CONTEXT = "MASCHERL_CONTEXT";
 
     public static MascherlContext getInstance() {
-        Message message = JAXRSUtils.getCurrentMessage();
-        if (message == null) {
-            throw new IllegalStateException("No current message");
-        }
-        ServletContext servletContext = (ServletContext) message.get(AbstractHTTPDestination.HTTP_CONTEXT);
-        if (servletContext == null) {
-            throw new IllegalStateException("ServletContext not set in current message");
-        }
-        return getInstance(servletContext);
+        return getInstance(getServletContextOfCurrentRequest());
     }
 
     public static MascherlContext getInstance(ServletContext servletContext) {
@@ -40,25 +32,34 @@ public class MascherlContext {
         return mascherlContext;
     }
 
-    static MascherlContext createInstance(ServletContext servletContext) {
-        MascherlContext mascherlContext = new MascherlContext();
-        servletContext.setAttribute(MASCHERL_CONTEXT, mascherlContext);
-        return mascherlContext;
+    /**
+     * Builder for MascherlContext.
+     */
+    public static final class Builder {
+
+        private final Map<Class<?>, PageClassMeta> pageClassMetaMap = new HashMap<>();
+
+        public void addPageClassMeta(Class<?> pageClass, PageClassMeta pageClassMeta) {
+            pageClassMetaMap.put(pageClass, pageClassMeta);
+        }
+
+        public MascherlContext build(ServletContext servletContext) {
+            MascherlContext mascherlContext = new MascherlContext(this);
+            servletContext.setAttribute(MASCHERL_CONTEXT, mascherlContext);
+            return mascherlContext;
+        }
+
     }
 
     // MascherlContext is shared by all threads, thus must be thread-safe
-    private final ConcurrentMap<Class<?>, PageClassMeta> pageClassMetaMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<?>, PageClassMeta> pageClassMetaMap;
 
-    private MascherlContext() {
-        // instance creation controlled by getInstance()
+    private MascherlContext(Builder builder) {
+        pageClassMetaMap = new ConcurrentHashMap<>(builder.pageClassMetaMap);
     }
 
     public PageClassMeta getPageClassMeta(Class<?> pageClass) {
         return pageClassMetaMap.get(pageClass);
-    }
-
-    public void addPageClassMeta(Class<?> pageClass, PageClassMeta pageClassMeta) {
-        pageClassMetaMap.put(pageClass, pageClassMeta);
     }
 
     public Set<Class<?>> getPageClasses() {

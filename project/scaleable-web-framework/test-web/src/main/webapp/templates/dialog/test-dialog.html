@@ -2,7 +2,7 @@
 <div class="modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            {{{containers.dialog-content}}}
+            {{{@dialog-content}}}
         </div>
     </div>
 </div>
@@ -13,7 +13,7 @@
     dialog.modal('show');
     dialog.on('hide.bs.modal', function (e) {
         $("div.modal-backdrop").remove();
-        History.pushState({"container": "dialog"}, null, "http://localhost:8080/page1");
+        History.pushState({"container": "dialog"}, null, "/page1");
 
         /*window.fireHistoryChange = false;
         History.pushState({"container": "main"}, null, "http://localhost:8080/page1");
