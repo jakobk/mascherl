@@ -6,6 +6,7 @@ import org.mascherl.page.Container;
 import org.mascherl.page.ContainerRef;
 import org.mascherl.page.FormSubmission;
 import org.mascherl.page.Partial;
+import org.mascherl.render.mustache.MustacheRenderer;
 
 import javax.servlet.ServletContext;
 import java.lang.reflect.Method;
@@ -13,7 +14,7 @@ import java.net.URI;
 import java.util.Set;
 
 /**
- * Initializes Mascherl by creating the {@link MascherlContext} and adding all necessary class metadata to it.
+ * Initializes Mascherl by creating and initializing {@link MascherlContext}.
  *
  * @author Jakob Korherr
  */
@@ -29,6 +30,7 @@ public class MascherlInitializer {
 
     public void initialize() {
         MascherlContext.Builder builder = new MascherlContext.Builder();
+        builder.setMascherlRenderer(new MustacheRenderer(servletContext));
         addPageClassMeta(builder);
         builder.build(servletContext);
     }

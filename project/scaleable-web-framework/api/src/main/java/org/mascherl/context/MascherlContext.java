@@ -1,5 +1,7 @@
 package org.mascherl.context;
 
+import org.mascherl.render.MascherlRenderer;
+
 import javax.servlet.ServletContext;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +14,7 @@ import static org.mascherl.jaxrs.JaxRs.getServletContextOfCurrentRequest;
 /**
  * The singleton context of Mascherl (one instance for the whole web application).
  *
- * Stores metadata needed for the processing of requests.
+ * Stores metadata and application instances needed for the processing of requests.
  *
  * @author Jakob Korherr
  */
@@ -38,6 +40,11 @@ public class MascherlContext {
     public static final class Builder {
 
         private final Map<Class<?>, PageClassMeta> pageClassMetaMap = new HashMap<>();
+        private MascherlRenderer mascherlRenderer;
+
+        public void setMascherlRenderer(MascherlRenderer mascherlRenderer) {
+            this.mascherlRenderer = mascherlRenderer;
+        }
 
         public void addPageClassMeta(Class<?> pageClass, PageClassMeta pageClassMeta) {
             pageClassMetaMap.put(pageClass, pageClassMeta);
@@ -53,9 +60,15 @@ public class MascherlContext {
 
     // MascherlContext is shared by all threads, thus must be thread-safe
     private final ConcurrentMap<Class<?>, PageClassMeta> pageClassMetaMap;
+    private final MascherlRenderer mascherlRenderer;
 
     private MascherlContext(Builder builder) {
         pageClassMetaMap = new ConcurrentHashMap<>(builder.pageClassMetaMap);
+        mascherlRenderer = builder.mascherlRenderer;
+    }
+
+    public MascherlRenderer getMascherlRenderer() {
+        return mascherlRenderer;
     }
 
     public PageClassMeta getPageClassMeta(Class<?> pageClass) {

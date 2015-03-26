@@ -1,4 +1,4 @@
-package org.mascherl.render;
+package org.mascherl.render.mustache;
 
 import com.github.mustachejava.MustacheResolver;
 

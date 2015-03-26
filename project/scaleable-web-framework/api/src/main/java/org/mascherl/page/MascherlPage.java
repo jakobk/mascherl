@@ -2,8 +2,7 @@ package org.mascherl.page;
 
 import org.mascherl.context.MascherlContext;
 import org.mascherl.context.PageClassMeta;
-import org.mascherl.jaxrs.JaxRs;
-import org.mascherl.render.MascherlPageRenderer;
+import org.mascherl.render.MascherlRenderer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -81,7 +80,7 @@ public interface MascherlPage {
                                 @QueryParam(M_PAGE) String page) {
         final boolean partialRequest = (container != null);
 
-        MascherlPageRenderer renderer = new MascherlPageRenderer(JaxRs.getServletContextOfCurrentRequest());
+        MascherlRenderer renderer = MascherlContext.getInstance().getMascherlRenderer();
         if (partialRequest) {
             if (page != null && !Objects.equals(page, getClass().getName())) {
                 container = MAIN_CONTAINER;
