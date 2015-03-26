@@ -1,4 +1,4 @@
-package org.macherl.test;
+package org.mascherl.test;
 
 import org.mascherl.page.Container;
 import org.mascherl.page.Partial;
@@ -13,8 +13,8 @@ import javax.ws.rs.QueryParam;
  *
  * @author Jakob Korherr
  */
-@Path("/data2")
-public class Data2Page implements MascherlPage {  // request scoped
+@Path("/data")
+public class DataPage implements MascherlPage {  // request scoped
 
     @QueryParam("page")
     @DefaultValue("1")
@@ -22,12 +22,12 @@ public class Data2Page implements MascherlPage {  // request scoped
 
     @Override
     public String getTitle() {
-        return "Data2";
+        return "Data";
     }
 
     @Container("main")
     public Partial main() {
-        return new Partial("/templates/data2.html");
+        return new Partial("/templates/data.html");
     }
 
     @Container("data-container")

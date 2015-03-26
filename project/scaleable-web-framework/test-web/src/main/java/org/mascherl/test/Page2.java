@@ -1,4 +1,4 @@
-package org.macherl.test;
+package org.mascherl.test;
 
 import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Container;

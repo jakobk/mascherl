@@ -1,4 +1,4 @@
-package org.macherl.test;
+package org.mascherl.test;
 
 import org.mascherl.page.ContainerRef;
 import org.mascherl.page.FormSubmission;
