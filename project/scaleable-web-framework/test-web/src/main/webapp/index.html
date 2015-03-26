@@ -11,6 +11,11 @@
     <script src="/bower_components/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
 
     <script>
+        window.mascherl = window.mascherl || {};
+        window.mascherl.applicationVersion = "{{applicationVersion}}";
+    </script>
+
+    <script>
         $(document).ready(function() {
             addNavigationHandlers("body");
         });
@@ -23,7 +28,8 @@
                 type: "GET",
                 data: {
                     "m-container": container,
-                    "m-page": page
+                    "m-page": page,
+                    "m-app-version": window.mascherl.applicationVersion
                 },
                 dataType: "html",
                 success: function (data, status, xhr) {
@@ -40,11 +46,16 @@
                     document.title = xhr.getResponseHeader("X-Mascherl-Title");
                 },
                 error: function (xhr, status, errorThrown) {
-                    var containerDiv = $("#main");
-                    containerDiv.html(status);
-                    containerDiv.attr("m-page", "Error");
-                    History.replaceState({error: true}, null, "/error.html");
-                    document.title = "Error";
+                    if (xhr.status === 409) {
+                        // navigate the whole browser page to the new url
+                        window.location.href = url;
+                    } else {
+                        var containerDiv = $("#main");
+                        containerDiv.html(status);
+                        containerDiv.attr("m-page", "Error");
+                        History.replaceState({error: true}, null, "/error.html");
+                        document.title = "Error";
+                    }
                 }
             });
         }
@@ -55,6 +66,7 @@
                 data: $("#" + form).serialize()
                         + "&m-form=" + form
                         + "&m-container=" + container
+                        + "&m-app-version=" + window.mascherl.applicationVersion
                         + (typeof page === "undefined" ? "" : "&m-page=" + page),
                 type: "POST",
                 dataType: "html",
@@ -75,11 +87,16 @@
                     document.title = xhr.getResponseHeader("X-Mascherl-Title");
                 },
                 error: function (xhr, status, errorThrown) {
-                    var containerDiv = $("#main");
-                    containerDiv.html(status);
-                    containerDiv.attr("m-page", "Error");
-                    History.replaceState({error: true}, null, "/error.html");
-                    document.title = "Error";
+                    if (xhr.status === 409) {
+                        window.alert(xhr.responseText);
+                        window.location.reload(true);
+                    } else {
+                        var containerDiv = $("#main");
+                        containerDiv.html(status);
+                        containerDiv.attr("m-page", "Error");
+                        History.replaceState({error: true}, null, "/error.html");
+                        document.title = "Error";
+                    }
                 }
             });
         }

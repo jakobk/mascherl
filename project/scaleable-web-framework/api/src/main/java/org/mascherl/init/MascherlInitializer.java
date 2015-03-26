@@ -7,10 +7,14 @@ import org.mascherl.page.ContainerRef;
 import org.mascherl.page.FormSubmission;
 import org.mascherl.page.Partial;
 import org.mascherl.render.mustache.MustacheRenderer;
+import org.mascherl.version.ApplicationVersionProvider;
+import org.mascherl.version.ConfigApplicationVersionProvider;
 
 import javax.servlet.ServletContext;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 /**
@@ -31,8 +35,17 @@ public class MascherlInitializer {
     public void initialize() {
         MascherlContext.Builder builder = new MascherlContext.Builder();
         builder.setMascherlRenderer(new MustacheRenderer(servletContext));
+        builder.setApplicationVersion(getApplicationVersionProvider().getApplicationVersion());
         addPageClassMeta(builder);
         builder.build(servletContext);
+    }
+
+    private ApplicationVersionProvider getApplicationVersionProvider() {
+        Iterator<ApplicationVersionProvider> providers = ServiceLoader.load(ApplicationVersionProvider.class).iterator();
+        if (providers.hasNext()) {
+            return providers.next();
+        }
+        return new ConfigApplicationVersionProvider();   // default impl
     }
 
     private void addPageClassMeta(MascherlContext.Builder builder) {

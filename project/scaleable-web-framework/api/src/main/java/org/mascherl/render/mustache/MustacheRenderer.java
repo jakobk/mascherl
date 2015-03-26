@@ -55,7 +55,7 @@ public class MustacheRenderer implements MascherlRenderer {
         Mustache mustache = mustacheFactory.compile(templateReader, FULL_PAGE_RESOURCE);
 
         MustacheRendererScope scope = new MustacheRendererScope(
-                page, null, pageClassMeta,
+                mascherlContext, page, null, pageClassMeta,
                 (subContainer) -> renderSubContainer(mascherlContext, page, subContainer));
 
         StreamingOutput streamingOutput = (OutputStream outputStream)
@@ -109,7 +109,7 @@ public class MustacheRenderer implements MascherlRenderer {
             Mustache mustache = mustacheFactory.compile(templateReader, resourcePath);
 
             MustacheRendererScope scope = new MustacheRendererScope(
-                    page, partial, pageClassMeta,
+                    mascherlContext, page, partial, pageClassMeta,
                     (subContainer) -> renderSubContainer(mascherlContext, page, subContainer));
             mustache.execute(writer, scope).flush();
         }

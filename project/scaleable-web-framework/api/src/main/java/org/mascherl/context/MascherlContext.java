@@ -1,6 +1,7 @@
 package org.mascherl.context;
 
 import org.mascherl.render.MascherlRenderer;
+import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
 import java.util.HashMap;
@@ -41,9 +42,14 @@ public class MascherlContext {
 
         private final Map<Class<?>, PageClassMeta> pageClassMetaMap = new HashMap<>();
         private MascherlRenderer mascherlRenderer;
+        private ApplicationVersion applicationVersion;
 
         public void setMascherlRenderer(MascherlRenderer mascherlRenderer) {
             this.mascherlRenderer = mascherlRenderer;
+        }
+
+        public void setApplicationVersion(ApplicationVersion applicationVersion) {
+            this.applicationVersion = applicationVersion;
         }
 
         public void addPageClassMeta(Class<?> pageClass, PageClassMeta pageClassMeta) {
@@ -61,14 +67,20 @@ public class MascherlContext {
     // MascherlContext is shared by all threads, thus must be thread-safe
     private final ConcurrentMap<Class<?>, PageClassMeta> pageClassMetaMap;
     private final MascherlRenderer mascherlRenderer;
+    private final ApplicationVersion applicationVersion;
 
     private MascherlContext(Builder builder) {
         pageClassMetaMap = new ConcurrentHashMap<>(builder.pageClassMetaMap);
         mascherlRenderer = builder.mascherlRenderer;
+        applicationVersion = builder.applicationVersion;
     }
 
     public MascherlRenderer getMascherlRenderer() {
         return mascherlRenderer;
+    }
+
+    public ApplicationVersion getApplicationVersion() {
+        return applicationVersion;
     }
 
     public PageClassMeta getPageClassMeta(Class<?> pageClass) {
