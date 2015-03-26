@@ -22,12 +22,12 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
-import static org.mascherl.MascherlConstants.M_APP_VERSION;
-import static org.mascherl.MascherlConstants.M_CLIENT_URL;
-import static org.mascherl.MascherlConstants.M_CONTAINER;
-import static org.mascherl.MascherlConstants.M_FORM;
-import static org.mascherl.MascherlConstants.M_PAGE;
-import static org.mascherl.MascherlConstants.OUTDATED_VERSION_MSG;
+import static org.mascherl.MascherlConstants.Messages.OUTDATED_VERSION_MSG;
+import static org.mascherl.MascherlConstants.RequestParameters.M_APP_VERSION;
+import static org.mascherl.MascherlConstants.RequestParameters.M_CLIENT_URL;
+import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
+import static org.mascherl.MascherlConstants.RequestParameters.M_FORM;
+import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
 import static org.mascherl.page.MascherlPageUtils.createUriBuilder;
 import static org.mascherl.page.MascherlPageUtils.forwardAsGetRequest;
 import static org.mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParameters;

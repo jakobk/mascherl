@@ -25,10 +25,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.mascherl.MascherlConstants.X_MASCHERL_CONTAINER;
-import static org.mascherl.MascherlConstants.X_MASCHERL_PAGE;
-import static org.mascherl.MascherlConstants.X_MASCHERL_TITLE;
-import static org.mascherl.MascherlConstants.X_MASCHERL_URL;
+import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_CONTAINER;
+import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
+import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
+import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_URL;
 import static org.mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParameters;
 
 /**
