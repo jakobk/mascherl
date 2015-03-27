@@ -46,6 +46,9 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         if (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION)) {
             return mascherlContext.getApplicationVersion().getVersion();
         }
+        if (Objects.equals(key, "pageId")) {
+            return pageInstance.getClass().getName();
+        }
         if (key.startsWith("@")) {
             String containerName = key.substring(1);
             return renderSubContainer(containerName);
@@ -64,7 +67,8 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         return (partial != null && partial.getScope().containsKey(key))
                 || (key.startsWith("@") && pageClassMeta.containerExists(key.substring(1)))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
-                || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION));
+                || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))
+                || (Objects.equals(key, "pageId"));
     }
 
     @Override

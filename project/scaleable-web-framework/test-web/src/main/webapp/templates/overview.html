@@ -1,14 +1,19 @@
-Overview page
+{{<uber}}
 
-<p>{{welcome}}</p>
 
-<p><a href="/page1" m-container="main">Page 1</a></p>
-<p><a href="/page2" m-container="main">Page 2</a></p>
-<p><a href="/data" m-container="main">Data</a></p>
-<p><a href="/data2" m-container="main">Data2</a></p>
+{{$form}}
+    {{message}}
 
-{{{@form}}}
+    <div>
+        <form id="overview-form" method="post">
+            <p><input type="text" placeholder="Vorname" name="firstname" /></p>
+            <p><input type="text" placeholder="Nachname" name="lastname" /></p>
+            <p><input type="submit" /></p>
+        </form>
+    </div>
+{{/form}}
 
 <p><a href="https://www.google.at" m-ignore>Link to Google</a></p>
 
 Overview end
+{{/uber}}

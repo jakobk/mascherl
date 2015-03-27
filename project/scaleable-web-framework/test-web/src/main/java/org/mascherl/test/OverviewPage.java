@@ -32,7 +32,7 @@ public class OverviewPage implements MascherlPage {  // request scoped
 
     @Container("form")
     public Partial form() {
-        return new Partial("/templates/overviewform.html")
+        return new Partial("/templates/overview.html")
                 .set("message", message);
     }
 

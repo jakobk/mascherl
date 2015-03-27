@@ -2,7 +2,6 @@ package org.mascherl.render.mustache;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
 import org.mascherl.context.MascherlContext;
 import org.mascherl.context.PageClassMeta;
 import org.mascherl.page.Container;
@@ -14,16 +13,13 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Objects;
 
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_CONTAINER;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
@@ -38,12 +34,10 @@ import static org.mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParamet
  */
 public class MustacheRenderer implements MascherlRenderer {
 
-    private final MustacheFactory mustacheFactory;
-    private final ServletContext servletContext;
+    private final MascherlMustacheFactory mustacheFactory;
 
     public MustacheRenderer(ServletContext servletContext) {
-        this.servletContext = servletContext;
-        mustacheFactory = new DefaultMustacheFactory();
+        mustacheFactory = new MascherlMustacheFactory(servletContext);
     }
 
     @Override
@@ -51,8 +45,7 @@ public class MustacheRenderer implements MascherlRenderer {
         MascherlContext mascherlContext = MascherlContext.getInstance();
         PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(page.getClass());
 
-        BufferedReader templateReader = openPageTemplate(FULL_PAGE_RESOURCE);
-        Mustache mustache = mustacheFactory.compile(templateReader, FULL_PAGE_RESOURCE);
+        Mustache mustache = mustacheFactory.compile(FULL_PAGE_RESOURCE);
 
         MustacheRendererScope scope = new MustacheRendererScope(
                 mascherlContext, page, null, pageClassMeta,
@@ -103,32 +96,18 @@ public class MustacheRenderer implements MascherlRenderer {
 
         final Partial partial = (Partial) invokeWithInjectedJaxRsParameters(page, containerMethod);
         if (partial != null) {
-            String resourcePath = partial.getTemplate();
+            String templatePath = partial.getTemplate();
 
-            BufferedReader templateReader = openPageTemplate(resourcePath);
-            Mustache mustache = mustacheFactory.compile(templateReader, resourcePath);
+            Mustache mustache = mustacheFactory.compile(templatePath);
+
+            if (Objects.equals(container, "form")) {
+                mustache = mustacheFactory.getMustacheForContainer(templatePath, container);
+            }
 
             MustacheRendererScope scope = new MustacheRendererScope(
                     mascherlContext, page, partial, pageClassMeta,
                     (subContainer) -> renderSubContainer(mascherlContext, page, subContainer));
             mustache.execute(writer, scope).flush();
-        }
-    }
-
-    private BufferedReader openPageTemplate(String pageTemplate) {
-        String realPath = servletContext.getRealPath(pageTemplate);
-        if (realPath == null) {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
-        }
-        Path path = Paths.get(realPath);
-        if (Files.isReadable(path)) {
-            try {
-                return Files.newBufferedReader(path);
-            } catch (IOException e) {
-                throw new WebApplicationException(e);
-            }
-        } else {
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
     }
 
