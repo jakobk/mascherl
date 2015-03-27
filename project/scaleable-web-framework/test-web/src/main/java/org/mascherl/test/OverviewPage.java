@@ -4,7 +4,8 @@ import org.mascherl.page.ContainerRef;
 import org.mascherl.page.FormSubmission;
 import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Container;
-import org.mascherl.page.Partial;
+import org.mascherl.page.Model;
+import org.mascherl.page.Template;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Path;
@@ -15,6 +16,7 @@ import javax.ws.rs.Path;
  * @author Jakob Korherr
  */
 @Path("/")
+@Template("/templates/overview.html")
 public class OverviewPage implements MascherlPage {  // request scoped
 
     private String message;
@@ -25,15 +27,13 @@ public class OverviewPage implements MascherlPage {  // request scoped
     }
 
     @Container("main")
-    public Partial main() {
-        return new Partial("/templates/overview.html")
-                .set("welcome", "Welcome to Mascherl!");
+    public Model main() {
+        return new Model().put("welcome", "Welcome to Mascherl!");
     }
 
     @Container("form")
-    public Partial form() {
-        return new Partial("/templates/overview.html")
-                .set("message", message);
+    public Model form() {
+        return new Model().put("message", message);
     }
 
     @FormSubmission("overview-form")

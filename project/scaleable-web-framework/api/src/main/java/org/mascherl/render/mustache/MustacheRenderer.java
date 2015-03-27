@@ -1,12 +1,11 @@
 package org.mascherl.render.mustache;
 
-import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import org.mascherl.context.MascherlContext;
 import org.mascherl.context.PageClassMeta;
 import org.mascherl.page.Container;
 import org.mascherl.page.MascherlPage;
-import org.mascherl.page.Partial;
+import org.mascherl.page.Model;
 import org.mascherl.render.MascherlRenderer;
 
 import javax.servlet.ServletContext;
@@ -21,6 +20,7 @@ import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_CONTAINER;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
@@ -94,18 +94,20 @@ public class MustacheRenderer implements MascherlRenderer {
                     "in class " + page.getClass() + " found.");
         }
 
-        final Partial partial = (Partial) invokeWithInjectedJaxRsParameters(page, containerMethod);
-        if (partial != null) {
-            String templatePath = partial.getTemplate();
+        final Model model = (Model) invokeWithInjectedJaxRsParameters(page, containerMethod);
+        if (model != null) {
+            String pageTemplate = pageClassMeta.getPageTemplate();
 
-            Mustache mustache = mustacheFactory.compile(templatePath);
+            // in any case: make sure the whole page template is fully compiled
+            // (if so we get a cache hit in the MustacheFactory, it won't get compiled again)
+            Mustache mustache = mustacheFactory.compile(pageTemplate);
 
-            if (Objects.equals(container, "form")) {
-                mustache = mustacheFactory.getMustacheForContainer(templatePath, container);
+            if (!Objects.equals(container, MAIN_CONTAINER)) {
+                mustache = mustacheFactory.getMustacheForContainer(pageTemplate, container);
             }
 
             MustacheRendererScope scope = new MustacheRendererScope(
-                    mascherlContext, page, partial, pageClassMeta,
+                    mascherlContext, page, model, pageClassMeta,
                     (subContainer) -> renderSubContainer(mascherlContext, page, subContainer));
             mustache.execute(writer, scope).flush();
         }

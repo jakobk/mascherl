@@ -1,8 +1,9 @@
 package org.mascherl.test;
 
 import org.mascherl.page.Container;
-import org.mascherl.page.Partial;
+import org.mascherl.page.Model;
 import org.mascherl.page.MascherlPage;
+import org.mascherl.page.Template;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Path;
@@ -14,6 +15,7 @@ import javax.ws.rs.QueryParam;
  * @author Jakob Korherr
  */
 @Path("/page1")
+@Template("/templates/page1.html")
 public class Page1 implements MascherlPage {
 
     @QueryParam("dialog-page")
@@ -26,8 +28,8 @@ public class Page1 implements MascherlPage {
     }
 
     @Container("main")
-    public Partial main() {
-        return new Partial("/templates/page1.html");
+    public Model main() {
+        return new Model();
     }
 
 }

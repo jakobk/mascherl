@@ -12,17 +12,27 @@ import javax.ws.rs.Path;
  *
  * @author Jakob Korherr
  */
-@Path("/page2")
-@Template("/templates/page2.html")
-public class Page2 implements MascherlPage {
+@Path("/page1/dialog/1")
+@Template("/templates/dialog/dialog-page1.html")
+public class Page1Dialog1 implements MascherlPage {
 
     @Override
     public String getTitle() {
-        return "Page2";
+        return "Page1 - Dialog";
     }
 
     @Container("main")
     public Model main() {
+        return new Model();
+    }
+
+    @Container("dialog")
+    public Model dialog() {
+        return new Model();
+    }
+
+    @Container("dialogContent")
+    public Model dialogContent() {
         return new Model();
     }
 

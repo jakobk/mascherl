@@ -3,7 +3,7 @@ package org.mascherl.render.mustache;
 import org.mascherl.context.MascherlContext;
 import org.mascherl.context.PageClassMeta;
 import org.mascherl.page.MascherlPage;
-import org.mascherl.page.Partial;
+import org.mascherl.page.Model;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -20,15 +20,15 @@ public class MustacheRendererScope extends HashMap<String, Object> {
 
     private final MascherlContext mascherlContext;
     private final MascherlPage pageInstance;
-    private final Partial partial;
+    private final Model model;
     private final PageClassMeta pageClassMeta;
     private final Function<String, String> containerRenderFn;
 
-    public MustacheRendererScope(MascherlContext mascherlContext, MascherlPage pageInstance, Partial partial,
+    public MustacheRendererScope(MascherlContext mascherlContext, MascherlPage pageInstance, Model model,
                                  PageClassMeta pageClassMeta, Function<String, String> containerRenderFn) {
         this.mascherlContext = mascherlContext;
         this.pageInstance = pageInstance;
-        this.partial = partial;
+        this.model = model;
         this.pageClassMeta = pageClassMeta;
         this.containerRenderFn = containerRenderFn;
     }
@@ -37,8 +37,8 @@ public class MustacheRendererScope extends HashMap<String, Object> {
     public Object get(Object keyObject) {
         final String key = (String) keyObject;
 
-        if (partial != null && partial.getScope().containsKey(key)) {
-            return partial.getScope().get(key);
+        if (model != null && model.getScope().containsKey(key)) {
+            return model.getScope().get(key);
         }
         if (Objects.equals(key, RootScopeVariables.TITLE)) {
             return pageInstance.getTitle();
@@ -64,7 +64,7 @@ public class MustacheRendererScope extends HashMap<String, Object> {
     @Override
     public boolean containsKey(Object keyObject) {
         final String key = (String) keyObject;
-        return (partial != null && partial.getScope().containsKey(key))
+        return (model != null && model.getScope().containsKey(key))
                 || (key.startsWith("@") && pageClassMeta.containerExists(key.substring(1)))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
                 || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))

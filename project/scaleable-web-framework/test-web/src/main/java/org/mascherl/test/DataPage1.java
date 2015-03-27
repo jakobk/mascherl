@@ -12,17 +12,22 @@ import javax.ws.rs.Path;
  *
  * @author Jakob Korherr
  */
-@Path("/page2")
-@Template("/templates/page2.html")
-public class Page2 implements MascherlPage {
+@Path("/data/1")
+@Template("/templates/data-page1.html")
+public class DataPage1 implements MascherlPage {  // request scoped
 
     @Override
     public String getTitle() {
-        return "Page2";
+        return "Data";
     }
 
     @Container("main")
     public Model main() {
+        return new Model();
+    }
+
+    @Container("dataContainer")
+    public Model dataContainer() {
         return new Model();
     }
 
