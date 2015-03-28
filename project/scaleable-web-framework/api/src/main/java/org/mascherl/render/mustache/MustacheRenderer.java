@@ -6,16 +6,18 @@ import org.mascherl.context.PageClassMeta;
 import org.mascherl.page.Container;
 import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Model;
+import org.mascherl.render.ContainerMeta;
 import org.mascherl.render.MascherlRenderer;
+import org.mascherl.render.TemplateMeta;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
@@ -63,16 +65,25 @@ public class MustacheRenderer implements MascherlRenderer {
             mustache = mustacheFactory.compileFullPage(pageClassMeta.getPageTemplate());
         }
 
-        Method containerMethod = pageClassMeta.getContainerMethod(container);
-        if (containerMethod == null) {
-            throw new IllegalStateException("No method annotated with @" +
-                    Container.class.getSimpleName() + "(\"" + container + "\") " +
-                    "in class " + page.getClass() + " found.");
-        }
-        Model model = (Model) invokeWithInjectedJaxRsParameters(page, containerMethod);
+        TemplateMeta templateMeta = mustacheFactory.getTemplateMeta(pageClassMeta.getPageTemplate());
+        ContainerMeta containerMeta = templateMeta.getContainerMeta(container);
+        List<Model> models = new LinkedList<>();
+        collectModelValues(page, containerMeta, pageClassMeta, models);
 
+        MustacheRendererScope scope = new MustacheRendererScope(mascherlContext, page, models);
         return (OutputStream outputStream)
-                -> doRenderContainer(mascherlContext, mustache, page, model, new OutputStreamWriter(outputStream));
+                -> mustache.execute(new OutputStreamWriter(outputStream), scope).flush();
+    }
+
+    private void collectModelValues(MascherlPage page, ContainerMeta containerMeta, PageClassMeta pageClassMeta, List<Model> models) {
+        Method containerMethod = pageClassMeta.getContainerMethod(containerMeta.getContainerName());
+        if (containerMethod != null) {
+            models.add((Model) invokeWithInjectedJaxRsParameters(page, containerMethod));
+        }
+
+        for (ContainerMeta childContainerMeta : containerMeta.getChildren()) {
+            collectModelValues(page, childContainerMeta, pageClassMeta, models);
+        }
     }
 
     private Response.ResponseBuilder preparePartialResponse(MascherlPage page, String container, String clientUrl) {
@@ -84,12 +95,6 @@ public class MustacheRenderer implements MascherlRenderer {
             response.header(X_MASCHERL_URL, clientUrl);
         }
         return response;
-    }
-
-    private void doRenderContainer(MascherlContext mascherlContext, Mustache mustache,
-                                   MascherlPage page, Model model, Writer writer) throws IOException {
-        MustacheRendererScope scope = new MustacheRendererScope(mascherlContext, page, model);
-        mustache.execute(writer, scope).flush();
     }
 
     private Mustache getContainerMustache(String container, String pageTemplate) {

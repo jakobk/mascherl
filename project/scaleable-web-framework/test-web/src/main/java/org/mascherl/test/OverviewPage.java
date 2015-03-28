@@ -1,9 +1,9 @@
 package org.mascherl.test;
 
+import org.mascherl.page.Container;
 import org.mascherl.page.ContainerRef;
 import org.mascherl.page.FormSubmission;
 import org.mascherl.page.MascherlPage;
-import org.mascherl.page.Container;
 import org.mascherl.page.Model;
 import org.mascherl.page.Template;
 
@@ -19,7 +19,7 @@ import javax.ws.rs.Path;
 @Template("/templates/overview.html")
 public class OverviewPage implements MascherlPage {  // request scoped
 
-    private String message;
+    private String message = "default message";
 
     @Override
     public String getTitle() {
@@ -28,6 +28,11 @@ public class OverviewPage implements MascherlPage {  // request scoped
 
     @Container("main")
     public Model main() {
+        return new Model();
+    }
+
+    @Container("links")
+    public Model links() {
         return new Model().put("welcome", "Welcome to Mascherl!");
     }
 
