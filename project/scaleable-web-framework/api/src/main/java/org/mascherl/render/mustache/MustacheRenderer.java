@@ -45,10 +45,19 @@ public class MustacheRenderer implements MascherlRenderer {
         MascherlContext mascherlContext = MascherlContext.getInstance();
         PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(page.getClass());
 
-        Mustache mustache = mustacheFactory.compile(FULL_PAGE_RESOURCE);
+        Mustache mustache = mustacheFactory.compileFullPage(pageClassMeta.getPageTemplate());
+
+        String container = "main";
+        Method containerMethod = pageClassMeta.getContainerMethod(container);
+        if (containerMethod == null) {
+            throw new IllegalStateException("No method annotated with @" +
+                    Container.class.getSimpleName() + "(\"" + container + "\") " +
+                    "in class " + page.getClass() + " found.");
+        }
+        final Model model = (Model) invokeWithInjectedJaxRsParameters(page, containerMethod);
 
         MustacheRendererScope scope = new MustacheRendererScope(
-                mascherlContext, page, null, pageClassMeta,
+                mascherlContext, page, model, pageClassMeta,
                 (subContainer) -> renderSubContainer(mascherlContext, page, subContainer));
 
         StreamingOutput streamingOutput = (OutputStream outputStream)
@@ -99,7 +108,7 @@ public class MustacheRenderer implements MascherlRenderer {
             String pageTemplate = pageClassMeta.getPageTemplate();
 
             // in any case: make sure the whole page template is fully compiled
-            // (if so we get a cache hit in the MustacheFactory, it won't get compiled again)
+            // (if so we get a cache hit in the MustacheFactory, and it won't get compiled again)
             Mustache mustache = mustacheFactory.compile(pageTemplate);
 
             if (!Objects.equals(container, MAIN_CONTAINER)) {

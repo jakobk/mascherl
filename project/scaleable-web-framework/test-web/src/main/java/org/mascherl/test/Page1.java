@@ -18,10 +18,6 @@ import javax.ws.rs.QueryParam;
 @Template("/templates/page1.html")
 public class Page1 implements MascherlPage {
 
-    @QueryParam("dialog-page")
-    @DefaultValue("1")
-    private String dialogPage;
-
     @Override
     public String getTitle() {
         return "Page1";
