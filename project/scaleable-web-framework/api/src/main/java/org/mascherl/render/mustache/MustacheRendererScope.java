@@ -1,13 +1,11 @@
 package org.mascherl.render.mustache;
 
 import org.mascherl.context.MascherlContext;
-import org.mascherl.context.PageClassMeta;
 import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Model;
 
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.function.Function;
 
 import static org.mascherl.MascherlConstants.RootScopeVariables;
 
@@ -21,16 +19,11 @@ public class MustacheRendererScope extends HashMap<String, Object> {
     private final MascherlContext mascherlContext;
     private final MascherlPage pageInstance;
     private final Model model;
-    private final PageClassMeta pageClassMeta;
-    private final Function<String, String> containerRenderFn;
 
-    public MustacheRendererScope(MascherlContext mascherlContext, MascherlPage pageInstance, Model model,
-                                 PageClassMeta pageClassMeta, Function<String, String> containerRenderFn) {
+    public MustacheRendererScope(MascherlContext mascherlContext, MascherlPage pageInstance, Model model) {
         this.mascherlContext = mascherlContext;
         this.pageInstance = pageInstance;
         this.model = model;
-        this.pageClassMeta = pageClassMeta;
-        this.containerRenderFn = containerRenderFn;
     }
 
     @Override
@@ -49,23 +42,13 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         if (Objects.equals(key, "pageId")) {
             return pageInstance.getClass().getName();
         }
-        if (key.startsWith("@")) {
-            String containerName = key.substring(1);
-            return renderSubContainer(containerName);
-        }
-
         return null;
-    }
-
-    private String renderSubContainer(String containerName) {
-        return containerRenderFn.apply(containerName);
     }
 
     @Override
     public boolean containsKey(Object keyObject) {
         final String key = (String) keyObject;
         return (model != null && model.getScope().containsKey(key))
-                || (key.startsWith("@") && pageClassMeta.containerExists(key.substring(1)))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
                 || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))
                 || (Objects.equals(key, "pageId"));

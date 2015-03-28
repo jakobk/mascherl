@@ -9,13 +9,11 @@ import org.mascherl.page.Model;
 import org.mascherl.render.MascherlRenderer;
 
 import javax.servlet.ServletContext;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -42,31 +40,42 @@ public class MustacheRenderer implements MascherlRenderer {
 
     @Override
     public Response renderFull(MascherlPage page) {
+        Response.ResponseBuilder responseBuilder = Response.ok();
+        StreamingOutput output = render(page, MAIN_CONTAINER, false);
+        return responseBuilder.entity(output).build();
+    }
+
+    @Override
+    public Response renderContainer(MascherlPage page, String container, String clientUrl) {
+        Response.ResponseBuilder responseBuilder = preparePartialResponse(page, container, clientUrl);
+        StreamingOutput output = render(page, container, true);
+        return responseBuilder.entity(output).build();
+    }
+
+    private StreamingOutput render(MascherlPage page, String container, boolean isPartial) {
         MascherlContext mascherlContext = MascherlContext.getInstance();
         PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(page.getClass());
 
-        Mustache mustache = mustacheFactory.compileFullPage(pageClassMeta.getPageTemplate());
+        Mustache mustache;
+        if (isPartial) {
+            mustache = getContainerMustache(container, pageClassMeta.getPageTemplate());
+        } else {
+            mustache = mustacheFactory.compileFullPage(pageClassMeta.getPageTemplate());
+        }
 
-        String container = "main";
         Method containerMethod = pageClassMeta.getContainerMethod(container);
         if (containerMethod == null) {
             throw new IllegalStateException("No method annotated with @" +
                     Container.class.getSimpleName() + "(\"" + container + "\") " +
                     "in class " + page.getClass() + " found.");
         }
-        final Model model = (Model) invokeWithInjectedJaxRsParameters(page, containerMethod);
+        Model model = (Model) invokeWithInjectedJaxRsParameters(page, containerMethod);
 
-        MustacheRendererScope scope = new MustacheRendererScope(
-                mascherlContext, page, model, pageClassMeta,
-                (subContainer) -> renderSubContainer(mascherlContext, page, subContainer));
-
-        StreamingOutput streamingOutput = (OutputStream outputStream)
-                -> mustache.execute(new OutputStreamWriter(outputStream), scope).flush();
-        return Response.ok().entity(streamingOutput).build();
+        return (OutputStream outputStream)
+                -> doRenderContainer(mascherlContext, mustache, page, model, new OutputStreamWriter(outputStream));
     }
 
-    @Override
-    public Response renderContainer(MascherlPage page, String container, String clientUrl) {
+    private Response.ResponseBuilder preparePartialResponse(MascherlPage page, String container, String clientUrl) {
         Response.ResponseBuilder response = Response.ok();
         response.header(X_MASCHERL_TITLE, page.getTitle());
         response.header(X_MASCHERL_PAGE, page.getClass().getName());
@@ -74,52 +83,28 @@ public class MustacheRenderer implements MascherlRenderer {
         if (clientUrl != null) {
             response.header(X_MASCHERL_URL, clientUrl);
         }
-
-        MascherlContext mascherlContext = MascherlContext.getInstance();
-        StreamingOutput streamingOutput = (OutputStream outputStream)
-                -> doRenderContainer(mascherlContext, page, container, new OutputStreamWriter(outputStream));
-        return response.entity(streamingOutput).build();
+        return response;
     }
 
-    private String renderSubContainer(MascherlContext mascherlContext, MascherlPage page, String container) {
-        String mustacheOutput;
-        try (StringWriter mustacheWriter = new StringWriter()) {
-            doRenderContainer(mascherlContext, page, container, mustacheWriter);
-            mustacheOutput = mustacheWriter.toString();
-        } catch (IOException e) {
-            throw new WebApplicationException(e);
-        }
-
-        return "<div id=\"" + container + "\" m-page=\"" + page.getClass().getName() + "\">" + mustacheOutput + "</div>";
+    private void doRenderContainer(MascherlContext mascherlContext, Mustache mustache,
+                                   MascherlPage page, Model model, Writer writer) throws IOException {
+        MustacheRendererScope scope = new MustacheRendererScope(mascherlContext, page, model);
+        mustache.execute(writer, scope).flush();
     }
 
-    private void doRenderContainer(MascherlContext mascherlContext, MascherlPage page, String container, Writer writer) throws IOException {
-        PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(page.getClass());
-
-        Method containerMethod = pageClassMeta.getContainerMethod(container);
-        if (containerMethod == null) {
-            throw new IllegalStateException("No method annotated with @" +
-                    Container.class.getSimpleName() + "(\"" + container + "\") " +
-                    "in class " + page.getClass() + " found.");
+    private Mustache getContainerMustache(String container, String pageTemplate) {
+        // first: make sure that the whole page template is fully compiled
+        // (if so we get a cache hit in the MustacheFactory, and it won't get compiled again)
+        Mustache mustache = mustacheFactory.compile(pageTemplate);
+        // then: check if we should only render a sub-container, and directly use the sub-container mustache
+        if (isSubContainer(container)) {
+            mustache = mustacheFactory.getMustacheForContainer(pageTemplate, container);
         }
+        return mustache;
+    }
 
-        final Model model = (Model) invokeWithInjectedJaxRsParameters(page, containerMethod);
-        if (model != null) {
-            String pageTemplate = pageClassMeta.getPageTemplate();
-
-            // in any case: make sure the whole page template is fully compiled
-            // (if so we get a cache hit in the MustacheFactory, and it won't get compiled again)
-            Mustache mustache = mustacheFactory.compile(pageTemplate);
-
-            if (!Objects.equals(container, MAIN_CONTAINER)) {
-                mustache = mustacheFactory.getMustacheForContainer(pageTemplate, container);
-            }
-
-            MustacheRendererScope scope = new MustacheRendererScope(
-                    mascherlContext, page, model, pageClassMeta,
-                    (subContainer) -> renderSubContainer(mascherlContext, page, subContainer));
-            mustache.execute(writer, scope).flush();
-        }
+    private boolean isSubContainer(String container) {
+        return !Objects.equals(container, MAIN_CONTAINER);
     }
 
 }
