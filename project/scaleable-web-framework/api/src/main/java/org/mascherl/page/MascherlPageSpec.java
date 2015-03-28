@@ -12,14 +12,14 @@ public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid 
 
     private final String template;
     private final String pageTitle;
-    private final Map<String, ModelProducer> containerModelProviders = new HashMap<>();
+    private final Map<String, ModelCalculator> containerModelProviders = new HashMap<>();
 
     public MascherlPageSpec(String template, String pageTitle) {
         this.template = template;
         this.pageTitle = pageTitle;
     }
 
-    public MascherlPageSpec container(String containerName, ModelProducer modelProvider) {
+    public MascherlPageSpec container(String containerName, ModelCalculator modelProvider) {
         containerModelProviders.put(containerName, modelProvider);
         return this;
     }
@@ -32,10 +32,8 @@ public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid 
         return pageTitle;
     }
 
-    public Model getContainerModel(String containerName) {
-        Model model = new Model();
-        containerModelProviders.get(containerName).populate(model);
-        return model;
+    public void populateContainerModel(String containerName, Model pageModel) {
+        containerModelProviders.get(containerName).populate(pageModel);
     }
 
 }
