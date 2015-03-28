@@ -3,7 +3,9 @@ package org.mascherl.test;
 import org.mascherl.page.Container;
 import org.mascherl.page.ContainerRef;
 import org.mascherl.page.FormSubmission;
+import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlPage;
+import org.mascherl.page.MascherlPageSpec;
 import org.mascherl.page.Model;
 import org.mascherl.page.Template;
 
@@ -39,6 +41,15 @@ public class OverviewPage implements MascherlPage {  // request scoped
     @Container("form")
     public Model form() {
         return new Model().put("message", message);
+    }
+
+    @Path("/")
+    @Mascherl
+    public MascherlPageSpec overview() {
+        return new MascherlPageSpec("/templates/overview.html", "Overview")
+                .container("main", (model) -> {})
+                .container("links", (model) -> model.put("welcome", "Welcome to Mascherl!"))
+                .container("form", (model) -> model.put("message", message));
     }
 
     @FormSubmission("overview-form")
