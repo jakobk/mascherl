@@ -1,7 +1,7 @@
 package org.mascherl.render.mustache;
 
 import org.mascherl.context.MascherlContext;
-import org.mascherl.page.MascherlPage;
+import org.mascherl.page.MascherlPageSpec;
 import org.mascherl.page.Model;
 
 import java.util.HashMap;
@@ -19,12 +19,12 @@ import static org.mascherl.MascherlConstants.RootScopeVariables;
 public class MustacheRendererScope extends HashMap<String, Object> {
 
     private final MascherlContext mascherlContext;
-    private final MascherlPage pageInstance;
+    private final MascherlPageSpec page;
     private final List<Model> models;
 
-    public MustacheRendererScope(MascherlContext mascherlContext, MascherlPage pageInstance, List<Model> models) {
+    public MustacheRendererScope(MascherlContext mascherlContext, MascherlPageSpec page, List<Model> models) {
         this.mascherlContext = mascherlContext;
-        this.pageInstance = pageInstance;
+        this.page = page;
         this.models = models;
     }
 
@@ -32,19 +32,20 @@ public class MustacheRendererScope extends HashMap<String, Object> {
     public Object get(Object keyObject) {
         final String key = (String) keyObject;
 
+        // TODO do not search all models for the value, only the model of the respective container
         Optional<Model> matchedModel = models.stream().filter((model) -> model.getScope().containsKey(key)).findAny();
         if (matchedModel.isPresent()) {
             return matchedModel.get().getScope().get(key);
         }
 
         if (Objects.equals(key, RootScopeVariables.TITLE)) {
-            return pageInstance.getTitle();
+            return page.getPageTitle();
         }
         if (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION)) {
             return mascherlContext.getApplicationVersion().getVersion();
         }
-        if (Objects.equals(key, "pageId")) {
-            return pageInstance.getClass().getName();
+        if (Objects.equals(key, RootScopeVariables.PAGE_ID)) {
+            return page.getClass().getName();
         }
         return null;
     }
@@ -55,7 +56,7 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         return (models.stream().anyMatch((model) -> model.getScope().containsKey(key)))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
                 || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))
-                || (Objects.equals(key, "pageId"));
+                || (Objects.equals(key, RootScopeVariables.PAGE_ID));
     }
 
     @Override

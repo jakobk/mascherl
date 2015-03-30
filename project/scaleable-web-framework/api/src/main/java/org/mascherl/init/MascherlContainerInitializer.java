@@ -7,9 +7,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 import javax.ws.rs.Path;
-import java.lang.reflect.Modifier;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Initializes Mascherl using {@link ServletContainerInitializer} and {@link HandlesTypes}.
@@ -26,17 +24,8 @@ public class MascherlContainerInitializer implements ServletContainerInitializer
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext ctx) throws ServletException {
         if (classes != null && !classes.isEmpty()) {
-            Set<Class<?>> mascherlPageClasses = classes.stream().filter(this::isMascherlPage).collect(Collectors.toSet());
-            if (!mascherlPageClasses.isEmpty()) {
-                new MascherlInitializer(ctx, classes).initialize();
-            }
+            new MascherlInitializer(ctx, classes).initialize();
         }
-    }
-
-    private boolean isMascherlPage(Class<?> pageClass) {
-        return MascherlPage.class.isAssignableFrom(pageClass)
-                && !Modifier.isAbstract(pageClass.getModifiers())
-                && !pageClass.isInterface();
     }
 
 }

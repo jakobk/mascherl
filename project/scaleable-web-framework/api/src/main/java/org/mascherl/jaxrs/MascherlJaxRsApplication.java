@@ -5,6 +5,7 @@ import org.mascherl.context.MascherlContext;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -22,7 +23,10 @@ public class MascherlJaxRsApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return MascherlContext.getInstance(servletContext).getPageClasses();
+        Set<Class<?>> classes = new HashSet<>();
+        classes.add(MascherlMessageBodyWriter.class);
+        classes.addAll(MascherlContext.getInstance(servletContext).getPageClasses());
+        return classes;
     }
 
 }

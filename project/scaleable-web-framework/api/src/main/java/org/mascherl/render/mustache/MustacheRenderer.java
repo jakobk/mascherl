@@ -2,20 +2,17 @@ package org.mascherl.render.mustache;
 
 import com.github.mustachejava.Mustache;
 import org.mascherl.context.MascherlContext;
-import org.mascherl.context.PageClassMeta;
-import org.mascherl.page.Container;
-import org.mascherl.page.MascherlPage;
+import org.mascherl.page.MascherlPageSpec;
 import org.mascherl.page.Model;
 import org.mascherl.render.ContainerMeta;
 import org.mascherl.render.MascherlRenderer;
 import org.mascherl.render.TemplateMeta;
 
 import javax.servlet.ServletContext;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.MultivaluedMap;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +22,6 @@ import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_CONTAINE
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_URL;
-import static org.mascherl.page.MascherlPageUtils.invokeWithInjectedJaxRsParameters;
 
 /**
  * MascherlRenderer implementation using Mustache as render engine.
@@ -41,60 +37,54 @@ public class MustacheRenderer implements MascherlRenderer {
     }
 
     @Override
-    public Response renderFull(MascherlPage page) {
-        Response.ResponseBuilder responseBuilder = Response.ok();
-        StreamingOutput output = render(page, MAIN_CONTAINER, false);
-        return responseBuilder.entity(output).build();
+    public void renderFull(MascherlContext mascherlContext, MascherlPageSpec page, OutputStream outputStream,
+                           MultivaluedMap<String, Object> httpHeaders) throws IOException {
+        render(mascherlContext, page, outputStream, MAIN_CONTAINER, false);
     }
 
     @Override
-    public Response renderContainer(MascherlPage page, String container, String clientUrl) {
-        Response.ResponseBuilder responseBuilder = preparePartialResponse(page, container, clientUrl);
-        StreamingOutput output = render(page, container, true);
-        return responseBuilder.entity(output).build();
+    public void renderContainer(MascherlContext mascherlContext, MascherlPageSpec page, OutputStream outputStream,
+                                MultivaluedMap<String, Object> httpHeaders,
+                                String container, String clientUrl) throws IOException {
+        addHttpHeadersForPartialResponse(page, httpHeaders, container, clientUrl);
+        render(mascherlContext, page, outputStream, container, true);
     }
 
-    private StreamingOutput render(MascherlPage page, String container, boolean isPartial) {
-        MascherlContext mascherlContext = MascherlContext.getInstance();
-        PageClassMeta pageClassMeta = mascherlContext.getPageClassMeta(page.getClass());
-
+    private void render(MascherlContext mascherlContext, MascherlPageSpec page, OutputStream outputStream, String container, boolean isPartial) throws IOException {
         Mustache mustache;
         if (isPartial) {
-            mustache = getContainerMustache(container, pageClassMeta.getPageTemplate());
+            mustache = getContainerMustache(container, page.getTemplate());
         } else {
-            mustache = mustacheFactory.compileFullPage(pageClassMeta.getPageTemplate());
+            mustache = mustacheFactory.compileFullPage(page.getTemplate());
         }
 
-        TemplateMeta templateMeta = mustacheFactory.getTemplateMeta(pageClassMeta.getPageTemplate());
+        TemplateMeta templateMeta = mustacheFactory.getTemplateMeta(page.getTemplate());
         ContainerMeta containerMeta = templateMeta.getContainerMeta(container);
         List<Model> models = new LinkedList<>();
-        collectModelValues(page, containerMeta, pageClassMeta, models);
+        collectModelValues(page, containerMeta, models);
 
         MustacheRendererScope scope = new MustacheRendererScope(mascherlContext, page, models);
-        return (OutputStream outputStream)
-                -> mustache.execute(new OutputStreamWriter(outputStream), scope).flush();
+        mustache.execute(new OutputStreamWriter(outputStream), scope).flush();
     }
 
-    private void collectModelValues(MascherlPage page, ContainerMeta containerMeta, PageClassMeta pageClassMeta, List<Model> models) {
-        Method containerMethod = pageClassMeta.getContainerMethod(containerMeta.getContainerName());
-        if (containerMethod != null) {
-            models.add((Model) invokeWithInjectedJaxRsParameters(page, containerMethod));
-        }
+    private void collectModelValues(MascherlPageSpec page, ContainerMeta containerMeta, List<Model> models) {
+        Model model = new Model();
+        page.populateContainerModel(containerMeta.getContainerName(), model);
+        models.add(model);
 
         for (ContainerMeta childContainerMeta : containerMeta.getChildren()) {
-            collectModelValues(page, childContainerMeta, pageClassMeta, models);
+            collectModelValues(page, childContainerMeta, models);
         }
     }
 
-    private Response.ResponseBuilder preparePartialResponse(MascherlPage page, String container, String clientUrl) {
-        Response.ResponseBuilder response = Response.ok();
-        response.header(X_MASCHERL_TITLE, page.getTitle());
-        response.header(X_MASCHERL_PAGE, page.getClass().getName());
-        response.header(X_MASCHERL_CONTAINER, container);
+    private void addHttpHeadersForPartialResponse(MascherlPageSpec page, MultivaluedMap<String, Object> httpHeaders,
+                                                  String container, String clientUrl) {
+        httpHeaders.putSingle(X_MASCHERL_TITLE, page.getPageTitle());
+        httpHeaders.putSingle(X_MASCHERL_PAGE, page.getClass().getName());
+        httpHeaders.putSingle(X_MASCHERL_CONTAINER, container);
         if (clientUrl != null) {
-            response.header(X_MASCHERL_URL, clientUrl);
+            httpHeaders.putSingle(X_MASCHERL_URL, clientUrl);
         }
-        return response;
     }
 
     private Mustache getContainerMustache(String container, String pageTemplate) {

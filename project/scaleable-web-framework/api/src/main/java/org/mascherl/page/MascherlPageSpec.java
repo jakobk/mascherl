@@ -12,7 +12,8 @@ public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid 
 
     private final String template;
     private final String pageTitle;
-    private final Map<String, ModelCalculator> containerModelProviders = new HashMap<>();
+    private String pageId;   // TODO find a better solution to store the pageId
+    private final Map<String, ModelCalculator> containerModelCalculators = new HashMap<>();
 
     public MascherlPageSpec(String template, String pageTitle) {
         this.template = template;
@@ -20,7 +21,7 @@ public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid 
     }
 
     public MascherlPageSpec container(String containerName, ModelCalculator modelProvider) {
-        containerModelProviders.put(containerName, modelProvider);
+        containerModelCalculators.put(containerName, modelProvider);
         return this;
     }
 
@@ -33,7 +34,17 @@ public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid 
     }
 
     public void populateContainerModel(String containerName, Model pageModel) {
-        containerModelProviders.get(containerName).populate(pageModel);
+        ModelCalculator modelCalculator = containerModelCalculators.get(containerName);
+        if (modelCalculator != null) {
+            modelCalculator.populate(pageModel);
+        }
     }
 
+    public String getPageId() {
+        return pageId;
+    }
+
+    public void setPageId(String pageId) {
+        this.pageId = pageId;
+    }
 }

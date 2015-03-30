@@ -78,32 +78,9 @@ public interface MascherlPage {
             }
 
             // no forward necessary
-            return get(request, container, clientAppVersion, page);
-        }
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public default Response get(@Context HttpServletRequest request,
-                                @QueryParam(M_CONTAINER) String container,
-                                @QueryParam(M_APP_VERSION) ApplicationVersion clientAppVersion,
-                                @QueryParam(M_PAGE) String page) {
-        final boolean partialRequest = (container != null);
-
-        MascherlContext mascherlContext = MascherlContext.getInstance();
-        if (partialRequest && !mascherlContext.getApplicationVersion().equals(clientAppVersion)) {
-            return Response.status(Response.Status.CONFLICT).entity(OUTDATED_VERSION_MSG).build();
-        }
-
-        MascherlRenderer renderer = mascherlContext.getMascherlRenderer();
-        if (partialRequest) {
-            if (page != null && !Objects.equals(page, getClass().getName())) {
-                container = MAIN_CONTAINER;
-            }
-            String clientUrl = (String) request.getAttribute(M_CLIENT_URL);
-            return renderer.renderContainer(this, container, clientUrl);
-        } else {
-            return renderer.renderFull(this);
+            // TODO implement
+            // return get(request, container, clientAppVersion, page);
+            return Response.serverError().entity("not yet implemented").build();
         }
     }
 

@@ -1,15 +1,11 @@
 package org.mascherl.test;
 
-import org.mascherl.page.Container;
 import org.mascherl.page.ContainerRef;
 import org.mascherl.page.FormSubmission;
-import org.mascherl.page.Mascherl;
-import org.mascherl.page.MascherlPage;
 import org.mascherl.page.MascherlPageSpec;
-import org.mascherl.page.Model;
-import org.mascherl.page.Template;
 
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
 /**
@@ -17,39 +13,66 @@ import javax.ws.rs.Path;
  *
  * @author Jakob Korherr
  */
-@Path("/")
-@Template("/templates/overview.html")
-public class OverviewPage implements MascherlPage {  // request scoped
+@Path("/")  // TODO needed for initializer for now, find something better
+public class OverviewPage {
 
     private String message = "default message";
 
-    @Override
-    public String getTitle() {
-        return "Overview";
-    }
-
-    @Container("main")
-    public Model main() {
-        return new Model();
-    }
-
-    @Container("links")
-    public Model links() {
-        return new Model().put("welcome", "Welcome to Mascherl!");
-    }
-
-    @Container("form")
-    public Model form() {
-        return new Model().put("message", message);
-    }
-
+    @GET
     @Path("/")
-    @Mascherl
     public MascherlPageSpec overview() {
         return new MascherlPageSpec("/templates/overview.html", "Overview")
                 .container("main", (model) -> {})
                 .container("links", (model) -> model.put("welcome", "Welcome to Mascherl!"))
                 .container("form", (model) -> model.put("message", message));
+    }
+
+    @GET
+    @Path("/page1")
+    public MascherlPageSpec page1() {
+        return new MascherlPageSpec("/templates/page1.html", "Page1")
+                .container("main", (model) -> {});
+    }
+
+    @GET
+    @Path("/page1/dialog/1")
+    public MascherlPageSpec page1Dialog1() {
+        return new MascherlPageSpec("/templates/dialog/dialog-page1.html", "Page1 - Dialog")
+                .container("main", (model) -> {})
+                .container("dialog", (model) -> {})
+                .container("dialogContent", (model) -> {});
+    }
+
+    @Path("/page1/dialog/2")
+    @GET
+    public MascherlPageSpec page1Dialog2() {
+        return new MascherlPageSpec("/templates/dialog/dialog-page2.html", "Page1 - Dialog - 2")
+                .container("main", (model) -> {})
+                .container("dialog", (model) -> {})
+                .container("dialogContent", (model) -> {});
+    }
+
+    @GET
+    @Path("/page2")
+    public MascherlPageSpec page2() {
+        return new MascherlPageSpec("/templates/page2.html", "Page2")
+                .container("main", (model) -> {});
+    }
+
+    @GET
+    @Path("/data/1")
+    public MascherlPageSpec data1() {
+        return new MascherlPageSpec("/templates/data-page1.html", "Data")
+                .container("main", (model) -> {})
+                .container("dataContainer", (model) -> {});
+    }
+
+    @GET
+    @Path("/data/2")
+    public MascherlPageSpec data2() {
+        return new MascherlPageSpec("/templates/data-page2.html", "Data")
+                .container("main", (model) -> {})
+                .container("dataContainer", (model) -> {});
     }
 
     @FormSubmission("overview-form")
