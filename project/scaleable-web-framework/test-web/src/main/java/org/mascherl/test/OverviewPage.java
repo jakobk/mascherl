@@ -14,7 +14,6 @@ import javax.ws.rs.Path;
  *
  * @author Jakob Korherr
  */
-@Path("/")  // TODO needed for initializer for now, find something better
 public class OverviewPage {
 
     @GET
