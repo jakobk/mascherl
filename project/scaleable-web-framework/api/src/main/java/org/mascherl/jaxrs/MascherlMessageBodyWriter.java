@@ -1,6 +1,6 @@
 package org.mascherl.jaxrs;
 
-import org.mascherl.context.MascherlContext;
+import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlPageSpec;
 import org.mascherl.render.MascherlRenderer;
 
@@ -55,7 +55,7 @@ public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage
     public void writeTo(MascherlPageSpec mascherlPage, Class<?> type, Type genericType, Annotation[] annotations,
                         MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
             throws IOException, WebApplicationException {
-        MascherlContext mascherlContext = MascherlContext.getInstance(request.getServletContext());
+        MascherlApplication mascherlApplication = MascherlApplication.getInstance(request.getServletContext());
 
         String container = (String) request.getAttribute(M_CONTAINER);
         if (container == null) {
@@ -69,15 +69,15 @@ public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage
             mascherlPage.setPageId(resourceInfo.getResourceClass().getName());
         }
 
-        MascherlRenderer renderer = mascherlContext.getMascherlRenderer();
+        MascherlRenderer renderer = mascherlApplication.getMascherlRendererFactory().createMascherlRenderer();
         if (partialRequest) {
             if (page != null && !Objects.equals(page, getClass().getName())) {
                 container = MAIN_CONTAINER;
             }
             String clientUrl = (String) request.getAttribute(M_CLIENT_URL);
-            renderer.renderContainer(mascherlContext, mascherlPage, entityStream, httpHeaders, container, clientUrl);
+            renderer.renderContainer(mascherlApplication, mascherlPage, entityStream, httpHeaders, container, clientUrl);
         } else {
-            renderer.renderFull(mascherlContext, mascherlPage, entityStream, httpHeaders);
+            renderer.renderFull(mascherlApplication, mascherlPage, entityStream, httpHeaders);
         }
     }
 }

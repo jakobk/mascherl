@@ -1,6 +1,6 @@
 package org.mascherl.jaxrs;
 
-import org.mascherl.context.MascherlContext;
+import org.mascherl.application.MascherlApplication;
 import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
@@ -28,12 +28,12 @@ public class ApplicationVersionRequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        MascherlContext mascherlContext = MascherlContext.getInstance(servletContext);
+        MascherlApplication mascherlApplication = MascherlApplication.getInstance(servletContext);
 
         if (isPartialRequest(requestContext)) {
             ApplicationVersion clientAppVersion = new ApplicationVersion(
                     requestContext.getUriInfo().getQueryParameters().getFirst(M_APP_VERSION));
-            if (!mascherlContext.getApplicationVersion().equals(clientAppVersion)) {
+            if (!mascherlApplication.getApplicationVersion().equals(clientAppVersion)) {
                 requestContext.abortWith(Response.status(Response.Status.CONFLICT).entity(OUTDATED_VERSION_MSG).build());
             }
         }

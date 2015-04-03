@@ -13,8 +13,8 @@ public class Mascherl {
         return new MascherlPageSpec();
     }
 
-    public static FormResult redirect(String path) {
-        return new FormResult(UriBuilder.fromPath(path).build());
+    public static FormResult redirect(String pageUri) {
+        return new FormResult(UriBuilder.fromUri(pageUri).build());
     }
 
     public static FormResult renderContainer(String container, MascherlPageSpec pageSpec) {

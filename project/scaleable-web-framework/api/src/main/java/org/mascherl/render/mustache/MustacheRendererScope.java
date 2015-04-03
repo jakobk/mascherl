@@ -1,6 +1,6 @@
 package org.mascherl.render.mustache;
 
-import org.mascherl.context.MascherlContext;
+import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlPageSpec;
 import org.mascherl.page.Model;
 
@@ -20,12 +20,12 @@ import static org.mascherl.MascherlConstants.RootScopeVariables;
  */
 public class MustacheRendererScope extends HashMap<String, Object> {
 
-    private final MascherlContext mascherlContext;
+    private final MascherlApplication mascherlApplication;
     private final MascherlPageSpec page;
     private final List<Model> models;
 
-    public MustacheRendererScope(MascherlContext mascherlContext, MascherlPageSpec page, List<Model> models) {
-        this.mascherlContext = mascherlContext;
+    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPageSpec page, List<Model> models) {
+        this.mascherlApplication = mascherlApplication;
         this.page = page;
         this.models = models;
     }
@@ -43,7 +43,7 @@ public class MustacheRendererScope extends HashMap<String, Object> {
             return page.getPageTitle();
         }
         if (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION)) {
-            return mascherlContext.getApplicationVersion().getVersion();
+            return mascherlApplication.getApplicationVersion().getVersion();
         }
         if (Objects.equals(key, RootScopeVariables.PAGE_ID)) {
             return page.getClass().getName();

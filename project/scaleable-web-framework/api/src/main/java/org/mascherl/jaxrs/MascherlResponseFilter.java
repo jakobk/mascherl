@@ -1,7 +1,7 @@
 package org.mascherl.jaxrs;
 
 import org.apache.cxf.jaxrs.impl.tl.ThreadLocalProxy;
-import org.mascherl.context.MascherlContext;
+import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.FormResult;
 import org.mascherl.version.ApplicationVersion;
 
@@ -74,7 +74,7 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
         UriBuilder uriBuilder = UriBuilder.fromUri(path);
         uriBuilder.queryParam(M_CONTAINER, MAIN_CONTAINER);
 
-        ApplicationVersion applicationVersion = MascherlContext.getInstance(request.getServletContext()).getApplicationVersion();
+        ApplicationVersion applicationVersion = MascherlApplication.getInstance(request.getServletContext()).getApplicationVersion();
         uriBuilder.queryParam(M_APP_VERSION, applicationVersion.getVersion());
 
         responseContext.setEntity(null);

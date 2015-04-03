@@ -1,7 +1,7 @@
 package org.mascherl.render.mustache;
 
 import com.github.mustachejava.Mustache;
-import org.mascherl.context.MascherlContext;
+import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlPageSpec;
 import org.mascherl.page.Model;
 import org.mascherl.render.ContainerMeta;
@@ -37,20 +37,20 @@ public class MustacheRenderer implements MascherlRenderer {
     }
 
     @Override
-    public void renderFull(MascherlContext mascherlContext, MascherlPageSpec page, OutputStream outputStream,
+    public void renderFull(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream,
                            MultivaluedMap<String, Object> httpHeaders) throws IOException {
-        render(mascherlContext, page, outputStream, MAIN_CONTAINER, false);
+        render(mascherlApplication, page, outputStream, MAIN_CONTAINER, false);
     }
 
     @Override
-    public void renderContainer(MascherlContext mascherlContext, MascherlPageSpec page, OutputStream outputStream,
+    public void renderContainer(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream,
                                 MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException {
         addHttpHeadersForPartialResponse(page, httpHeaders, container, clientUrl);
-        render(mascherlContext, page, outputStream, container, true);
+        render(mascherlApplication, page, outputStream, container, true);
     }
 
-    private void render(MascherlContext mascherlContext, MascherlPageSpec page, OutputStream outputStream, String container, boolean isPartial) throws IOException {
+    private void render(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream, String container, boolean isPartial) throws IOException {
         Mustache mustache;
         if (isPartial) {
             mustache = getContainerMustache(container, page.getTemplate());
@@ -63,7 +63,7 @@ public class MustacheRenderer implements MascherlRenderer {
         List<Model> models = new LinkedList<>();
         collectModelValues(page, containerMeta, models);
 
-        MustacheRendererScope scope = new MustacheRendererScope(mascherlContext, page, models);
+        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, models);
         mustache.execute(new OutputStreamWriter(outputStream), scope).flush();
     }
 
