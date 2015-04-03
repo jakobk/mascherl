@@ -8,30 +8,30 @@ import java.util.Map;
  *
  * @author Jakob Korherr
  */
-public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid of the interface
+public class MascherlPage {   // TODO rename to MacherlPage once we got rid of the interface
 
     private String template;
     private String pageTitle;
     private final Map<String, ModelCalculator> containerModelCalculators = new HashMap<>();
     private String pageId;   // TODO find a better solution to store the pageId
 
-    public MascherlPageSpec() {}
+    public MascherlPage() {}
 
-    public MascherlPageSpec template(String template) {
+    public MascherlPage template(String template) {
         this.template = template;
         return this;
     }
 
-    public MascherlPageSpec pageTitle(String pageTitle) {
+    public MascherlPage pageTitle(String pageTitle) {
         this.pageTitle = pageTitle;
         return this;
     }
 
-    public MascherlPageSpec container(String containerName) {
+    public MascherlPage container(String containerName) {
         return container(containerName, (model) -> {});
     }
 
-    public MascherlPageSpec container(String containerName, ModelCalculator modelProvider) {
+    public MascherlPage container(String containerName, ModelCalculator modelProvider) {
         containerModelCalculators.put(containerName, modelProvider);
         return this;
     }

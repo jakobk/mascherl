@@ -55,15 +55,15 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
                 String clientUrl = formResult.getPath().toString();
                 request.setAttribute(M_CLIENT_URL, clientUrl);
 
-                if (formResult.getPageSpec() != null) {
+                if (formResult.getMascherlPage() != null) {
                     request.setAttribute(M_CONTAINER, MAIN_CONTAINER);
-                    responseContext.setEntity(formResult.getPageSpec());
+                    responseContext.setEntity(formResult.getMascherlPage());
                 } else {
                     redirect(responseContext, formResult.getPath(), request, response);
                 }
             } else if (formResult.getContainer() != null) {
                 request.setAttribute(M_CONTAINER, formResult.getContainer());
-                responseContext.setEntity(formResult.getPageSpec());
+                responseContext.setEntity(formResult.getMascherlPage());
             } else {
                 throw new IllegalArgumentException("container and path of FormResult cannot both be null");
             }

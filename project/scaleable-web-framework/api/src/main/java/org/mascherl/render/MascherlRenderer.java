@@ -1,7 +1,7 @@
 package org.mascherl.render;
 
 import org.mascherl.application.MascherlApplication;
-import org.mascherl.page.MascherlPageSpec;
+import org.mascherl.page.MascherlPage;
 
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
@@ -16,10 +16,10 @@ public interface MascherlRenderer {
 
     public String FULL_PAGE_RESOURCE = "/index.html";
 
-    public void renderFull(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream,
+    public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
                            MultivaluedMap<String, Object> httpHeaders) throws IOException;
 
-    public void renderContainer(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream,
+    public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
                                 MultivaluedMap<String, Object> httpHeaders, String container, String clientUrl) throws IOException;
 
 }

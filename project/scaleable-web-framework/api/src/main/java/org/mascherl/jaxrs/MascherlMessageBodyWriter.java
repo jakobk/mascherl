@@ -1,7 +1,7 @@
 package org.mascherl.jaxrs;
 
 import org.mascherl.application.MascherlApplication;
-import org.mascherl.page.MascherlPageSpec;
+import org.mascherl.page.MascherlPage;
 import org.mascherl.render.MascherlRenderer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
  * @author Jakob Korherr
  */
 @Produces(MediaType.WILDCARD)
-public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPageSpec> {
+public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage> {
 
     @Context
     private HttpServletRequest request;
@@ -43,16 +43,16 @@ public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return MascherlPageSpec.class.isAssignableFrom(type);
+        return MascherlPage.class.isAssignableFrom(type);
     }
 
     @Override
-    public long getSize(MascherlPageSpec mascherlPageSpec, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    public long getSize(MascherlPage mascherlPage, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return -1;  // cannot be pre-determined, because response is created while streaming
     }
 
     @Override
-    public void writeTo(MascherlPageSpec mascherlPage, Class<?> type, Type genericType, Annotation[] annotations,
+    public void writeTo(MascherlPage mascherlPage, Class<?> type, Type genericType, Annotation[] annotations,
                         MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
             throws IOException, WebApplicationException {
         MascherlApplication mascherlApplication = MascherlApplication.getInstance(request.getServletContext());

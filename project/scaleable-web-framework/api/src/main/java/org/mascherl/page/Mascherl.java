@@ -9,20 +9,20 @@ import javax.ws.rs.core.UriBuilder;
  */
 public class Mascherl {
 
-    public static MascherlPageSpec page() {
-        return new MascherlPageSpec();
+    public static MascherlPage page() {
+        return new MascherlPage();
     }
 
     public static FormResult redirect(String pageUri) {
         return new FormResult(UriBuilder.fromUri(pageUri).build());
     }
 
-    public static FormResult renderContainer(String container, MascherlPageSpec pageSpec) {
-        return new FormResult(container, pageSpec);
+    public static FormResult renderContainer(String container, MascherlPage mascherlPage) {
+        return new FormResult(container, mascherlPage);
     }
 
-    public static FormResult renderPage(String pageUri, MascherlPageSpec pageSpec) {
-        return new FormResult(UriBuilder.fromUri(pageUri).build(), pageSpec);
+    public static FormResult renderPage(String pageUri, MascherlPage mascherlPage) {
+        return new FormResult(UriBuilder.fromUri(pageUri).build(), mascherlPage);
     }
 
 }

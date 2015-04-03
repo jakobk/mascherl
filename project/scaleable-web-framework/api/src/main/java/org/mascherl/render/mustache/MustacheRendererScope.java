@@ -1,7 +1,7 @@
 package org.mascherl.render.mustache;
 
 import org.mascherl.application.MascherlApplication;
-import org.mascherl.page.MascherlPageSpec;
+import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Model;
 
 import javax.ws.rs.core.UriBuilder;
@@ -21,10 +21,10 @@ import static org.mascherl.MascherlConstants.RootScopeVariables;
 public class MustacheRendererScope extends HashMap<String, Object> {
 
     private final MascherlApplication mascherlApplication;
-    private final MascherlPageSpec page;
+    private final MascherlPage page;
     private final List<Model> models;
 
-    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPageSpec page, List<Model> models) {
+    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPage page, List<Model> models) {
         this.mascherlApplication = mascherlApplication;
         this.page = page;
         this.models = models;

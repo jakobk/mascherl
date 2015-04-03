@@ -11,21 +11,21 @@ public class FormResult {
 
     private final URI path;
     private final String container;
-    private final MascherlPageSpec pageSpec;
+    private final MascherlPage mascherlPage;
 
     public FormResult(URI path) {
         this(path, null);
     }
 
-    public FormResult(URI path, MascherlPageSpec pageSpec) {
+    public FormResult(URI path, MascherlPage mascherlPage) {
         this.path = path;
-        this.pageSpec = pageSpec;
+        this.mascherlPage = mascherlPage;
         this.container = null;
     }
 
-    public FormResult(String container, MascherlPageSpec pageSpec) {
+    public FormResult(String container, MascherlPage mascherlPage) {
         this.path = null;
-        this.pageSpec = pageSpec;
+        this.mascherlPage = mascherlPage;
         this.container = container;
     }
 
@@ -37,8 +37,8 @@ public class FormResult {
         return container;
     }
 
-    public MascherlPageSpec getPageSpec() {
-        return pageSpec;
+    public MascherlPage getMascherlPage() {
+        return mascherlPage;
     }
 
 }

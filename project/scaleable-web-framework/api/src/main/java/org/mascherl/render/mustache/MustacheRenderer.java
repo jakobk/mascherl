@@ -2,7 +2,7 @@ package org.mascherl.render.mustache;
 
 import com.github.mustachejava.Mustache;
 import org.mascherl.application.MascherlApplication;
-import org.mascherl.page.MascherlPageSpec;
+import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Model;
 import org.mascherl.render.ContainerMeta;
 import org.mascherl.render.MascherlRenderer;
@@ -13,6 +13,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -37,20 +38,21 @@ public class MustacheRenderer implements MascherlRenderer {
     }
 
     @Override
-    public void renderFull(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream,
+    public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
                            MultivaluedMap<String, Object> httpHeaders) throws IOException {
         render(mascherlApplication, page, outputStream, MAIN_CONTAINER, false);
     }
 
     @Override
-    public void renderContainer(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream,
+    public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
                                 MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException {
         addHttpHeadersForPartialResponse(page, httpHeaders, container, clientUrl);
         render(mascherlApplication, page, outputStream, container, true);
     }
 
-    private void render(MascherlApplication mascherlApplication, MascherlPageSpec page, OutputStream outputStream, String container, boolean isPartial) throws IOException {
+    private void render(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
+                        String container, boolean isPartial) throws IOException {
         Mustache mustache;
         if (isPartial) {
             mustache = getContainerMustache(container, page.getTemplate());
@@ -64,10 +66,10 @@ public class MustacheRenderer implements MascherlRenderer {
         collectModelValues(page, containerMeta, models);
 
         MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, models);
-        mustache.execute(new OutputStreamWriter(outputStream), scope).flush();
+        mustache.execute(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), scope).flush();
     }
 
-    private void collectModelValues(MascherlPageSpec page, ContainerMeta containerMeta, List<Model> models) {
+    private void collectModelValues(MascherlPage page, ContainerMeta containerMeta, List<Model> models) {
         Model model = new Model();
         page.populateContainerModel(containerMeta.getContainerName(), model);
         models.add(model);
@@ -77,7 +79,7 @@ public class MustacheRenderer implements MascherlRenderer {
         }
     }
 
-    private void addHttpHeadersForPartialResponse(MascherlPageSpec page, MultivaluedMap<String, Object> httpHeaders,
+    private void addHttpHeadersForPartialResponse(MascherlPage page, MultivaluedMap<String, Object> httpHeaders,
                                                   String container, String clientUrl) {
         httpHeaders.putSingle(X_MASCHERL_TITLE, page.getPageTitle());
         httpHeaders.putSingle(X_MASCHERL_PAGE, page.getClass().getName());

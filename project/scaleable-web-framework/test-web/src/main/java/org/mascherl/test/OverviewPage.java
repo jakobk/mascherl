@@ -2,7 +2,7 @@ package org.mascherl.test;
 
 import org.mascherl.page.FormResult;
 import org.mascherl.page.Mascherl;
-import org.mascherl.page.MascherlPageSpec;
+import org.mascherl.page.MascherlPage;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
@@ -19,7 +19,7 @@ public class OverviewPage {
 
     @GET
     @Path("/")
-    public MascherlPageSpec overview() {
+    public MascherlPage overview() {
         return Mascherl.page()
                 .template("/templates/overview.html")
                 .pageTitle("Overview")
@@ -56,7 +56,7 @@ public class OverviewPage {
 
     @GET
     @Path("/page1")
-    public MascherlPageSpec page1() {
+    public MascherlPage page1() {
         return Mascherl.page()
                 .template("/templates/page1.html")
                 .pageTitle("Page1")
@@ -65,7 +65,7 @@ public class OverviewPage {
 
     @GET
     @Path("/page1/dialog/1")
-    public MascherlPageSpec page1Dialog1() {
+    public MascherlPage page1Dialog1() {
         return Mascherl.page()
                 .template("/templates/dialog/dialog-page1.html")
                 .pageTitle("Page1 - Dialog")
@@ -76,7 +76,7 @@ public class OverviewPage {
 
     @Path("/page1/dialog/2")
     @GET
-    public MascherlPageSpec page1Dialog2() {
+    public MascherlPage page1Dialog2() {
         return Mascherl.page()
                 .template("/templates/dialog/dialog-page2.html")
                 .pageTitle("Page1 - Dialog - 2")
@@ -87,7 +87,7 @@ public class OverviewPage {
 
     @GET
     @Path("/page2")
-    public MascherlPageSpec page2() {
+    public MascherlPage page2() {
         return Mascherl.page()
                 .template("/templates/page2.html")
                 .pageTitle("Page2")
@@ -96,7 +96,7 @@ public class OverviewPage {
 
     @GET
     @Path("/data/1")
-    public MascherlPageSpec data1() {
+    public MascherlPage data1() {
         return Mascherl.page()
                 .template("/templates/data-page1.html")
                 .pageTitle("Data")
@@ -106,7 +106,7 @@ public class OverviewPage {
 
     @GET
     @Path("/data/2")
-    public MascherlPageSpec data2() {
+    public MascherlPage data2() {
         return Mascherl.page()
                 .template("/templates/data-page2.html")
                 .pageTitle("Data")
