@@ -51,9 +51,9 @@
                         window.location.href = url;
                     } else {
                         var containerDiv = $("#main");
-                        containerDiv.html(status);
+                        containerDiv.html($("#error").html());
                         containerDiv.attr("m-page", "Error");
-                        History.replaceState({error: true}, null, "/error.html");
+                        History.replaceState({error: true}, null, History.getState().url);
                         document.title = "Error";
                     }
                 }
@@ -92,9 +92,9 @@
                         window.location.reload(true);
                     } else {
                         var containerDiv = $("#main");
-                        containerDiv.html(status);
+                        containerDiv.html($("#error").html());
                         containerDiv.attr("m-page", "Error");
-                        History.replaceState({error: true}, null, "/error.html");
+                        History.replaceState({error: true}, null, History.getState().url);
                         document.title = "Error";
                     }
                 }
@@ -154,8 +154,10 @@
             }
             return {page: page, container: container};
         }
+    </script>
 
-
+    <script id="error" type="text/x-error-template">
+        <p>Something went wrong... Please reload the page and try again.</p>
     </script>
 </head>
 <body>
