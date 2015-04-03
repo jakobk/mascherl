@@ -4,10 +4,12 @@ import org.mascherl.context.MascherlContext;
 import org.mascherl.page.MascherlPageSpec;
 import org.mascherl.page.Model;
 
+import javax.ws.rs.core.UriBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.mascherl.MascherlConstants.RootScopeVariables;
 
@@ -37,7 +39,6 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         if (matchedModel.isPresent()) {
             return matchedModel.get().getScope().get(key);
         }
-
         if (Objects.equals(key, RootScopeVariables.TITLE)) {
             return page.getPageTitle();
         }
@@ -46,6 +47,20 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         }
         if (Objects.equals(key, RootScopeVariables.PAGE_ID)) {
             return page.getClass().getName();
+        }
+        if (Objects.equals(key, RootScopeVariables.URL)) {
+            return (Function<String, String>) (resourceRef) -> {
+                int classMethodSeparatorIndex = resourceRef.lastIndexOf(".");
+                String className = resourceRef.substring(0, classMethodSeparatorIndex);
+                String methodName = resourceRef.substring(classMethodSeparatorIndex + 1);
+                Class<?> resourceClass;
+                try {
+                    resourceClass = Class.forName(className);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                return UriBuilder.fromMethod(resourceClass, methodName).build().toString();
+            };
         }
         return null;
     }
@@ -56,7 +71,8 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         return (models.stream().anyMatch((model) -> model.getScope().containsKey(key)))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
                 || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))
-                || (Objects.equals(key, RootScopeVariables.PAGE_ID));
+                || (Objects.equals(key, RootScopeVariables.PAGE_ID))
+                || (Objects.equals(key, RootScopeVariables.URL));
     }
 
     @Override

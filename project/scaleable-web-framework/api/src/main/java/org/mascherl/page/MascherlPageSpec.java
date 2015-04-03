@@ -10,19 +10,37 @@ import java.util.Map;
  */
 public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid of the interface
 
-    private final String template;
-    private final String pageTitle;
-    private String pageId;   // TODO find a better solution to store the pageId
+    private String template;
+    private String pageTitle;
     private final Map<String, ModelCalculator> containerModelCalculators = new HashMap<>();
+    private String pageId;   // TODO find a better solution to store the pageId
 
-    public MascherlPageSpec(String template, String pageTitle) {
+    public MascherlPageSpec() {}
+
+    public MascherlPageSpec template(String template) {
         this.template = template;
+        return this;
+    }
+
+    public MascherlPageSpec pageTitle(String pageTitle) {
         this.pageTitle = pageTitle;
+        return this;
+    }
+
+    public MascherlPageSpec container(String containerName) {
+        return container(containerName, (model) -> {});
     }
 
     public MascherlPageSpec container(String containerName, ModelCalculator modelProvider) {
         containerModelCalculators.put(containerName, modelProvider);
         return this;
+    }
+
+    public void populateContainerModel(String containerName, Model pageModel) {
+        ModelCalculator modelCalculator = containerModelCalculators.get(containerName);
+        if (modelCalculator != null) {
+            modelCalculator.populate(pageModel);
+        }
     }
 
     public String getTemplate() {
@@ -33,13 +51,6 @@ public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid 
         return pageTitle;
     }
 
-    public void populateContainerModel(String containerName, Model pageModel) {
-        ModelCalculator modelCalculator = containerModelCalculators.get(containerName);
-        if (modelCalculator != null) {
-            modelCalculator.populate(pageModel);
-        }
-    }
-
     public String getPageId() {
         return pageId;
     }
@@ -47,4 +58,6 @@ public class MascherlPageSpec {   // TODO rename to MacherlPage once we got rid 
     public void setPageId(String pageId) {
         this.pageId = pageId;
     }
+
+
 }

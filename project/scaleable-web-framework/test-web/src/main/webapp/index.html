@@ -121,7 +121,7 @@
                     container = "main";
                 }
                 var navMeta = calculateNavigationMeta(container);
-                submitForm(History.getState().url, $(this).attr("id"), navMeta.container, navMeta.page);
+                submitForm(event.target.action, $(this).attr("id"), navMeta.container, navMeta.page);
                 return false;  // stop handling event
             });
         }

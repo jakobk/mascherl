@@ -24,7 +24,9 @@ public class MascherlJaxRsApplication extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<>();
+        classes.add(ApplicationVersionRequestFilter.class);
         classes.add(MascherlMessageBodyWriter.class);
+        classes.add(MascherlResponseFilter.class);
         classes.addAll(MascherlContext.getInstance(servletContext).getPageClasses());
         return classes;
     }

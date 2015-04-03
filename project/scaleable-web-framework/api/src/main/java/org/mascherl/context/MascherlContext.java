@@ -4,13 +4,7 @@ import org.mascherl.render.MascherlRenderer;
 import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import static org.mascherl.jaxrs.JaxRs.getServletContextOfCurrentRequest;
 
 /**
  * The singleton context of Mascherl (one instance for the whole web application).
@@ -22,10 +16,6 @@ import static org.mascherl.jaxrs.JaxRs.getServletContextOfCurrentRequest;
 public class MascherlContext {
 
     private static final String MASCHERL_CONTEXT = "MASCHERL_CONTEXT";
-
-    public static MascherlContext getInstance() {
-        return getInstance(getServletContextOfCurrentRequest());
-    }
 
     public static MascherlContext getInstance(ServletContext servletContext) {
         MascherlContext mascherlContext = (MascherlContext) servletContext.getAttribute(MASCHERL_CONTEXT);
@@ -40,7 +30,7 @@ public class MascherlContext {
      */
     public static final class Builder {
 
-        private final Map<Class<?>, PageClassMeta> pageClassMetaMap = new HashMap<>();
+        private Set<Class<?>> pageClasses;
         private MascherlRenderer mascherlRenderer;
         private ApplicationVersion applicationVersion;
 
@@ -52,8 +42,8 @@ public class MascherlContext {
             this.applicationVersion = applicationVersion;
         }
 
-        public void addPageClassMeta(Class<?> pageClass, PageClassMeta pageClassMeta) {
-            pageClassMetaMap.put(pageClass, pageClassMeta);
+        public void setPageClasses(Set<Class<?>> pageClasses) {
+            this.pageClasses = pageClasses;
         }
 
         public MascherlContext build(ServletContext servletContext) {
@@ -65,12 +55,12 @@ public class MascherlContext {
     }
 
     // MascherlContext is shared by all threads, thus must be thread-safe
-    private final ConcurrentMap<Class<?>, PageClassMeta> pageClassMetaMap;
+    private final Set<Class<?>> pageClasses;
     private final MascherlRenderer mascherlRenderer;
     private final ApplicationVersion applicationVersion;
 
     private MascherlContext(Builder builder) {
-        pageClassMetaMap = new ConcurrentHashMap<>(builder.pageClassMetaMap);
+        pageClasses = builder.pageClasses;
         mascherlRenderer = builder.mascherlRenderer;
         applicationVersion = builder.applicationVersion;
     }
@@ -83,12 +73,8 @@ public class MascherlContext {
         return applicationVersion;
     }
 
-    public PageClassMeta getPageClassMeta(Class<?> pageClass) {
-        return pageClassMetaMap.get(pageClass);
-    }
-
     public Set<Class<?>> getPageClasses() {
-        return pageClassMetaMap.keySet();
+        return pageClasses;
     }
 
 }

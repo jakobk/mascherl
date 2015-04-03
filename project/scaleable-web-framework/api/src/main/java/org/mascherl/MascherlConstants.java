@@ -26,6 +26,7 @@ public class MascherlConstants {
         public static final String TITLE = "title";
         public static final String APPLICATION_VERSION = "applicationVersion";
         public static final String PAGE_ID = "pageId";
+        public static final String URL = "url";
     }
 
     public static class Messages {

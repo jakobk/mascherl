@@ -1,7 +1,5 @@
 package org.mascherl.init;
 
-import org.mascherl.page.MascherlPage;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -13,8 +11,8 @@ import java.util.Set;
  * Initializes Mascherl using {@link ServletContainerInitializer} and {@link HandlesTypes}.
  *
  * Using this method of initialization has the advantage of not having to scan the classpath ourselves
- * for classes implementing {@link MascherlPage} (e.g. by using a tool like Scannotation) in order to build
- * the necessary page class metadata. The whole classpath scanning is left to the servlet container here.
+ * (e.g. by using a tool like Scannotation) in order to build the necessary page class metadata. The whole
+ * classpath scanning is left to the servlet container here.
  *
  * @author Jakob Korherr
  */
