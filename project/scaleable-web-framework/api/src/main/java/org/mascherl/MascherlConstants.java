@@ -20,6 +20,7 @@ public class MascherlConstants {
         public static final String X_MASCHERL_PAGE = "X-Mascherl-Page";
         public static final String X_MASCHERL_CONTAINER = "X-Mascherl-Container";
         public static final String X_MASCHERL_URL = "X-Mascherl-Url";
+        public static final String X_POWERED_BY = "X-Powered-By";
     }
 
     public static class RootScopeVariables {

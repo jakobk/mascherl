@@ -47,6 +47,7 @@ public class MascherlApplication {
         private MascherlRendererFactory mascherlRendererFactory;
         private ApplicationVersion applicationVersion;
         private boolean developmentMode;
+        private String mascherlVersion;
 
         public void setMascherlRendererFactory(MascherlRendererFactory mascherlRendererFactory) {
             this.mascherlRendererFactory = mascherlRendererFactory;
@@ -58,6 +59,10 @@ public class MascherlApplication {
 
         public void setDevelopmentMode(boolean developmentMode) {
             this.developmentMode = developmentMode;
+        }
+
+        public void setMascherlVersion(String mascherlVersion) {
+            this.mascherlVersion = mascherlVersion;
         }
 
         public MascherlApplication build(ServletContext servletContext) {
@@ -73,12 +78,14 @@ public class MascherlApplication {
     private final MascherlRendererFactory mascherlRendererFactory;
     private final ApplicationVersion applicationVersion;
     private final boolean developmentMode;
+    private final String mascherlVersion;
 
     private MascherlApplication(Builder builder) {
         servletContext = builder.servletContext;
         mascherlRendererFactory = builder.mascherlRendererFactory;
         applicationVersion = builder.applicationVersion;
         developmentMode = builder.developmentMode;
+        mascherlVersion = builder.mascherlVersion;
     }
 
     public ServletContext getServletContext() {
@@ -96,4 +103,9 @@ public class MascherlApplication {
     public boolean isDevelopmentMode() {
         return developmentMode;
     }
+
+    public String getMascherlVersion() {
+        return mascherlVersion;
+    }
+
 }

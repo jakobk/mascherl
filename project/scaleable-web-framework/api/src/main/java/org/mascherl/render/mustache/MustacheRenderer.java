@@ -23,6 +23,7 @@ import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_CONTAINE
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_URL;
+import static org.mascherl.MascherlConstants.ResponseHeaders.X_POWERED_BY;
 
 /**
  * MascherlRenderer implementation using Mustache as render engine.
@@ -40,6 +41,7 @@ public class MustacheRenderer implements MascherlRenderer {
     @Override
     public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
                            MultivaluedMap<String, Object> httpHeaders) throws IOException {
+        addGeneralHttpHeaders(mascherlApplication, httpHeaders);
         render(mascherlApplication, page, outputStream, MAIN_CONTAINER, false);
     }
 
@@ -47,7 +49,8 @@ public class MustacheRenderer implements MascherlRenderer {
     public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
                                 MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException {
-        addHttpHeadersForPartialResponse(page, httpHeaders, container, clientUrl);
+        addGeneralHttpHeaders(mascherlApplication, httpHeaders);
+        addHttpHeadersForPartialResponse(mascherlApplication, page, httpHeaders, container, clientUrl);
         render(mascherlApplication, page, outputStream, container, true);
     }
 
@@ -79,7 +82,12 @@ public class MustacheRenderer implements MascherlRenderer {
         }
     }
 
-    private void addHttpHeadersForPartialResponse(MascherlPage page, MultivaluedMap<String, Object> httpHeaders,
+    private void addGeneralHttpHeaders(MascherlApplication mascherlApplication, MultivaluedMap<String, Object> httpHeaders) {
+        httpHeaders.putSingle(X_POWERED_BY, "Mascherl " + mascherlApplication.getMascherlVersion());
+    }
+
+    private void addHttpHeadersForPartialResponse(MascherlApplication mascherlApplication, MascherlPage page,
+                                                  MultivaluedMap<String, Object> httpHeaders,
                                                   String container, String clientUrl) {
         httpHeaders.putSingle(X_MASCHERL_TITLE, page.getPageTitle());
         httpHeaders.putSingle(X_MASCHERL_PAGE, page.getClass().getName());
