@@ -1,9 +1,11 @@
 package org.mascherl.application;
 
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.mascherl.MascherlConstants;
 import org.mascherl.render.MascherlRendererFactory;
 import org.mascherl.render.mustache.MustacheRendererFactory;
+import org.mascherl.session.MascherlSessionStorage;
 import org.mascherl.version.ApplicationVersionProvider;
 import org.mascherl.version.ConfigApplicationVersionProvider;
 
@@ -33,6 +35,7 @@ public class MascherlInitializer {
     public void initialize() {
         MascherlApplication.Builder builder = new MascherlApplication.Builder();
         builder.setMascherlRendererFactory(getMustacheRendererFactory());
+        builder.setMascherlSessionStorage(new MascherlSessionStorage());
         builder.setApplicationVersion(getApplicationVersionProvider().getApplicationVersion());
         builder.setDevelopmentMode(ConfigFactory.load().getBoolean(DEVELOPMENT_MODUS));
         builder.setMascherlVersion(findMascherlVersion());
@@ -47,6 +50,7 @@ public class MascherlInitializer {
         }
 
         application.getMascherlRendererFactory().init(application);
+        application.getMascherlSessionStorage().init(application);
     }
 
     private String findMascherlVersion() {

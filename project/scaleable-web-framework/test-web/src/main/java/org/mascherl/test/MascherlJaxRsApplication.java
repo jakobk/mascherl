@@ -1,10 +1,6 @@
 package org.mascherl.test;
 
-import org.mascherl.MascherlConstants;
 import org.mascherl.application.MascherlApplication;
-import org.mascherl.jaxrs.ApplicationVersionRequestFilter;
-import org.mascherl.jaxrs.MascherlMessageBodyWriter;
-import org.mascherl.jaxrs.MascherlResponseFilter;
 
 import javax.ws.rs.core.Application;
 import java.util.HashSet;

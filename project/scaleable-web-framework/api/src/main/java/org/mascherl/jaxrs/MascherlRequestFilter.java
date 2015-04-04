@@ -1,9 +1,12 @@
 package org.mascherl.jaxrs;
 
 import org.mascherl.application.MascherlApplication;
+import org.mascherl.session.MascherlSession;
+import org.mascherl.session.MascherlSessionHolder;
 import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
@@ -19,15 +22,25 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
  *
  * @author Jakob Korherr
  */
-public class ApplicationVersionRequestFilter implements ContainerRequestFilter {
+public class MascherlRequestFilter implements ContainerRequestFilter {
 
     @Context
     private ServletContext servletContext;
+
+    @Context
+    private HttpServletRequest request;
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         MascherlApplication mascherlApplication = MascherlApplication.getInstance(servletContext);
 
+        verifyApplicationVersion(mascherlApplication, requestContext);
+
+        MascherlSession mascherlSession = mascherlApplication.getMascherlSessionStorage().restoreSession(request);
+        request.setAttribute("MASCHERL_SESSION", mascherlSession);
+    }
+
+    private void verifyApplicationVersion(MascherlApplication mascherlApplication, ContainerRequestContext requestContext) {
         if (isPartialRequest(requestContext)) {
             ApplicationVersion clientAppVersion = new ApplicationVersion(
                     requestContext.getUriInfo().getQueryParameters().getFirst(M_APP_VERSION));

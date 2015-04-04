@@ -3,8 +3,11 @@ package org.mascherl.jaxrs;
 import org.apache.cxf.jaxrs.impl.tl.ThreadLocalProxy;
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.FormResult;
+import org.mascherl.session.MascherlSessionHolder;
+import org.mascherl.session.MascherlSessionStorage;
 import org.mascherl.version.ApplicationVersion;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -32,6 +35,9 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 public class MascherlResponseFilter implements ContainerResponseFilter {
 
     @Context
+    private ServletContext servletContext;
+
+    @Context
     private HttpServletRequest threadLocalRequest;
 
     @Context
@@ -42,6 +48,9 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        MascherlSessionStorage sessionStorage = MascherlApplication.getInstance(servletContext).getMascherlSessionStorage();
+        sessionStorage.saveSession(MascherlSessionHolder.getSession(), threadLocalResponse);
+
         if (responseContext.getEntity() instanceof FormResult) {
             FormResult formResult = (FormResult) responseContext.getEntity();
 

@@ -1,9 +1,10 @@
 package org.mascherl.application;
 
-import org.mascherl.jaxrs.ApplicationVersionRequestFilter;
 import org.mascherl.jaxrs.MascherlMessageBodyWriter;
+import org.mascherl.jaxrs.MascherlRequestFilter;
 import org.mascherl.jaxrs.MascherlResponseFilter;
 import org.mascherl.render.MascherlRendererFactory;
+import org.mascherl.session.MascherlSessionStorage;
 import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
@@ -32,7 +33,7 @@ public class MascherlApplication {
 
     public static Set<Class<?>> getJaxRsClasses() {
         Set<Class<?>> classes = new HashSet<>();
-        classes.add(ApplicationVersionRequestFilter.class);
+        classes.add(MascherlRequestFilter.class);
         classes.add(MascherlMessageBodyWriter.class);
         classes.add(MascherlResponseFilter.class);
         return classes;
@@ -45,12 +46,17 @@ public class MascherlApplication {
 
         private ServletContext servletContext;
         private MascherlRendererFactory mascherlRendererFactory;
+        private MascherlSessionStorage mascherlSessionStorage;
         private ApplicationVersion applicationVersion;
         private boolean developmentMode;
         private String mascherlVersion;
 
         public void setMascherlRendererFactory(MascherlRendererFactory mascherlRendererFactory) {
             this.mascherlRendererFactory = mascherlRendererFactory;
+        }
+
+        public void setMascherlSessionStorage(MascherlSessionStorage mascherlSessionStorage) {
+            this.mascherlSessionStorage = mascherlSessionStorage;
         }
 
         public void setApplicationVersion(ApplicationVersion applicationVersion) {
@@ -76,6 +82,7 @@ public class MascherlApplication {
 
     private final ServletContext servletContext;
     private final MascherlRendererFactory mascherlRendererFactory;
+    private MascherlSessionStorage mascherlSessionStorage;
     private final ApplicationVersion applicationVersion;
     private final boolean developmentMode;
     private final String mascherlVersion;
@@ -83,6 +90,7 @@ public class MascherlApplication {
     private MascherlApplication(Builder builder) {
         servletContext = builder.servletContext;
         mascherlRendererFactory = builder.mascherlRendererFactory;
+        mascherlSessionStorage = builder.mascherlSessionStorage;
         applicationVersion = builder.applicationVersion;
         developmentMode = builder.developmentMode;
         mascherlVersion = builder.mascherlVersion;
@@ -94,6 +102,10 @@ public class MascherlApplication {
 
     public MascherlRendererFactory getMascherlRendererFactory() {
         return mascherlRendererFactory;
+    }
+
+    public MascherlSessionStorage getMascherlSessionStorage() {
+        return mascherlSessionStorage;
     }
 
     public ApplicationVersion getApplicationVersion() {

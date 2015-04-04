@@ -3,11 +3,13 @@ package org.mascherl.test;
 import org.mascherl.page.FormResult;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlPage;
+import org.mascherl.session.MascherlSession;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * TODO
@@ -19,12 +21,17 @@ public class OverviewPage {
     @GET
     @Path("/")
     public MascherlPage overview() {
+        MascherlSession session = MascherlSession.getInstance();
+        session.put("user", "Jakob Korherr");
+
         return Mascherl.page()
                 .template("/templates/overview.html")
                 .pageTitle("Overview")
                 .container("main")
                 .container("links", (model) -> model.put("welcome", "Welcome to Mascherl!"))
-                .container("form", (model) -> model.put("message", "default message"));
+                .container("form", (model) -> model
+                        .put("message", "default message")
+                        .put("overviewFormAction", UriBuilder.fromMethod(OverviewPage.class, "submit").build()));
     }
 
     @POST
@@ -35,7 +42,7 @@ public class OverviewPage {
         return Mascherl.renderContainer(
                 "form",
                 overview()
-                        .container("form", (model) -> model.put("message", message)));
+                        .container("form", (model) -> model.put("message", message)));     // TODO overrideContainer
 //        return Mascherl.renderPage("/page1?id=1", page1());
 //        return Mascherl.redirect("/page1");
     }
@@ -56,6 +63,9 @@ public class OverviewPage {
     @GET
     @Path("/page1")
     public MascherlPage page1() {
+        MascherlSession session = MascherlSession.getInstance();
+        System.out.println(session.getString("user"));
+
         return Mascherl.page()
                 .template("/templates/page1.html")
                 .pageTitle("Page1")
