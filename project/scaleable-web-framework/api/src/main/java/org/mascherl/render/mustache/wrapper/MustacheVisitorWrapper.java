@@ -1,4 +1,4 @@
-package org.mascherl.render.mustache;
+package org.mascherl.render.mustache.wrapper;
 
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheVisitor;

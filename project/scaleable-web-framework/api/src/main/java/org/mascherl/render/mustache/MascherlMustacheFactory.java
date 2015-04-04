@@ -10,8 +10,11 @@ import com.github.mustachejava.codes.DefaultCode;
 import com.github.mustachejava.codes.DefaultMustache;
 import com.github.mustachejava.codes.ExtendNameCode;
 import org.mascherl.render.ContainerMeta;
-import org.mascherl.render.MascherlRenderer;
 import org.mascherl.render.TemplateMeta;
+import org.mascherl.render.mustache.fullpage.FullPageCachedMustache;
+import org.mascherl.render.mustache.fullpage.FullPageDynamicMustache;
+import org.mascherl.render.mustache.fullpage.MainContainerPartialCode;
+import org.mascherl.render.mustache.wrapper.MustacheVisitorWrapper;
 
 import javax.servlet.ServletContext;
 import java.lang.reflect.Field;
@@ -20,8 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
+import static org.mascherl.render.MascherlRenderer.FULL_PAGE_RESOURCE;
 
 /**
  * Mascherl specific Mustache factory, which adds Mascherl specific functionality to {@link DefaultMustacheFactory}.
@@ -57,23 +62,26 @@ public class MascherlMustacheFactory extends DefaultMustacheFactory {
     }
 
     public Mustache compileFullPage(String mainTemplate) {
-        mostOuterTemplate.set(mainTemplate);
+        Mustache mainContainerMustache = compile(mainTemplate);
+
+        mostOuterTemplate.set(FULL_PAGE_RESOURCE);
         try {
-            // TODO find something better here
-            // compile and init, but do not cache!
-            Mustache mustache = mc.compile(MascherlRenderer.FULL_PAGE_RESOURCE);
-            mustache.init();
-            if (!templateIndex.containsKey(mainTemplate)) {
-                compile(mainTemplate);
-            }
-            return mustache;
+            FullPageCachedMustache fullPage = (FullPageCachedMustache) super.compile(FULL_PAGE_RESOURCE);
+            return new FullPageDynamicMustache(fullPage, mainContainerMustache);
         } finally {
             mostOuterTemplate.remove();
         }
     }
 
-    public String getPageTemplate() {
-        return mostOuterTemplate.get();
+    @Override
+    protected Function<String, Mustache> getMustacheCacheFunction() {
+        return (name) -> {
+            Mustache mustache = super.getMustacheCacheFunction().apply(name);
+            if (Objects.equals(FULL_PAGE_RESOURCE, name)) {
+                mustache = new FullPageCachedMustache(mustache);
+            }
+            return mustache;
+        };
     }
 
     public TemplateMeta getTemplateMeta(String templateName) {
