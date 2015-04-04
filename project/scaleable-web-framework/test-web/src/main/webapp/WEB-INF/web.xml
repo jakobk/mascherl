@@ -5,7 +5,11 @@
 
     <servlet-mapping>
         <servlet-name>default</servlet-name>
-        <url-pattern>/bower_components/*</url-pattern>
+        <url-pattern>/webjars/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/mascherl/*</url-pattern>
     </servlet-mapping>
 
     <servlet>
