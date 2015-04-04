@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
@@ -65,20 +67,24 @@ public class MustacheRenderer implements MascherlRenderer {
 
         TemplateMeta templateMeta = mustacheFactory.getTemplateMeta(page.getTemplate());
         ContainerMeta containerMeta = templateMeta.getContainerMeta(container);
-        List<Model> models = new LinkedList<>();
-        collectModelValues(page, containerMeta, models);
+        Map<String, Model> containerModels = new HashMap<>();
+        collectModelValues(page, containerMeta, containerModels);
 
-        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, models);
+        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, containerModels);
+        if (isPartial) {
+            scope.setCurrentContainer(container);
+        }
+
         mustache.execute(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), scope).flush();
     }
 
-    private void collectModelValues(MascherlPage page, ContainerMeta containerMeta, List<Model> models) {
+    private void collectModelValues(MascherlPage page, ContainerMeta containerMeta, Map<String, Model> containerModels) {
         Model model = new Model();
         page.populateContainerModel(containerMeta.getContainerName(), model);
-        models.add(model);
+        containerModels.put(containerMeta.getContainerName(), model);
 
         for (ContainerMeta childContainerMeta : containerMeta.getChildren()) {
-            collectModelValues(page, childContainerMeta, models);
+            collectModelValues(page, childContainerMeta, containerModels);
         }
     }
 

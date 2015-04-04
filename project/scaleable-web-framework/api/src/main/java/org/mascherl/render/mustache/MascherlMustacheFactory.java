@@ -2,6 +2,7 @@ package org.mascherl.render.mustache;
 
 import com.github.mustachejava.Code;
 import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.DefaultMustacheVisitor;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheResolver;
 import com.github.mustachejava.MustacheVisitor;
@@ -14,7 +15,6 @@ import org.mascherl.render.TemplateMeta;
 import org.mascherl.render.mustache.fullpage.FullPageCachedMustache;
 import org.mascherl.render.mustache.fullpage.FullPageDynamicMustache;
 import org.mascherl.render.mustache.fullpage.MainContainerPartialCode;
-import org.mascherl.render.mustache.wrapper.MustacheVisitorWrapper;
 
 import javax.servlet.ServletContext;
 import java.lang.reflect.Field;
@@ -91,10 +91,6 @@ public class MascherlMustacheFactory extends DefaultMustacheFactory {
     @Override
     public MustacheVisitor createMustacheVisitor() {
         return new MascherlMustacheVisitor();
-    }
-
-    private MustacheVisitor createDefaultMustacheVisitor() {
-        return super.createMustacheVisitor();
     }
 
     public Mustache getMustacheForContainer(String mainTemplate, String containerName) {
@@ -192,10 +188,10 @@ public class MascherlMustacheFactory extends DefaultMustacheFactory {
      * {@link MustacheVisitor} implementing Mascherl specific functions, i.e. capturing container mustaches
      * of page templates, and handling the inclusion of the main container mustache into the full page template.
      */
-    private class MascherlMustacheVisitor extends MustacheVisitorWrapper {
+    private class MascherlMustacheVisitor extends DefaultMustacheVisitor {
 
         public MascherlMustacheVisitor() {
-            super(createDefaultMustacheVisitor());
+            super(MascherlMustacheFactory.this);
         }
 
         @Override
@@ -217,12 +213,16 @@ public class MascherlMustacheFactory extends DefaultMustacheFactory {
             super.name(templateContext, variable, containerWrapper);
         }
 
+        private void mascherlContainer(TemplateContext templateContext, String variable, Mustache containerWrapper) {
+            list.add(new MascherlExtendNameCode(templateContext, df, containerWrapper, variable));
+        }
+
         private Mustache createContainerWrapper(TemplateContext templateContext, String variable, Mustache mustache) {
-            MustacheVisitor visitor = createDefaultMustacheVisitor();
+            MascherlMustacheVisitor visitor = new MascherlMustacheVisitor();
             visitor.write(templateContext, "<div id=\"" + variable + "\" m-page=\"");
             visitor.value(templateContext, "pageId", true);
             visitor.write(templateContext, "\">");
-            visitor.name(templateContext, variable, mustache);
+            visitor.mascherlContainer(templateContext, variable, mustache);
             visitor.write(templateContext, "</div>");
             return visitor.mustache(templateContext);
         }
