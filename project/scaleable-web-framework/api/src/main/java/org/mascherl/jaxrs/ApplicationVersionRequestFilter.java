@@ -6,7 +6,6 @@ import org.mascherl.version.ApplicationVersion;
 import javax.servlet.ServletContext;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
  *
  * @author Jakob Korherr
  */
-@PreMatching
 public class ApplicationVersionRequestFilter implements ContainerRequestFilter {
 
     @Context
