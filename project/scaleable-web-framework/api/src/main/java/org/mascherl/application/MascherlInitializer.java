@@ -1,6 +1,5 @@
 package org.mascherl.application;
 
-import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.mascherl.MascherlConstants;
 import org.mascherl.render.MascherlRendererFactory;

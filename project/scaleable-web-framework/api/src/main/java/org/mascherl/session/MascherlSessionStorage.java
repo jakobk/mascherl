@@ -12,11 +12,15 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 
-import static org.mascherl.MascherlConstants.MASCHERL_SESSION_COOKIE;
 import static org.mascherl.MascherlConstants.MASCHERL_SESSION_REQUEST_ATTRIBUTE;
 
 /**
- * TODO
+ * Session storage implementation for {@link MascherlSession}.
+ *
+ * This class is responsible for restoring the user's {@link MascherlSession} from the current
+ * {@link javax.servlet.http.HttpServletRequest}, and saving it into the current {@link javax.servlet.http.HttpServletResponse}.
+ *
+ * @see org.mascherl.session.MascherlSession
  *
  * @author Jakob Korherr
  */
@@ -35,13 +39,25 @@ public class MascherlSessionStorage {
 
     private static final String SESSION_SECRET_CONFIG_KEY = "org.mascherl.session.secret";
     private static final String SESSION_TRANSFORMATION_CONFIG_KEY = "org.mascherl.session.transformation";
+    private static final String COOKIE_NAME_CONFIG_KEY = "org.mascherl.session.cookie";
 
     private static final int EXPIRE_ON_BROWSER_CLOSE = -1;
 
-    private CryptoHelper cryptoHelper;
-    private ObjectMapper objectMapper;
+    private final CryptoHelper cryptoHelper;
+    private final ObjectMapper objectMapper;
+    private final String cookieName;
 
     public MascherlSessionStorage() {
+        Config config = ConfigFactory.load();
+
+        cookieName = config.getString(COOKIE_NAME_CONFIG_KEY);
+
+        String applicationSecret = config.getString(SESSION_SECRET_CONFIG_KEY);
+        String transformation = config.getString(SESSION_TRANSFORMATION_CONFIG_KEY);
+        cryptoHelper = new CryptoHelper(applicationSecret, transformation);
+
+        objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
     }
 
     public void init(MascherlApplication mascherlApplication) {
@@ -52,11 +68,6 @@ public class MascherlSessionStorage {
             throw new RuntimeException("The application runs in production mode, but still uses the default " +
                     "application secret. This configuration is HIGHLY INSECURE, and thus initialization will be aborted.");
         }
-
-        cryptoHelper = new CryptoHelper(applicationSecret, config.getString(SESSION_TRANSFORMATION_CONFIG_KEY));
-
-        objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
     }
 
     public void saveSession(MascherlSession session, HttpServletResponse response) {
@@ -71,7 +82,7 @@ public class MascherlSessionStorage {
 
         String encryptedValue = cryptoHelper.encryptAES(data);
 
-        Cookie cookie = new Cookie(MASCHERL_SESSION_COOKIE, encryptedValue);
+        Cookie cookie = new Cookie(cookieName, encryptedValue);
         cookie.setMaxAge(EXPIRE_ON_BROWSER_CLOSE);
         response.addCookie(cookie);
     }
@@ -81,7 +92,7 @@ public class MascherlSessionStorage {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             Optional<Cookie> cookieOptional = Arrays.stream(cookies).filter(
-                    (cookie) -> Objects.equals(MASCHERL_SESSION_COOKIE, cookie.getName())).findAny();
+                    (cookie) -> Objects.equals(cookieName, cookie.getName())).findAny();
             if (cookieOptional.isPresent()) {
                 String encryptedValue = cookieOptional.get().getValue();
                 String data = cryptoHelper.decryptAES(encryptedValue);

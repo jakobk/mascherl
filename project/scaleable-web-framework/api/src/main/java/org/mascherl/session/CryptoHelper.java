@@ -34,7 +34,7 @@ public class CryptoHelper {
 
     public String encryptAES(String value) {
         try {
-            SecretKeySpec secretKeySpec = secretKeyWithSha256(applicationSecret, AES);
+            SecretKeySpec secretKeySpec = secretKeyWithSha256(AES);
             Cipher cipher = Cipher.getInstance(transformation);
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
             byte[] encryptedValue = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
@@ -54,7 +54,7 @@ public class CryptoHelper {
     public String decryptAES(String value) {
         try {
             byte[] data = Base64.getDecoder().decode(value);
-            SecretKeySpec secretKeySpec = secretKeyWithSha256(applicationSecret, AES);
+            SecretKeySpec secretKeySpec = secretKeyWithSha256(AES);
             Cipher cipher = Cipher.getInstance(transformation);
             int blockSize = cipher.getBlockSize();
             byte[] initiationVector = Arrays.copyOfRange(data, 0, blockSize);
@@ -67,9 +67,9 @@ public class CryptoHelper {
         }
     }
 
-    private static SecretKeySpec secretKeyWithSha256(String privateKey, String algorithm) throws NoSuchAlgorithmException {
+    private SecretKeySpec secretKeyWithSha256(String algorithm) throws NoSuchAlgorithmException {
         MessageDigest messageDigest = MessageDigest.getInstance(SHA_256);
-        messageDigest.update(privateKey.getBytes(StandardCharsets.UTF_8));
+        messageDigest.update(applicationSecret.getBytes(StandardCharsets.UTF_8));
         int maxAllowedKeyLengthBits = Cipher.getMaxAllowedKeyLength(algorithm);
         byte[] raw = Arrays.copyOfRange(messageDigest.digest(), 0, maxAllowedKeyLengthBits / 8);
         return new SecretKeySpec(raw, algorithm);

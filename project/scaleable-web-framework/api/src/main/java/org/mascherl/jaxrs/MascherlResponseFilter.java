@@ -1,8 +1,8 @@
 package org.mascherl.jaxrs;
 
-import org.apache.cxf.jaxrs.impl.tl.ThreadLocalProxy;
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.FormResult;
+import org.mascherl.servlet.MascherlFilter;
 import org.mascherl.session.MascherlSession;
 import org.mascherl.session.MascherlSessionStorage;
 import org.mascherl.version.ApplicationVersion;
@@ -28,7 +28,8 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CLIENT_URL;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 
 /**
- * ContainerResponseFilter for implementing {@link org.mascherl.page.FormResult} results.
+ * Implementation of {@link javax.ws.rs.container.ContainerResponseFilter} for executing Mascherl specific tasks
+ * after a resource method has been called.
  *
  * @author Jakob Korherr
  */
@@ -38,52 +39,59 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
     private ServletContext servletContext;
 
     @Context
-    private HttpServletRequest threadLocalRequest;
-
-    @Context
-    private HttpServletResponse threadLocalResponse;
-
-    @Context
     private ResourceContext resourceContext;
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        MascherlSessionStorage sessionStorage = MascherlApplication.getInstance(servletContext).getMascherlSessionStorage();
-        sessionStorage.saveSession(MascherlSession.getInstance(), threadLocalResponse);
+        MascherlApplication mascherlApplication = MascherlApplication.getInstance(servletContext);
+        HttpServletRequest request = MascherlFilter.getRequest();
+        HttpServletResponse response = MascherlFilter.getResponse();
 
+        saveSession(mascherlApplication, response);
+
+        handleFormResultEntity(responseContext, mascherlApplication, request, response);
+    }
+
+    private void saveSession(MascherlApplication mascherlApplication, HttpServletResponse response) {
+        MascherlSessionStorage sessionStorage = mascherlApplication.getMascherlSessionStorage();
+        sessionStorage.saveSession(MascherlSession.getInstance(), response);
+    }
+
+    private void handleFormResultEntity(ContainerResponseContext responseContext, MascherlApplication mascherlApplication,
+                                        HttpServletRequest request, HttpServletResponse response) {
         if (responseContext.getEntity() instanceof FormResult) {
             FormResult formResult = (FormResult) responseContext.getEntity();
-
-            // TODO find something CXF independent here, e.g. ServletFilter
-            @SuppressWarnings("unchecked")
-            HttpServletRequest request = ((ThreadLocalProxy<HttpServletRequest>) threadLocalRequest).get();
-            @SuppressWarnings("unchecked")
-            HttpServletResponse response = ((ThreadLocalProxy<HttpServletResponse>) threadLocalResponse).get();
 
             if (formResult.getPath() != null) {
                 String clientUrl = formResult.getPath().toString();
                 request.setAttribute(M_CLIENT_URL, clientUrl);
 
                 if (formResult.getMascherlPage() != null) {
-                    request.setAttribute(M_CONTAINER, MAIN_CONTAINER);
+                    String container = formResult.getContainer();
+                    if (container == null) {
+                        container = MAIN_CONTAINER;
+                    }
+
+                    request.setAttribute(M_CONTAINER, container);
                     responseContext.setEntity(formResult.getMascherlPage());
                 } else {
-                    redirect(responseContext, formResult.getPath(), request, response);
+                    redirect(mascherlApplication, responseContext, formResult.getPath(), request, response);
                 }
             } else if (formResult.getContainer() != null) {
                 request.setAttribute(M_CONTAINER, formResult.getContainer());
                 responseContext.setEntity(formResult.getMascherlPage());
             } else {
-                throw new IllegalArgumentException("container and path of FormResult cannot both be null");
+                throw new IllegalArgumentException("Illegal FormResult " + formResult);
             }
         }
     }
 
-    private void redirect(ContainerResponseContext responseContext, URI path, HttpServletRequest request, HttpServletResponse response) {
+    private void redirect(MascherlApplication mascherlApplication, ContainerResponseContext responseContext,
+                          URI path, HttpServletRequest request, HttpServletResponse response) {
         UriBuilder uriBuilder = UriBuilder.fromUri(path);
         uriBuilder.queryParam(M_CONTAINER, MAIN_CONTAINER);
 
-        ApplicationVersion applicationVersion = MascherlApplication.getInstance(request.getServletContext()).getApplicationVersion();
+        ApplicationVersion applicationVersion = mascherlApplication.getApplicationVersion();
         uriBuilder.queryParam(M_APP_VERSION, applicationVersion.getVersion());
 
         responseContext.setEntity(null);

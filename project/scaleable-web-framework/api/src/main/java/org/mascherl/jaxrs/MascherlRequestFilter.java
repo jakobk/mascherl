@@ -1,7 +1,8 @@
 package org.mascherl.jaxrs;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.mascherl.application.MascherlApplication;
-import org.mascherl.session.MascherlSession;
 import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
@@ -12,16 +13,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
-import static org.mascherl.MascherlConstants.Messages.OUTDATED_VERSION_MSG;
 import static org.mascherl.MascherlConstants.RequestParameters.M_APP_VERSION;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 
 /**
- * TODO
+ * Implementation of {@link javax.ws.rs.container.ContainerRequestFilter} for executing Mascherl specific tasks
+ * before a resource method is called.
  *
  * @author Jakob Korherr
  */
 public class MascherlRequestFilter implements ContainerRequestFilter {
+
+    private static final String OUTDATED_VERSION_MSG_CONFIG = "org.mascherl.message.OutdatedVersion";
 
     @Context
     private ServletContext servletContext;
@@ -35,21 +38,28 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
 
         verifyApplicationVersion(mascherlApplication, requestContext);
 
+        restoreSession(mascherlApplication);
+    }
+
+    private void restoreSession(MascherlApplication mascherlApplication) {
         mascherlApplication.getMascherlSessionStorage().restoreSession(request);
     }
 
     private void verifyApplicationVersion(MascherlApplication mascherlApplication, ContainerRequestContext requestContext) {
-        if (isPartialRequest(requestContext)) {
+        if (isPartialRequest()) {  // TODO does not work for POST requests --> use HTTP headers for container and version??
             ApplicationVersion clientAppVersion = new ApplicationVersion(
                     requestContext.getUriInfo().getQueryParameters().getFirst(M_APP_VERSION));
             if (!mascherlApplication.getApplicationVersion().equals(clientAppVersion)) {
-                requestContext.abortWith(Response.status(Response.Status.CONFLICT).entity(OUTDATED_VERSION_MSG).build());
+                Config config = ConfigFactory.load();
+                String msg = config.getString(OUTDATED_VERSION_MSG_CONFIG);
+
+                requestContext.abortWith(Response.status(Response.Status.CONFLICT).entity(msg).build());
             }
         }
     }
 
-    private static boolean isPartialRequest(ContainerRequestContext requestContext) {
-        String container = requestContext.getUriInfo().getQueryParameters().getFirst(M_CONTAINER);
+    private boolean isPartialRequest() {
+        String container = request.getParameter(M_CONTAINER);
         return (container != null);
     }
 

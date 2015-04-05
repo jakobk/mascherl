@@ -25,7 +25,7 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
 
 /**
- * TODO
+ * Implementation of {@link MessageBodyWriter} for {@link MascherlPage} entities.
  *
  * @author Jakob Korherr
  */
@@ -65,7 +65,7 @@ public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage
 
         final boolean partialRequest = (container != null);
 
-        if (mascherlPage.getPageId() == null || mascherlPage.getPageId().isEmpty()) {
+        if (mascherlPage.getPageId() == null || mascherlPage.getPageId().isEmpty()) {  // TODO pageId
             mascherlPage.setPageId(resourceInfo.getResourceClass().getName());
         }
 

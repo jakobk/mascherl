@@ -14,7 +14,23 @@ import java.util.Map;
 import static org.mascherl.MascherlConstants.MASCHERL_SESSION_REQUEST_ATTRIBUTE;
 
 /**
- * TODO
+ * The session of Mascherl, which can be used to store client specific values between requests.
+ *
+ * This session implementation is very much alike the session implementation of the Play framework.
+ * Instead of relying on classical server-side session storage (which only stores the session ID on the client browser,
+ * and keeps the real data on the processing server, possibly replicating it to the other servers in the cluster),
+ * it serializes the actual session data into an AES encrypted cookie, which will be stored in the client browser.
+ * On subsequent requests this cookie can be decrypted by any application server on the cluster that uses the same
+ * application secret (org.mascherl.session.secret) as the original server, without any additional communication
+ * between the servers.
+ *
+ * This session implementation uses Jackson in order to serialize the session data into a JSON string. Thus, any type
+ * or object can be stored into the session, which can be serialized and deserialized by Jackson.
+ *
+ * Please note that the data, which can be stored in this session implementation is very limited, due to the HTTP cookie
+ * size limitation of (approximately) 4 kilobytes, including cookie name and metadata. In addition, the AES encryption
+ * adds some overhead to the cookie data, thus the maximum size of the serialized session data is 3039 characters
+ * (@see org.mascherl.session.MascherlSessionStorage#MAX_DATA_SIZE).
  *
  * @author Jakob Korherr
  */

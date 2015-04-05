@@ -11,6 +11,8 @@ import javax.servlet.ServletContext;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.mascherl.MascherlConstants.MASCHERL_APPLICATION_CONTEXT_ATTRIBUTE;
+
 /**
  * The central object describing a Mascherl application.
  *
@@ -21,10 +23,8 @@ import java.util.Set;
  */
 public class MascherlApplication {
 
-    private static final String MASCHERL_APPLICATION = "MASCHERL_APPLICATION";
-
     public static MascherlApplication getInstance(ServletContext servletContext) {
-        MascherlApplication mascherlApplication = (MascherlApplication) servletContext.getAttribute(MASCHERL_APPLICATION);
+        MascherlApplication mascherlApplication = (MascherlApplication) servletContext.getAttribute(MASCHERL_APPLICATION_CONTEXT_ATTRIBUTE);
         if (mascherlApplication == null) {
             throw new IllegalStateException("Mascherl is not initialized");
         }
@@ -74,7 +74,7 @@ public class MascherlApplication {
         public MascherlApplication build(ServletContext servletContext) {
             this.servletContext = servletContext;
             MascherlApplication mascherlApplication = new MascherlApplication(this);
-            servletContext.setAttribute(MASCHERL_APPLICATION, mascherlApplication);
+            servletContext.setAttribute(MASCHERL_APPLICATION_CONTEXT_ATTRIBUTE, mascherlApplication);
             return mascherlApplication;
         }
 

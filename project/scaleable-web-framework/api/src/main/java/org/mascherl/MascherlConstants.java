@@ -10,7 +10,6 @@ public class MascherlConstants {
     public static class RequestParameters {
         public static final String M_CLIENT_URL = "m-client-url";
         public static final String M_CONTAINER = "m-container";
-        public static final String M_FORM = "m-form";
         public static final String M_PAGE = "m-page";
         public static final String M_APP_VERSION = "m-app-version";
     }
@@ -30,15 +29,11 @@ public class MascherlConstants {
         public static final String URL = "url";
     }
 
-    public static class Messages {
-        public static String OUTDATED_VERSION_MSG = "The request failed, because you are using an outdated version of the " +
-                "web application. The current page will be reloaded.";
-    }
-
     public static final String MAIN_CONTAINER = "main";
 
-    public static final String MASCHERL_SESSION_COOKIE = "MASCHERL_SESSION";
     public static final String MASCHERL_SESSION_REQUEST_ATTRIBUTE = "MASCHERL_SESSION";
+    public static final String MASCHERL_APPLICATION_CONTEXT_ATTRIBUTE = "MASCHERL_APPLICATION";
+
 
 
 }

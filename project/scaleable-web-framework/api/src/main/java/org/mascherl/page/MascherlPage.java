@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * TODO
+ * The specification for a page, which should be rendered by Mascherl.
  *
  * @author Jakob Korherr
  */
-public class MascherlPage {   // TODO rename to MacherlPage once we got rid of the interface
+public class MascherlPage {
 
     private String template;
     private String pageTitle;

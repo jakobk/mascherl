@@ -18,13 +18,16 @@ public class FormResult {
     }
 
     public FormResult(URI path, MascherlPage mascherlPage) {
-        this.path = path;
-        this.mascherlPage = mascherlPage;
-        this.container = null;
+        this(path, null, mascherlPage);
     }
 
     public FormResult(String container, MascherlPage mascherlPage) {
-        this.path = null;
+        this(null, container, mascherlPage);
+
+    }
+
+    public FormResult(URI path, String container, MascherlPage mascherlPage) {
+        this.path = path;
         this.mascherlPage = mascherlPage;
         this.container = container;
     }
