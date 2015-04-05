@@ -1,5 +1,6 @@
 package org.mascherl.session;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.mascherl.application.MascherlApplication;
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static org.mascherl.MascherlConstants.MASCHERL_SESSION_COOKIE;
+import static org.mascherl.MascherlConstants.MASCHERL_SESSION_REQUEST_ATTRIBUTE;
 
 /**
  * TODO
@@ -37,6 +39,7 @@ public class MascherlSessionStorage {
     private static final int EXPIRE_ON_BROWSER_CLOSE = -1;
 
     private CryptoHelper cryptoHelper;
+    private ObjectMapper objectMapper;
 
     public MascherlSessionStorage() {
     }
@@ -51,11 +54,12 @@ public class MascherlSessionStorage {
         }
 
         cryptoHelper = new CryptoHelper(applicationSecret, config.getString(SESSION_TRANSFORMATION_CONFIG_KEY));
+
+        objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
     }
 
     public void saveSession(MascherlSession session, HttpServletResponse response) {
-        MascherlSessionHolder.requestThreadLocal.remove();
-
         if (!session.wasModified()) {
             return;  // no need to update an unmodified session
         }
@@ -73,8 +77,7 @@ public class MascherlSessionStorage {
     }
 
     public MascherlSession restoreSession(HttpServletRequest request) {
-        MascherlSessionHolder.requestThreadLocal.set(request);
-
+        MascherlSession mascherlSession = null;
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             Optional<Cookie> cookieOptional = Arrays.stream(cookies).filter(
@@ -82,10 +85,15 @@ public class MascherlSessionStorage {
             if (cookieOptional.isPresent()) {
                 String encryptedValue = cookieOptional.get().getValue();
                 String data = cryptoHelper.decryptAES(encryptedValue);
-                return new MascherlSession(data);
+                mascherlSession = new MascherlSession(objectMapper, data);
             }
         }
-        return new MascherlSession();  // no session available, return a new one
+        if (mascherlSession == null) {
+            mascherlSession = new MascherlSession(objectMapper);  // no session available, return a new one
+        }
+
+        request.setAttribute(MASCHERL_SESSION_REQUEST_ATTRIBUTE, mascherlSession);
+        return mascherlSession;
     }
 
 }

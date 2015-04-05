@@ -3,11 +3,15 @@ package org.mascherl.session;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.mascherl.servlet.MascherlFilter;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.mascherl.MascherlConstants.MASCHERL_SESSION_REQUEST_ATTRIBUTE;
 
 /**
  * TODO
@@ -17,24 +21,25 @@ import java.util.Map;
 public class MascherlSession {
 
     public static MascherlSession getInstance() {
-        return MascherlSessionHolder.getSession();
+        return (MascherlSession) MascherlFilter.getRequest().getAttribute(MASCHERL_SESSION_REQUEST_ATTRIBUTE);
     }
 
     private final Map<String, Object> dataStorage = new HashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private final ObjectNode jsonRootNode;
     private boolean modified = false;
 
-    public MascherlSession() {
-        this("{}");
+    public MascherlSession(ObjectMapper objectMapper) {
+        this(objectMapper, objectMapper.createObjectNode());
     }
 
-    public MascherlSession(String json) {
-        try {
-            jsonRootNode = (ObjectNode) objectMapper.readTree(json);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public MascherlSession(ObjectMapper objectMapper, String json) {
+        this(objectMapper, parseJson(json, objectMapper));
+    }
+
+    protected MascherlSession(ObjectMapper objectMapper, ObjectNode jsonRootNode) {
+        this.objectMapper = objectMapper;
+        this.jsonRootNode = jsonRootNode;
     }
 
     public void remove(String key) {
@@ -44,7 +49,8 @@ public class MascherlSession {
     }
 
     public void put(String key, Object data) {
-        if (!objectMapper.canSerialize(data.getClass())) {
+        if (!objectMapper.canSerialize(data.getClass())
+                || !objectMapper.canDeserialize(TypeFactory.defaultInstance().constructType(data.getClass()))) {
             throw new IllegalArgumentException("Data of this type cannot be serialized in the Mascherl session");
         }
         dataStorage.put(key, data);
@@ -94,6 +100,14 @@ public class MascherlSession {
 
     public boolean wasModified() {
         return modified;
+    }
+
+    private static ObjectNode parseJson(String json, ObjectMapper objectMapper) {
+        try {
+            return (ObjectNode) objectMapper.readTree(json);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

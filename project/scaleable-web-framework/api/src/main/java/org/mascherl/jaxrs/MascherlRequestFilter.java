@@ -2,7 +2,6 @@ package org.mascherl.jaxrs;
 
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.session.MascherlSession;
-import org.mascherl.session.MascherlSessionHolder;
 import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
@@ -36,8 +35,7 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
 
         verifyApplicationVersion(mascherlApplication, requestContext);
 
-        MascherlSession mascherlSession = mascherlApplication.getMascherlSessionStorage().restoreSession(request);
-        request.setAttribute("MASCHERL_SESSION", mascherlSession);
+        mascherlApplication.getMascherlSessionStorage().restoreSession(request);
     }
 
     private void verifyApplicationVersion(MascherlApplication mascherlApplication, ContainerRequestContext requestContext) {

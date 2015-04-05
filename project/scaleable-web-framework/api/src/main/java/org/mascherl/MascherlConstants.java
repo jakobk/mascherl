@@ -38,5 +38,7 @@ public class MascherlConstants {
     public static final String MAIN_CONTAINER = "main";
 
     public static final String MASCHERL_SESSION_COOKIE = "MASCHERL_SESSION";
+    public static final String MASCHERL_SESSION_REQUEST_ATTRIBUTE = "MASCHERL_SESSION";
+
 
 }
