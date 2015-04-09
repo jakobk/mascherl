@@ -9,14 +9,16 @@ import org.mascherl.render.MascherlRenderer;
 import org.mascherl.render.TemplateMeta;
 
 import javax.servlet.ServletContext;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -34,6 +36,8 @@ import static org.mascherl.MascherlConstants.ResponseHeaders.X_POWERED_BY;
  */
 public class MustacheRenderer implements MascherlRenderer {
 
+    private static final String SHA_256 = "SHA-256";
+
     private final MascherlMustacheFactory mustacheFactory;
 
     public MustacheRenderer(ServletContext servletContext) {
@@ -41,22 +45,24 @@ public class MustacheRenderer implements MascherlRenderer {
     }
 
     @Override
-    public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
-                           MultivaluedMap<String, Object> httpHeaders) throws IOException {
+    public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
+                           OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders) throws IOException {
+        String pageId = calculatePageId(mascherlApplication, resourceInfo);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
-        render(mascherlApplication, page, outputStream, MAIN_CONTAINER, false);
+        render(mascherlApplication, page, pageId, outputStream, MAIN_CONTAINER, false);
     }
 
     @Override
-    public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
-                                MultivaluedMap<String, Object> httpHeaders,
+    public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
+                                OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException {
+        String pageId = calculatePageId(mascherlApplication, resourceInfo);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
-        addHttpHeadersForPartialResponse(mascherlApplication, page, httpHeaders, container, clientUrl);
-        render(mascherlApplication, page, outputStream, container, true);
+        addHttpHeadersForPartialResponse(page, pageId, httpHeaders, container, clientUrl);
+        render(mascherlApplication, page, pageId, outputStream, container, true);
     }
 
-    private void render(MascherlApplication mascherlApplication, MascherlPage page, OutputStream outputStream,
+    private void render(MascherlApplication mascherlApplication, MascherlPage page, String pageId, OutputStream outputStream,
                         String container, boolean isPartial) throws IOException {
         Mustache mustache;
         if (isPartial) {
@@ -70,12 +76,42 @@ public class MustacheRenderer implements MascherlRenderer {
         Map<String, Model> containerModels = new HashMap<>();
         collectModelValues(page, containerMeta, containerModels);
 
-        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, containerModels);
+        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, pageId, containerModels);
         if (isPartial) {
             scope.setCurrentContainer(container);
         }
 
         mustache.execute(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), scope).flush();
+    }
+
+    private String calculatePageId(MascherlApplication mascherlApplication, ResourceInfo resourceInfo) {
+        String pageId = resourceInfo.getResourceClass().getName();
+        if (resourceInfo.getResourceMethod() != null) {
+            pageId += "." + resourceInfo.getResourceMethod().getName();
+        }
+
+        if (!mascherlApplication.isDevelopmentMode()) {
+            // SHA-256 plain resource page id in order to hide resource class + method
+            pageId = sha256(pageId);
+        }
+
+        return pageId;
+    }
+
+    private String sha256(String value) {
+        MessageDigest messageDigest = createMessageDigest();
+        messageDigest.update(value.getBytes(StandardCharsets.UTF_8));
+        byte[] digest = messageDigest.digest();
+        byte[] base64Digest = Base64.getEncoder().encode(digest);
+        return new String(base64Digest, StandardCharsets.UTF_8);
+    }
+
+    private static MessageDigest createMessageDigest() {
+        try {
+            return MessageDigest.getInstance(SHA_256);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void collectModelValues(MascherlPage page, ContainerMeta containerMeta, Map<String, Model> containerModels) {
@@ -92,11 +128,12 @@ public class MustacheRenderer implements MascherlRenderer {
         httpHeaders.putSingle(X_POWERED_BY, "Mascherl " + mascherlApplication.getMascherlVersion());
     }
 
-    private void addHttpHeadersForPartialResponse(MascherlApplication mascherlApplication, MascherlPage page,
+    private void addHttpHeadersForPartialResponse(MascherlPage page,
+                                                  String pageId,
                                                   MultivaluedMap<String, Object> httpHeaders,
                                                   String container, String clientUrl) {
         httpHeaders.putSingle(X_MASCHERL_TITLE, page.getPageTitle());
-        httpHeaders.putSingle(X_MASCHERL_PAGE, page.getClass().getName());
+        httpHeaders.putSingle(X_MASCHERL_PAGE, pageId);
         httpHeaders.putSingle(X_MASCHERL_CONTAINER, container);
         if (clientUrl != null) {
             httpHeaders.putSingle(X_MASCHERL_URL, clientUrl);

@@ -13,7 +13,6 @@ public class MascherlPage {
     private String template;
     private String pageTitle;
     private final Map<String, ModelCalculator> containerModelCalculators = new HashMap<>();
-    private String pageId;   // TODO find a better solution to store the pageId
 
     public MascherlPage() {}
 
@@ -50,14 +49,5 @@ public class MascherlPage {
     public String getPageTitle() {
         return pageTitle;
     }
-
-    public String getPageId() {
-        return pageId;
-    }
-
-    public void setPageId(String pageId) {
-        this.pageId = pageId;
-    }
-
 
 }

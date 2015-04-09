@@ -27,13 +27,15 @@ public class MustacheRendererScope extends HashMap<String, Object> {
 
     private final MascherlApplication mascherlApplication;
     private final MascherlPage page;
+    private final String pageId;
     private final Map<String, Model> containerModels;
     private String currentContainer;
     private final Set<String> warnedValues;
 
-    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPage page, Map<String, Model> containerModels) {
+    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPage page, String pageId, Map<String, Model> containerModels) {
         this.mascherlApplication = mascherlApplication;
         this.page = page;
+        this.pageId = pageId;
         this.containerModels = containerModels;
         if (mascherlApplication.isDevelopmentMode()) {
             warnedValues = new HashSet<>();
@@ -59,7 +61,7 @@ public class MustacheRendererScope extends HashMap<String, Object> {
             return mascherlApplication.getApplicationVersion().getVersion();
         }
         if (Objects.equals(key, RootScopeVariables.PAGE_ID)) {
-            return page.getClass().getName();
+            return pageId;
         }
         if (Objects.equals(key, RootScopeVariables.URL)) {
             return (Function<String, String>) (resourceRef) -> {

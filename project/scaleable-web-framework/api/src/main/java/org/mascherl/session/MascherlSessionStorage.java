@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.mascherl.MascherlConstants.MASCHERL_SESSION_REQUEST_ATTRIBUTE;
 
@@ -25,6 +27,8 @@ import static org.mascherl.MascherlConstants.MASCHERL_SESSION_REQUEST_ATTRIBUTE;
  * @author Jakob Korherr
  */
 public class MascherlSessionStorage {
+
+    private static final Logger logger = Logger.getLogger(MascherlSessionStorage.class.getName());
 
     /**
      * Max size of the unencrypted data that can be stored in a cookie.
@@ -95,8 +99,12 @@ public class MascherlSessionStorage {
                     (cookie) -> Objects.equals(cookieName, cookie.getName())).findAny();
             if (cookieOptional.isPresent()) {
                 String encryptedValue = cookieOptional.get().getValue();
-                String data = cryptoHelper.decryptAES(encryptedValue);
-                mascherlSession = new MascherlSession(objectMapper, data);
+                try {
+                    String data = cryptoHelper.decryptAES(encryptedValue);
+                    mascherlSession = new MascherlSession(objectMapper, data);
+                } catch (RuntimeException e) {
+                    logger.log(Level.WARNING, "Session could not be restored. Will continue with empty session.", e);
+                }
             }
         }
         if (mascherlSession == null) {

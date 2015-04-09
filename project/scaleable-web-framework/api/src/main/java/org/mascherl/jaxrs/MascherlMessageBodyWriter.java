@@ -65,19 +65,15 @@ public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage
 
         final boolean partialRequest = (container != null);
 
-        if (mascherlPage.getPageId() == null || mascherlPage.getPageId().isEmpty()) {  // TODO pageId
-            mascherlPage.setPageId(resourceInfo.getResourceClass().getName());
-        }
-
         MascherlRenderer renderer = mascherlApplication.getMascherlRendererFactory().createMascherlRenderer();
         if (partialRequest) {
             if (page != null && !Objects.equals(page, getClass().getName())) {
                 container = MAIN_CONTAINER;
             }
             String clientUrl = (String) request.getAttribute(M_CLIENT_URL);
-            renderer.renderContainer(mascherlApplication, mascherlPage, entityStream, httpHeaders, container, clientUrl);
+            renderer.renderContainer(mascherlApplication, mascherlPage, resourceInfo, entityStream, httpHeaders, container, clientUrl);
         } else {
-            renderer.renderFull(mascherlApplication, mascherlPage, entityStream, httpHeaders);
+            renderer.renderFull(mascherlApplication, mascherlPage, resourceInfo, entityStream, httpHeaders);
         }
     }
 }
