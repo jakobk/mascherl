@@ -23,7 +23,7 @@ public class MascherlInitializer {
 
     private static final Logger logger = Logger.getLogger(MascherlInitializer.class.getName());
 
-    private static final String DEVELOPMENT_MODUS = "org.mascherl.DevelopmentModus";
+    private static final String DEVELOPMENT_MODUS = "org.mascherl.developmentModus";
 
     private final ServletContext servletContext;
 

@@ -10,9 +10,11 @@ import com.typesafe.config.ConfigFactory;
  */
 public class ConfigApplicationVersionProvider implements ApplicationVersionProvider {
 
+    private static final String APPLICATION_VERSION_CONFIG_KEY = "org.mascherl.version.applicationVersion";
+
     @Override
     public ApplicationVersion getApplicationVersion() {
-        String version = ConfigFactory.load().getString(ApplicationVersion.class.getName());
+        String version = ConfigFactory.load().getString(APPLICATION_VERSION_CONFIG_KEY);
         if (version == null || version.isEmpty()) {
             throw new IllegalArgumentException("Mascherl: application version must not be null or empty.");
         }

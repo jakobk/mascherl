@@ -24,7 +24,7 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
  */
 public class MascherlRequestFilter implements ContainerRequestFilter {
 
-    private static final String OUTDATED_VERSION_MSG_CONFIG = "org.mascherl.message.OutdatedVersion";
+    private static final String OUTDATED_VERSION_MSG_CONFIG = "org.mascherl.message.outdatedVersion";
 
     @Context
     private ServletContext servletContext;
