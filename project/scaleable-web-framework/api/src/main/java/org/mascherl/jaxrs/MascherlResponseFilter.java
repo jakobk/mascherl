@@ -62,8 +62,8 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
         if (responseContext.getEntity() instanceof FormResult) {
             FormResult formResult = (FormResult) responseContext.getEntity();
 
-            if (formResult.getPath() != null) {
-                String clientUrl = formResult.getPath().toString();
+            if (formResult.getPageUrl() != null) {
+                String clientUrl = formResult.getPageUrl().toString();
                 request.setAttribute(M_CLIENT_URL, clientUrl);
 
                 if (formResult.getMascherlPage() != null) {
@@ -75,7 +75,7 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
                     request.setAttribute(M_CONTAINER, container);
                     responseContext.setEntity(formResult.getMascherlPage());
                 } else {
-                    redirect(mascherlApplication, responseContext, formResult.getPath(), request, response);
+                    redirect(mascherlApplication, responseContext, formResult.getPageUrl(), request, response);
                 }
             } else if (formResult.getContainer() != null) {
                 request.setAttribute(M_CONTAINER, formResult.getContainer());

@@ -37,24 +37,27 @@ public class Mascherl {
         return new FormResult(UriBuilder.fromUri(pageUri).build());
     }
 
-    public static FormResult renderContainer(String container, MascherlPage mascherlPage) {
-        return new FormResult(container, mascherlPage);
+    public static FormResultBuilder renderAll() {
+        return renderContainer(MAIN_CONTAINER);
     }
 
-    public static FormResult renderPage(String pageUri, MascherlPage mascherlPage) {
-        return new FormResult(UriBuilder.fromUri(pageUri).build(), mascherlPage);
+    public static FormResultBuilder renderContainer(String container) {
+        MascherlFilter.getRequest().setAttribute(M_CONTAINER, container);
+        return new FormResultBuilder(container);
     }
 
-    public static FormResult renderPage(URI pageUri, MascherlPage mascherlPage) {
-        return new FormResult(pageUri, mascherlPage);
-    }
+    public static class FormResultBuilder {
 
-    public static FormResult renderContainerOfPage(String container, String pageUri, MascherlPage mascherlPage) {
-        return new FormResult(UriBuilder.fromUri(pageUri).build(), container, mascherlPage);
-    }
+        private final String container;
 
-    public static FormResult renderContainerOfPage(String container, URI pageUri, MascherlPage mascherlPage) {
-        return new FormResult(pageUri, container, mascherlPage);
+        public FormResultBuilder(String container) {
+            this.container = container;
+        }
+
+        public FormResult ofPage(MascherlPage mascherlPage) {
+            return new FormResult(container, mascherlPage);
+        }
+
     }
 
 }

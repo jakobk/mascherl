@@ -40,25 +40,29 @@ public class OverviewPage {
     public FormResult submit(@BeanParam OverviewForm overviewForm) {
         System.out.println(overviewForm.getFirstname() + " " + overviewForm.getLastname());
         String message = "Hello " + overviewForm.getFirstname() + " " + overviewForm.getLastname();
-        return Mascherl.renderContainer(
-                "form",
-                overview()
-                        .container("form", (model) -> model.put("message", message)));     // TODO overrideContainer
-//        return Mascherl.renderPage("/page1?id=1", page1());
-//        return Mascherl.redirect("/page1");
+        return Mascherl
+                .renderContainer("form")
+                .ofPage(overview()
+                        .container("form", (model) -> model.put("message", message)));
     }
 
     @POST
     @Path("/submit2")
     public FormResult submit2(@BeanParam OverviewForm overviewForm) {
         System.out.println(overviewForm.getFirstname() + " " + overviewForm.getLastname());
-        String message = "Hello " + overviewForm.getFirstname() + " " + overviewForm.getLastname();
-//        return Mascherl.renderContainer(
-//                "form",
-//                overview()
-//                        .container("form", (model) -> model.put("message", message)));
-//        return Mascherl.renderPage("/page1?id=1", page1());
-        return Mascherl.redirect("/page1");
+//        return Mascherl.redirect("/page1");
+
+        // TODO change to this API
+//        Mascherl.stay().renderContainer().withPageDef();
+//        Mascherl.stay().renderAll().withPageDef();
+//        Mascherl.goTo("/page1").renderContainer().withPageDef();
+//        Mascherl.goTo("/page1").renderAll().withPageDef();
+//        Mascherl.goTo("/page1").redirect();
+
+        return Mascherl
+                .renderAll()
+                .ofPage(page1())
+                .useUrl("/page1");
     }
 
     @GET
