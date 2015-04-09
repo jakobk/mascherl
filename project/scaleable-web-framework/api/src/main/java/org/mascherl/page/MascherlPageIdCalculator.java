@@ -19,9 +19,10 @@ public class MascherlPageIdCalculator {
 
     public static String calculatePageId(MascherlApplication mascherlApplication, ResourceInfo resourceInfo) {
         String pageId = resourceInfo.getResourceClass().getName();
-        if (resourceInfo.getResourceMethod() != null) {
-            pageId += "." + resourceInfo.getResourceMethod().getName();
-        }
+        // TODO deactivated until a better solution is found
+//        if (resourceInfo.getResourceMethod() != null) {
+//            pageId += "." + resourceInfo.getResourceMethod().getName();
+//        }
 
         if (!mascherlApplication.isDevelopmentMode()) {
             // SHA-256 plain resource page id in order to hide resource class + method

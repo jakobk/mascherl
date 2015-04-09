@@ -17,7 +17,7 @@ function navigate(url, container, page) {
         success: function (data, status, xhr) {
             container = xhr.getResponseHeader("X-Mascherl-Container");
 
-            if (container !== "dialog-content") {
+            if (container !== "dialogContent") {  // TODO find something better, more generic
                 $("div.modal-backdrop").remove();
             }
 
