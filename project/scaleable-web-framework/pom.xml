@@ -11,6 +11,7 @@
 
     <modules>
         <module>api</module>
+        <module>load-balancer</module>
         <module>test-web</module>
         <!-- TODO -->
     </modules>
