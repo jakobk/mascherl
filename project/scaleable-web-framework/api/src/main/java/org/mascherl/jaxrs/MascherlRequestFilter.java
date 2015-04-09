@@ -9,12 +9,17 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.Objects;
 
+import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_APP_VERSION;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
+import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
+import static org.mascherl.page.MascherlPageIdCalculator.calculatePageId;
 
 /**
  * Implementation of {@link javax.ws.rs.container.ContainerRequestFilter} for executing Mascherl specific tasks
@@ -32,6 +37,9 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
     @Context
     private HttpServletRequest request;
 
+    @Context
+    private ResourceInfo resourceInfo;
+
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         MascherlApplication mascherlApplication = MascherlApplication.getInstance(servletContext);
@@ -39,6 +47,23 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
         verifyApplicationVersion(mascherlApplication, requestContext);
 
         restoreSession(mascherlApplication);
+
+        calculateRequestContainer(mascherlApplication);
+    }
+
+    private void calculateRequestContainer(MascherlApplication mascherlApplication) {
+        String container = (String) request.getAttribute(M_CONTAINER);
+        if (container == null) {
+            container = request.getParameter(M_CONTAINER);
+        }
+        if (container != null) {
+            String requestPageId = request.getParameter(M_PAGE);
+            String resourcePageId = calculatePageId(mascherlApplication, resourceInfo);
+            if (requestPageId != null && !Objects.equals(requestPageId, resourcePageId)) {
+                container = MAIN_CONTAINER;
+            }
+        }
+        request.setAttribute(M_CONTAINER, container);
     }
 
     private void restoreSession(MascherlApplication mascherlApplication) {

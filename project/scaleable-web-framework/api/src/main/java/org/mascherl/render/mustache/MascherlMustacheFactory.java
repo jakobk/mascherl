@@ -85,6 +85,9 @@ public class MascherlMustacheFactory extends DefaultMustacheFactory {
     }
 
     public TemplateMeta getTemplateMeta(String templateName) {
+        if (!templateIndex.containsKey(templateName)) {
+            compile(templateName);
+        }
         return templateIndex.get(templateName);
     }
 

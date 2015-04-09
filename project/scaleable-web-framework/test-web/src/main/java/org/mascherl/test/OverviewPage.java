@@ -26,8 +26,7 @@ public class OverviewPage {
         session.put("user", "Jakob Korherr");
         session.put("lastLogin", LocalDateTime.now());
 
-        return Mascherl.page()
-                .template("/templates/overview.html")
+        return Mascherl.page("/templates/overview.html")
                 .pageTitle("Overview")
                 .container("main")
                 .container("links", (model) -> model.put("welcome", "Welcome to Mascherl!"))
@@ -69,8 +68,7 @@ public class OverviewPage {
         System.out.println(session.getString("user"));
         System.out.println(session.get("lastLogin", LocalDateTime.class));
 
-        return Mascherl.page()
-                .template("/templates/page1.html")
+        return Mascherl.page("/templates/page1.html")
                 .pageTitle("Page1")
                 .container("main");
     }
@@ -78,19 +76,17 @@ public class OverviewPage {
     @GET
     @Path("/page1/dialog/1")
     public MascherlPage page1Dialog1() {
-        return Mascherl.page()
-                .template("/templates/dialog/dialog-page1.html")
+        return Mascherl.page("/templates/dialog/dialog-page1.html")
                 .pageTitle("Page1 - Dialog")
                 .container("main")
                 .container("dialog")
                 .container("dialogContent");
     }
 
-    @Path("/page1/dialog/2")
     @GET
+    @Path("/page1/dialog/2")
     public MascherlPage page1Dialog2() {
-        return Mascherl.page()
-                .template("/templates/dialog/dialog-page2.html")
+        return Mascherl.page("/templates/dialog/dialog-page2.html")
                 .pageTitle("Page1 - Dialog - 2")
                 .container("main")
                 .container("dialog")
@@ -100,8 +96,7 @@ public class OverviewPage {
     @GET
     @Path("/page2")
     public MascherlPage page2() {
-        return Mascherl.page()
-                .template("/templates/page2.html")
+        return Mascherl.page("/templates/page2.html")
                 .pageTitle("Page2")
                 .container("main");
     }
@@ -109,8 +104,7 @@ public class OverviewPage {
     @GET
     @Path("/data/1")
     public MascherlPage data1() {
-        return Mascherl.page()
-                .template("/templates/data-page1.html")
+        return Mascherl.page("/templates/data-page1.html")
                 .pageTitle("Data")
                 .container("main")
                 .container("dataContainer");
@@ -119,8 +113,7 @@ public class OverviewPage {
     @GET
     @Path("/data/2")
     public MascherlPage data2() {
-        return Mascherl.page()
-                .template("/templates/data-page2.html")
+        return Mascherl.page("/templates/data-page2.html")
                 .pageTitle("Data")
                 .container("main")
                 .container("dataContainer");

@@ -58,18 +58,10 @@ public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage
         MascherlApplication mascherlApplication = MascherlApplication.getInstance(request.getServletContext());
 
         String container = (String) request.getAttribute(M_CONTAINER);
-        if (container == null) {
-            container = request.getParameter(M_CONTAINER);
-        }
-        String page = request.getParameter(M_PAGE);
-
         final boolean partialRequest = (container != null);
 
         MascherlRenderer renderer = mascherlApplication.getMascherlRendererFactory().createMascherlRenderer();
         if (partialRequest) {
-            if (page != null && !Objects.equals(page, getClass().getName())) {
-                container = MAIN_CONTAINER;
-            }
             String clientUrl = (String) request.getAttribute(M_CLIENT_URL);
             renderer.renderContainer(mascherlApplication, mascherlPage, resourceInfo, entityStream, httpHeaders, container, clientUrl);
         } else {

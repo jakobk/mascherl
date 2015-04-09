@@ -24,4 +24,6 @@ public interface MascherlRenderer {
                                 OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException;
 
+    public ContainerMeta getContainerMeta(String pageTemplate, String container);
+
 }

@@ -2,7 +2,6 @@ package org.mascherl.render.mustache;
 
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlPage;
-import org.mascherl.page.Model;
 
 import javax.ws.rs.core.UriBuilder;
 import java.util.HashMap;
@@ -28,15 +27,13 @@ public class MustacheRendererScope extends HashMap<String, Object> {
     private final MascherlApplication mascherlApplication;
     private final MascherlPage page;
     private final String pageId;
-    private final Map<String, Model> containerModels;
     private String currentContainer;
     private final Set<String> warnedValues;
 
-    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPage page, String pageId, Map<String, Model> containerModels) {
+    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPage page, String pageId) {
         this.mascherlApplication = mascherlApplication;
         this.page = page;
         this.pageId = pageId;
-        this.containerModels = containerModels;
         if (mascherlApplication.isDevelopmentMode()) {
             warnedValues = new HashSet<>();
         } else {
@@ -49,7 +46,7 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         final String key = (String) keyObject;
 
         if (currentContainer != null) {
-            Map<String, Object> containerScope = containerModels.get(currentContainer).getScope();
+            Map<String, Object> containerScope = page.getContainerModels().get(currentContainer).getScope();
             if (containerScope.containsKey(key)) {
                 return containerScope.get(key);
             }
@@ -83,7 +80,7 @@ public class MustacheRendererScope extends HashMap<String, Object> {
     @Override
     public boolean containsKey(Object keyObject) {
         final String key = (String) keyObject;
-        boolean found = (currentContainer != null && containerModels.get(currentContainer).getScope().containsKey(key))
+        boolean found = (currentContainer != null && page.getContainerModels().get(currentContainer).getScope().containsKey(key))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
                 || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))
                 || (Objects.equals(key, RootScopeVariables.PAGE_ID))
@@ -98,7 +95,7 @@ public class MustacheRendererScope extends HashMap<String, Object> {
 
     private void maybeDisplayWarningMessage(String key) {
         if (mascherlApplication.isDevelopmentMode() && !warnedValues.contains(key)) {
-            Set<String> foundInContainerModels = containerModels.entrySet().stream()
+            Set<String> foundInContainerModels = page.getContainerModels().entrySet().stream()
                     .filter((containerModel) -> containerModel.getValue().getScope().containsKey(key))
                     .map(Entry::getKey)
                     .collect(Collectors.toSet());

@@ -3,7 +3,6 @@ package org.mascherl.render.mustache;
 import com.github.mustachejava.Mustache;
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlPage;
-import org.mascherl.page.Model;
 import org.mascherl.render.ContainerMeta;
 import org.mascherl.render.MascherlRenderer;
 import org.mascherl.render.TemplateMeta;
@@ -15,11 +14,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
@@ -28,6 +22,7 @@ import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_URL;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_POWERED_BY;
+import static org.mascherl.page.MascherlPageIdCalculator.calculatePageId;
 
 /**
  * MascherlRenderer implementation using Mustache as render engine.
@@ -35,8 +30,6 @@ import static org.mascherl.MascherlConstants.ResponseHeaders.X_POWERED_BY;
  * @author Jakob Korherr
  */
 public class MustacheRenderer implements MascherlRenderer {
-
-    private static final String SHA_256 = "SHA-256";
 
     private final MascherlMustacheFactory mustacheFactory;
 
@@ -62,6 +55,12 @@ public class MustacheRenderer implements MascherlRenderer {
         render(mascherlApplication, page, pageId, outputStream, container, true);
     }
 
+    @Override
+    public ContainerMeta getContainerMeta(String pageTemplate, String container) {
+        TemplateMeta templateMeta = mustacheFactory.getTemplateMeta(pageTemplate);
+        return templateMeta.getContainerMeta(container);
+    }
+
     private void render(MascherlApplication mascherlApplication, MascherlPage page, String pageId, OutputStream outputStream,
                         String container, boolean isPartial) throws IOException {
         Mustache mustache;
@@ -71,57 +70,12 @@ public class MustacheRenderer implements MascherlRenderer {
             mustache = mustacheFactory.compileFullPage(page.getTemplate());
         }
 
-        TemplateMeta templateMeta = mustacheFactory.getTemplateMeta(page.getTemplate());
-        ContainerMeta containerMeta = templateMeta.getContainerMeta(container);
-        Map<String, Model> containerModels = new HashMap<>();
-        collectModelValues(page, containerMeta, containerModels);
-
-        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, pageId, containerModels);
+        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, pageId);
         if (isPartial) {
             scope.setCurrentContainer(container);
         }
 
         mustache.execute(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), scope).flush();
-    }
-
-    private String calculatePageId(MascherlApplication mascherlApplication, ResourceInfo resourceInfo) {
-        String pageId = resourceInfo.getResourceClass().getName();
-        if (resourceInfo.getResourceMethod() != null) {
-            pageId += "." + resourceInfo.getResourceMethod().getName();
-        }
-
-        if (!mascherlApplication.isDevelopmentMode()) {
-            // SHA-256 plain resource page id in order to hide resource class + method
-            pageId = sha256(pageId);
-        }
-
-        return pageId;
-    }
-
-    private String sha256(String value) {
-        MessageDigest messageDigest = createMessageDigest();
-        messageDigest.update(value.getBytes(StandardCharsets.UTF_8));
-        byte[] digest = messageDigest.digest();
-        byte[] base64Digest = Base64.getEncoder().encode(digest);
-        return new String(base64Digest, StandardCharsets.UTF_8);
-    }
-
-    private static MessageDigest createMessageDigest() {
-        try {
-            return MessageDigest.getInstance(SHA_256);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void collectModelValues(MascherlPage page, ContainerMeta containerMeta, Map<String, Model> containerModels) {
-        Model model = new Model();
-        page.populateContainerModel(containerMeta.getContainerName(), model);
-        containerModels.put(containerMeta.getContainerName(), model);
-
-        for (ContainerMeta childContainerMeta : containerMeta.getChildren()) {
-            collectModelValues(page, childContainerMeta, containerModels);
-        }
     }
 
     private void addGeneralHttpHeaders(MascherlApplication mascherlApplication, MultivaluedMap<String, Object> httpHeaders) {

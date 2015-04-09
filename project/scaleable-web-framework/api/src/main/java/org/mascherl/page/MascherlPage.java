@@ -1,7 +1,11 @@
 package org.mascherl.page;
 
+import org.mascherl.render.ContainerMeta;
+
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The specification for a page, which should be rendered by Mascherl.
@@ -10,15 +14,20 @@ import java.util.Map;
  */
 public class MascherlPage {
 
-    private String template;
+    private final String template;
+    private final Set<String> containersToEvaluate = new HashSet<>();
+    private final Map<String, Model> containerModels = new HashMap<>();
+
     private String pageTitle;
-    private final Map<String, ModelCalculator> containerModelCalculators = new HashMap<>();
 
-    public MascherlPage() {}
-
-    public MascherlPage template(String template) {
+    MascherlPage(String template, ContainerMeta requestContainerMeta) {
         this.template = template;
-        return this;
+        findContainersToEvaluate(requestContainerMeta);
+    }
+
+    private void findContainersToEvaluate(ContainerMeta containerMeta) {
+        containersToEvaluate.add(containerMeta.getContainerName());
+        containerMeta.getChildren().forEach(this::findContainersToEvaluate);
     }
 
     public MascherlPage pageTitle(String pageTitle) {
@@ -31,15 +40,15 @@ public class MascherlPage {
     }
 
     public MascherlPage container(String containerName, ModelCalculator modelProvider) {
-        containerModelCalculators.put(containerName, modelProvider);
-        return this;
-    }
-
-    public void populateContainerModel(String containerName, Model pageModel) {
-        ModelCalculator modelCalculator = containerModelCalculators.get(containerName);
-        if (modelCalculator != null) {
-            modelCalculator.populate(pageModel);
+        if (containersToEvaluate.contains(containerName)) {
+            Model model = containerModels.get(containerName);  // look for existing model --> model override
+            if (model == null) {
+                model = new Model();
+                containerModels.put(containerName, model);
+            }
+            modelProvider.populate(model);
         }
+        return this;
     }
 
     public String getTemplate() {
@@ -50,4 +59,7 @@ public class MascherlPage {
         return pageTitle;
     }
 
+    public Map<String, Model> getContainerModels() {
+        return containerModels;
+    }
 }
