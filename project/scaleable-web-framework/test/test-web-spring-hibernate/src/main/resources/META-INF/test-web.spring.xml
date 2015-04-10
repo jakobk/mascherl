@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/aop   http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://cxf.apache.org/jaxrs                 http://cxf.apache.org/schemas/jaxrs.xsd">
+
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+    <jaxrs:server id="mascherlServer" address="/">
+        <jaxrs:serviceBeans>
+            <ref bean="overviewPage" />
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <bean class="org.mascherl.jaxrs.MascherlMessageBodyWriter" />
+            <bean class="org.mascherl.jaxrs.MascherlRequestFilter" />
+            <bean class="org.mascherl.jaxrs.MascherlResponseFilter" />
+        </jaxrs:providers>
+    </jaxrs:server>
+
+    <bean id="overviewPage" class="org.mascherl.test.IndexPage" scope="singleton" />
+
+</beans>
