@@ -3,6 +3,7 @@ package org.mascherl.jaxrs;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.mascherl.application.MascherlApplication;
+import org.mascherl.page.MascherlPage;
 import org.mascherl.version.ApplicationVersion;
 
 import javax.servlet.ServletContext;
@@ -19,7 +20,7 @@ import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_APP_VERSION;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
-import static org.mascherl.page.MascherlPageIdCalculator.calculatePageId;
+import static org.mascherl.page.MascherlPageGroupCalculator.calculatePageGroup;
 
 /**
  * Implementation of {@link javax.ws.rs.container.ContainerRequestFilter} for executing Mascherl specific tasks
@@ -52,18 +53,20 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
     }
 
     private void calculateRequestContainer(MascherlApplication mascherlApplication) {
-        String container = (String) request.getAttribute(M_CONTAINER);
-        if (container == null) {
-            container = request.getParameter(M_CONTAINER);
-        }
-        if (container != null) {
-            String requestPageId = request.getParameter(M_PAGE);
-            String resourcePageId = calculatePageId(mascherlApplication, resourceInfo);
-            if (requestPageId != null && !Objects.equals(requestPageId, resourcePageId)) {
-                container = MAIN_CONTAINER;
+        if (MascherlPage.class.isAssignableFrom(resourceInfo.getResourceMethod().getReturnType())) {
+            String container = (String) request.getAttribute(M_CONTAINER);
+            if (container == null) {
+                container = request.getParameter(M_CONTAINER);
             }
+            if (container != null) {
+                String requestPageGroup = request.getParameter(M_PAGE);
+                String resourcePageGroup = calculatePageGroup(mascherlApplication, resourceInfo);
+                if (requestPageGroup != null && !Objects.equals(requestPageGroup, resourcePageGroup)) {
+                    container = MAIN_CONTAINER;
+                }
+            }
+            request.setAttribute(M_CONTAINER, container);
         }
-        request.setAttribute(M_CONTAINER, container);
     }
 
     private void restoreSession(MascherlApplication mascherlApplication) {

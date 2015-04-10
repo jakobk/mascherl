@@ -25,8 +25,8 @@ public class MascherlConstants {
     public static class RootScopeVariables {
         public static final String TITLE = "title";
         public static final String APPLICATION_VERSION = "applicationVersion";
-        public static final String PAGE_ID = "pageId";
-        public static final String URL = "url";
+        public static final String PAGE_GROUP = "pageGroup";
+        public static final String URL_FUNCTION = "url";
     }
 
     public static final String MAIN_CONTAINER = "main";

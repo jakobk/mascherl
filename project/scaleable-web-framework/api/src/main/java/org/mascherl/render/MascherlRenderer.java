@@ -21,7 +21,8 @@ public interface MascherlRenderer {
                            OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders) throws IOException;
 
     public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
-                                OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders,
+                                String formResultPageGroup, OutputStream outputStream,
+                                MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException;
 
     public ContainerMeta getContainerMeta(String pageTemplate, String container);

@@ -3,6 +3,7 @@ package org.mascherl.test;
 import org.mascherl.page.FormResult;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlPage;
+import org.mascherl.page.PageGroup;
 import org.mascherl.session.MascherlSession;
 
 import javax.ws.rs.BeanParam;
@@ -49,11 +50,12 @@ public class OverviewPage {
     @Path("/submit2")
     public FormResult submit2(@BeanParam OverviewForm overviewForm) {
         System.out.println(overviewForm.getFirstname() + " " + overviewForm.getLastname());
-        return Mascherl.navigate("/page1").renderAll().withPageDef(page1());
+        return Mascherl.navigate("/page1").renderAll().withPageDef(page1()).withPageGroup("page1");
     }
 
     @GET
     @Path("/page1")
+    @PageGroup("page1")
     public MascherlPage page1() {
         MascherlSession session = MascherlSession.getInstance();
         System.out.println(session.getString("user"));
@@ -66,6 +68,7 @@ public class OverviewPage {
 
     @GET
     @Path("/page1/dialog/1")
+    @PageGroup("page1")
     public MascherlPage page1Dialog1() {
         return Mascherl.page("/templates/dialog/dialog-page1.html")
                 .pageTitle("Page1 - Dialog")
@@ -76,6 +79,7 @@ public class OverviewPage {
 
     @GET
     @Path("/page1/dialog/2")
+    @PageGroup("page1")
     public MascherlPage page1Dialog2() {
         return Mascherl.page("/templates/dialog/dialog-page2.html")
                 .pageTitle("Page1 - Dialog - 2")

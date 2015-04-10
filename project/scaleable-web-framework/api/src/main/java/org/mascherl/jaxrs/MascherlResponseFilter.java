@@ -26,6 +26,7 @@ import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_APP_VERSION;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CLIENT_URL;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
+import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
 
 /**
  * Implementation of {@link javax.ws.rs.container.ContainerResponseFilter} for executing Mascherl specific tasks
@@ -73,12 +74,14 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
                     }
 
                     request.setAttribute(M_CONTAINER, container);
+                    request.setAttribute(M_PAGE, formResult.getPageGroup());
                     responseContext.setEntity(formResult.getMascherlPage());
                 } else {
                     redirect(mascherlApplication, responseContext, formResult.getPageUrl(), request, response);
                 }
             } else if (formResult.getContainer() != null) {
                 request.setAttribute(M_CONTAINER, formResult.getContainer());
+                request.setAttribute(M_PAGE, formResult.getPageGroup());
                 responseContext.setEntity(formResult.getMascherlPage());
             } else {
                 throw new IllegalArgumentException("Illegal FormResult " + formResult);

@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
+import static org.mascherl.MascherlConstants.RootScopeVariables.PAGE_GROUP;
 import static org.mascherl.render.MascherlRenderer.FULL_PAGE_RESOURCE;
 
 /**
@@ -223,7 +224,7 @@ public class MascherlMustacheFactory extends DefaultMustacheFactory {
         private Mustache createContainerWrapper(TemplateContext templateContext, String variable, Mustache mustache) {
             MascherlMustacheVisitor visitor = new MascherlMustacheVisitor();
             visitor.write(templateContext, "<div id=\"" + variable + "\" m-page=\"");
-            visitor.value(templateContext, "pageId", true);
+            visitor.value(templateContext, PAGE_GROUP, true);
             visitor.write(templateContext, "\">");
             visitor.mascherlContainer(templateContext, variable, mustache);
             visitor.write(templateContext, "</div>");

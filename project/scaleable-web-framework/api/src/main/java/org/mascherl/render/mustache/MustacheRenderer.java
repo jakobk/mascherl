@@ -22,7 +22,7 @@ import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_URL;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_POWERED_BY;
-import static org.mascherl.page.MascherlPageIdCalculator.calculatePageId;
+import static org.mascherl.page.MascherlPageGroupCalculator.calculatePageGroup;
 
 /**
  * MascherlRenderer implementation using Mustache as render engine.
@@ -40,19 +40,19 @@ public class MustacheRenderer implements MascherlRenderer {
     @Override
     public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
                            OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders) throws IOException {
-        String pageId = calculatePageId(mascherlApplication, resourceInfo);
+        String pageGroup = calculatePageGroup(mascherlApplication, resourceInfo);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
-        render(mascherlApplication, page, pageId, outputStream, MAIN_CONTAINER, false);
+        render(mascherlApplication, page, pageGroup, outputStream, MAIN_CONTAINER, false);
     }
 
     @Override
     public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
-                                OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders,
+                                String formResultPageGroup, OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException {
-        String pageId = calculatePageId(mascherlApplication, resourceInfo);
+        String pageGroup = calculatePageGroup(mascherlApplication, resourceInfo, formResultPageGroup);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
-        addHttpHeadersForPartialResponse(page, pageId, httpHeaders, container, clientUrl);
-        render(mascherlApplication, page, pageId, outputStream, container, true);
+        addHttpHeadersForPartialResponse(page, pageGroup, httpHeaders, container, clientUrl);
+        render(mascherlApplication, page, pageGroup, outputStream, container, true);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class MustacheRenderer implements MascherlRenderer {
         return templateMeta.getContainerMeta(container);
     }
 
-    private void render(MascherlApplication mascherlApplication, MascherlPage page, String pageId, OutputStream outputStream,
+    private void render(MascherlApplication mascherlApplication, MascherlPage page, String pageGroup, OutputStream outputStream,
                         String container, boolean isPartial) throws IOException {
         Mustache mustache;
         if (isPartial) {
@@ -70,7 +70,7 @@ public class MustacheRenderer implements MascherlRenderer {
             mustache = mustacheFactory.compileFullPage(page.getTemplate());
         }
 
-        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, pageId);
+        MustacheRendererScope scope = new MustacheRendererScope(mascherlApplication, page, pageGroup);
         if (isPartial) {
             scope.setCurrentContainer(container);
         }
@@ -83,11 +83,11 @@ public class MustacheRenderer implements MascherlRenderer {
     }
 
     private void addHttpHeadersForPartialResponse(MascherlPage page,
-                                                  String pageId,
+                                                  String pageGroup,
                                                   MultivaluedMap<String, Object> httpHeaders,
                                                   String container, String clientUrl) {
         httpHeaders.putSingle(X_MASCHERL_TITLE, page.getPageTitle());
-        httpHeaders.putSingle(X_MASCHERL_PAGE, pageId);
+        httpHeaders.putSingle(X_MASCHERL_PAGE, pageGroup);
         httpHeaders.putSingle(X_MASCHERL_CONTAINER, container);
         if (clientUrl != null) {
             httpHeaders.putSingle(X_MASCHERL_URL, clientUrl);

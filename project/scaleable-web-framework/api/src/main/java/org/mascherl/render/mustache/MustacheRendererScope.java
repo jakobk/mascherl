@@ -26,14 +26,14 @@ public class MustacheRendererScope extends HashMap<String, Object> {
 
     private final MascherlApplication mascherlApplication;
     private final MascherlPage page;
-    private final String pageId;
+    private final String pageGroup;
     private String currentContainer;
     private final Set<String> warnedValues;
 
-    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPage page, String pageId) {
+    public MustacheRendererScope(MascherlApplication mascherlApplication, MascherlPage page, String pageGroup) {
         this.mascherlApplication = mascherlApplication;
         this.page = page;
-        this.pageId = pageId;
+        this.pageGroup = pageGroup;
         if (mascherlApplication.isDevelopmentMode()) {
             warnedValues = new HashSet<>();
         } else {
@@ -57,10 +57,10 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         if (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION)) {
             return mascherlApplication.getApplicationVersion().getVersion();
         }
-        if (Objects.equals(key, RootScopeVariables.PAGE_ID)) {
-            return pageId;
+        if (Objects.equals(key, RootScopeVariables.PAGE_GROUP)) {
+            return pageGroup;
         }
-        if (Objects.equals(key, RootScopeVariables.URL)) {
+        if (Objects.equals(key, RootScopeVariables.URL_FUNCTION)) {
             return (Function<String, String>) (resourceRef) -> {
                 int classMethodSeparatorIndex = resourceRef.lastIndexOf(".");
                 String className = resourceRef.substring(0, classMethodSeparatorIndex);
@@ -83,8 +83,8 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         boolean found = (currentContainer != null && page.getContainerModels().get(currentContainer).getScope().containsKey(key))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
                 || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))
-                || (Objects.equals(key, RootScopeVariables.PAGE_ID))
-                || (Objects.equals(key, RootScopeVariables.URL));
+                || (Objects.equals(key, RootScopeVariables.PAGE_GROUP))
+                || (Objects.equals(key, RootScopeVariables.URL_FUNCTION));
 
         if (!found) {
             maybeDisplayWarningMessage(key);
