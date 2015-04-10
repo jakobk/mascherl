@@ -1,6 +1,5 @@
 package org.mascherl.page;
 
-import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
 /**
@@ -10,27 +9,18 @@ import java.net.URI;
  */
 public class FormResult {
 
-    private URI pageUrl;
+    private final URI pageUrl;
     private final String container;
     private final MascherlPage mascherlPage;
 
     FormResult(URI pageUrl) {
-        this(null, null);
-        this.pageUrl = pageUrl;
+        this(null, pageUrl, null);
     }
 
-    FormResult(String container, MascherlPage mascherlPage) {
-        this.mascherlPage = mascherlPage;
+    FormResult(String container, URI pageUrl, MascherlPage mascherlPage) {
         this.container = container;
-    }
-
-    public FormResult useUrl(String pageUrl) {
-        return useUrl(UriBuilder.fromUri(pageUrl).build());
-    }
-
-    public FormResult useUrl(URI pageUrl) {
         this.pageUrl = pageUrl;
-        return this;
+        this.mascherlPage = mascherlPage;
     }
 
     public URI getPageUrl() {

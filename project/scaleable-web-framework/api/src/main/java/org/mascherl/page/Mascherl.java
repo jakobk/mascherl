@@ -12,7 +12,7 @@ import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 
 /**
- * Utility class used for defining a fluent api for controller code.
+ * Class used for defining the fluent api for controller code.
  *
  * @author Jakob Korherr
  */
@@ -33,29 +33,57 @@ public class Mascherl {
         return MascherlApplication.getInstance(MascherlFilter.getRequest().getServletContext());
     }
 
-    public static FormResult redirect(String pageUri) {
-        return new FormResult(UriBuilder.fromUri(pageUri).build());
+    public static NavigationHolder stay() {
+        return new NavigationHolder();
     }
 
-    public static FormResultBuilder renderAll() {
-        return renderContainer(MAIN_CONTAINER);
+    public static NavigationHolder navigate(String pageUri) {
+        return navigate(UriBuilder.fromUri(pageUri).build());
     }
 
-    public static FormResultBuilder renderContainer(String container) {
-        MascherlFilter.getRequest().setAttribute(M_CONTAINER, container);
-        return new FormResultBuilder(container);
+    public static NavigationHolder navigate(URI pageUri) {
+        return new NavigationHolder(pageUri);
     }
 
-    public static class FormResultBuilder {
+    public static class NavigationHolder {
 
+        private final URI pageUrl;
+
+        public NavigationHolder() {
+            this(null);
+        }
+
+        public NavigationHolder(URI pageUrl) {
+            this.pageUrl = pageUrl;
+        }
+
+        public ContainerHolder renderAll() {
+            return renderContainer(MAIN_CONTAINER);
+        }
+
+        public ContainerHolder renderContainer(String container) {
+            MascherlFilter.getRequest().setAttribute(M_CONTAINER, container);
+            return new ContainerHolder(pageUrl, container);
+        }
+
+        public FormResult redirect() {
+            return new FormResult(pageUrl);
+        }
+
+    }
+
+    public static class ContainerHolder {
+
+        private final URI pageUrl;
         private final String container;
 
-        public FormResultBuilder(String container) {
+        public ContainerHolder(URI pageUrl, String container) {
+            this.pageUrl = pageUrl;
             this.container = container;
         }
 
-        public FormResult ofPage(MascherlPage mascherlPage) {
-            return new FormResult(container, mascherlPage);
+        public FormResult withPageDef(MascherlPage mascherlPage) {
+            return new FormResult(container, pageUrl, mascherlPage);
         }
 
     }
