@@ -8,10 +8,6 @@
 
     <link rel="stylesheet" href="/webjars/bootstrap/3.3.4/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/resources/style.css" />
-
-    <script id="error" type="text/x-error-template">
-        <p>Something went wrong... Please reload the page and try again.</p>
-    </script>
 </head>
 <body>
 {{$main}}{{/main}}
@@ -26,5 +22,28 @@
 </script>
 
 <script src="/mascherl/1.0.0/js/mascherl.js"></script>
+
+<script id="error" type="text/x-error-template">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/mail">WebMail powered by Mascherl &#x29d3;</a>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron">
+        <div class="container">
+            <h1>An error occurred</h1>
+            <p>Something went wrong... Please try again later.</p>
+        </div>
+    </div>
+    <div class="container">
+        <hr>
+        <footer>
+            <p>&copy; Jakob Korherr 2015</p>
+            <p>Version: {{applicationVersion}}</p>
+        </footer>
+    </div>
+</script>
 </body>
 </html>
