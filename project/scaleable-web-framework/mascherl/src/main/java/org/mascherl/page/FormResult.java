@@ -7,7 +7,7 @@ import java.net.URI;
  *
  * @author Jakob Korherr
  */
-public class FormResult {
+public class FormResult {   // TODO rename to MascherlAction
 
     private final URI pageUrl;
     private final String container;
