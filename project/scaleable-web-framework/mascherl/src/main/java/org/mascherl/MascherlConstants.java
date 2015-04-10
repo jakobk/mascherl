@@ -7,6 +7,11 @@ package org.mascherl;
  */
 public class MascherlConstants {
 
+    /**
+     * @see javax.ws.rs.Priorities
+     */
+    public static final int FILTER_PRIORITY = 500;
+
     public static class RequestParameters {
         public static final String M_CLIENT_URL = "m-client-url";
         public static final String M_CONTAINER = "m-container";

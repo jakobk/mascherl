@@ -1,7 +1,7 @@
 package org.mascherl.jaxrs;
 
 import org.mascherl.application.MascherlApplication;
-import org.mascherl.page.FormResult;
+import org.mascherl.page.MascherlAction;
 import org.mascherl.servlet.MascherlFilter;
 import org.mascherl.session.MascherlSession;
 import org.mascherl.session.MascherlSessionStorage;
@@ -50,7 +50,7 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
 
         saveSession(mascherlApplication, response);
 
-        handleFormResultEntity(responseContext, mascherlApplication, request, response);
+        handleMascherlActionEntity(responseContext, mascherlApplication, request, response);
     }
 
     private void saveSession(MascherlApplication mascherlApplication, HttpServletResponse response) {
@@ -58,33 +58,33 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
         sessionStorage.saveSession(MascherlSession.getInstance(), response);
     }
 
-    private void handleFormResultEntity(ContainerResponseContext responseContext, MascherlApplication mascherlApplication,
-                                        HttpServletRequest request, HttpServletResponse response) {
-        if (responseContext.getEntity() instanceof FormResult) {
-            FormResult formResult = (FormResult) responseContext.getEntity();
+    private void handleMascherlActionEntity(ContainerResponseContext responseContext, MascherlApplication mascherlApplication,
+                                            HttpServletRequest request, HttpServletResponse response) {
+        if (responseContext.getEntity() instanceof MascherlAction) {
+            MascherlAction mascherlAction = (MascherlAction) responseContext.getEntity();
 
-            if (formResult.getPageUrl() != null) {
-                String clientUrl = formResult.getPageUrl().toString();
+            if (mascherlAction.getPageUrl() != null) {
+                String clientUrl = mascherlAction.getPageUrl().toString();
                 request.setAttribute(M_CLIENT_URL, clientUrl);
 
-                if (formResult.getMascherlPage() != null) {
-                    String container = formResult.getContainer();
+                if (mascherlAction.getMascherlPage() != null) {
+                    String container = mascherlAction.getContainer();
                     if (container == null) {
                         container = MAIN_CONTAINER;
                     }
 
                     request.setAttribute(M_CONTAINER, container);
-                    request.setAttribute(M_PAGE, formResult.getPageGroup());
-                    responseContext.setEntity(formResult.getMascherlPage());
+                    request.setAttribute(M_PAGE, mascherlAction.getPageGroup());
+                    responseContext.setEntity(mascherlAction.getMascherlPage());
                 } else {
-                    redirect(mascherlApplication, responseContext, formResult.getPageUrl(), request, response);
+                    redirect(mascherlApplication, responseContext, mascherlAction.getPageUrl(), request, response);
                 }
-            } else if (formResult.getContainer() != null) {
-                request.setAttribute(M_CONTAINER, formResult.getContainer());
-                request.setAttribute(M_PAGE, formResult.getPageGroup());
-                responseContext.setEntity(formResult.getMascherlPage());
+            } else if (mascherlAction.getContainer() != null) {
+                request.setAttribute(M_CONTAINER, mascherlAction.getContainer());
+                request.setAttribute(M_PAGE, mascherlAction.getPageGroup());
+                responseContext.setEntity(mascherlAction.getMascherlPage());
             } else {
-                throw new IllegalArgumentException("Illegal FormResult " + formResult);
+                throw new IllegalArgumentException("Illegal " + MascherlAction.class.getSimpleName() + ": " + mascherlAction);
             }
         }
     }

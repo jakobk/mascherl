@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop   http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://cxf.apache.org/jaxrs                   http://cxf.apache.org/schemas/jaxrs.xsd">
+
+    <import resource="classpath:META-INF/cxf/cxf.xml" />
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+    <context:annotation-config />
+    <context:component-scan base-package="org.mascherl.example" />
+
+    <jaxrs:server id="mascherlServer" address="/">
+        <jaxrs:serviceBeans>
+            <ref bean="indexPage" />
+            <ref bean="signUpPage" />
+            <ref bean="mailOverviewPage" />
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <bean class="org.mascherl.jaxrs.MascherlMessageBodyWriter" />
+            <bean class="org.mascherl.jaxrs.MascherlRequestFilter" />
+            <bean class="org.mascherl.jaxrs.MascherlResponseFilter" />
+            <bean class="org.mascherl.example.filter.WebMailRequestFilter" />
+        </jaxrs:providers>
+    </jaxrs:server>
+
+    <!-- JPA Entity Manager Factory -->
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceXmlLocation" value="classpath*:/META-INF/persistence.xml"/>
+        <property name="persistenceUnitName" value="mascherl"/>
+        <property name="jpaDialect"><bean class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/></property>
+        <property name="jpaVendorAdapter"><bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/></property>
+    </bean>
+
+    <!-- JPA Platform Transaction Manager -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+
+    <!-- process the @Transactional annotations: -->
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+
+</beans>

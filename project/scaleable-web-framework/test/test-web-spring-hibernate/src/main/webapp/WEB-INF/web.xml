@@ -15,6 +15,10 @@
         <servlet-name>default</servlet-name>
         <url-pattern>/mascherl/*</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/resources/*</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>CXFServlet</servlet-name>
@@ -36,7 +40,7 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            classpath*:/META-INF/test-web.spring.xml
+            classpath*:/META-INF/webmail-example.spring.xml
         </param-value>
     </context-param>
 

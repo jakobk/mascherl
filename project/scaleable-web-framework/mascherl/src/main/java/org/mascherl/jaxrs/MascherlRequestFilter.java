@@ -2,12 +2,15 @@ package org.mascherl.jaxrs;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.mascherl.MascherlConstants;
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlPage;
 import org.mascherl.version.ApplicationVersion;
 
+import javax.annotation.Priority;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
@@ -28,6 +31,7 @@ import static org.mascherl.page.MascherlPageGroupCalculator.calculatePageGroup;
  *
  * @author Jakob Korherr
  */
+@Priority(MascherlConstants.FILTER_PRIORITY)
 public class MascherlRequestFilter implements ContainerRequestFilter {
 
     private static final String OUTDATED_VERSION_MSG_CONFIG = "org.mascherl.message.outdatedVersion";

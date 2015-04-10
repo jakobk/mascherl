@@ -1,0 +1,19 @@
+{{< pageTemplate}}
+
+{{$titleBar}}
+    <a class="navbar-brand" href="/">WebMail powered by Mascherl &#x29d3;</a>
+{{/titleBar}}
+
+{{$userInfo}}
+    <form id="loginFormNav" class="navbar-form navbar-right" action="/login" method="post">
+        <div class="form-group">
+            <input name="email" type="email" placeholder="Email address" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <input name="password" type="password" placeholder="Password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success">Sign in</button>
+    </form>
+{{/userInfo}}
+
+{{/pageTemplate}}

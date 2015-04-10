@@ -21,8 +21,8 @@ public class MascherlPageGroupCalculator {
         return calculatePageGroup(mascherlApplication, resourceInfo, null);
     }
 
-    public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo, String formResultPageGroup) {
-        String pageGroup = findPageGroup(resourceInfo, formResultPageGroup);
+    public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo, String actionPageGroup) {
+        String pageGroup = findPageGroup(resourceInfo, actionPageGroup);
 
         if (!mascherlApplication.isDevelopmentMode()) {
             // SHA-256 plain resource page id in order to hide resource class + method
@@ -32,9 +32,9 @@ public class MascherlPageGroupCalculator {
         return pageGroup;
     }
 
-    private static String findPageGroup(ResourceInfo resourceInfo, String formResultPageGroup) {
-        if (formResultPageGroup != null) {
-            return formResultPageGroup;
+    private static String findPageGroup(ResourceInfo resourceInfo, String actionPageGroup) {
+        if (actionPageGroup != null) {
+            return actionPageGroup;
         }
         PageGroup pageGroupAnnotation = findPageGroupAnnotation(resourceInfo);
         if (pageGroupAnnotation != null) {

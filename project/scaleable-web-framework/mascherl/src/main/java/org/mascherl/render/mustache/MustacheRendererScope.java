@@ -2,6 +2,7 @@ package org.mascherl.render.mustache;
 
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlPage;
+import org.mascherl.page.Model;
 
 import javax.ws.rs.core.UriBuilder;
 import java.util.HashMap;
@@ -46,9 +47,12 @@ public class MustacheRendererScope extends HashMap<String, Object> {
         final String key = (String) keyObject;
 
         if (currentContainer != null) {
-            Map<String, Object> containerScope = page.getContainerModels().get(currentContainer).getScope();
-            if (containerScope.containsKey(key)) {
-                return containerScope.get(key);
+            Model model = page.getContainerModels().get(currentContainer);
+            if (model != null) {
+                Map<String, Object> containerScope = model.getScope();
+                if (containerScope.containsKey(key)) {
+                    return containerScope.get(key);
+                }
             }
         }
         if (Objects.equals(key, RootScopeVariables.TITLE)) {
@@ -80,7 +84,10 @@ public class MustacheRendererScope extends HashMap<String, Object> {
     @Override
     public boolean containsKey(Object keyObject) {
         final String key = (String) keyObject;
-        boolean found = (currentContainer != null && page.getContainerModels().get(currentContainer).getScope().containsKey(key))
+        boolean found =
+                (currentContainer != null
+                        && page.getContainerModels().get(currentContainer) != null
+                        && page.getContainerModels().get(currentContainer).getScope().containsKey(key))
                 || (Objects.equals(key, RootScopeVariables.TITLE))
                 || (Objects.equals(key, RootScopeVariables.APPLICATION_VERSION))
                 || (Objects.equals(key, RootScopeVariables.PAGE_GROUP))

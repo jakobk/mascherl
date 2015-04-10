@@ -21,6 +21,12 @@ function navigate(url, container, page) {
                 $("div.modal-backdrop").remove();
             }
 
+            if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
+                window.fireHistoryChange = false;
+                History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));
+                window.fireHistoryChange = true;
+            }
+
             var containerDiv = $("#" + container);
             containerDiv.html(data);
             containerDiv.attr("m-page", xhr.getResponseHeader("X-Mascherl-Page"));

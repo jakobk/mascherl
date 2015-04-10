@@ -66,8 +66,8 @@ public class Mascherl {
             return new ContainerHolder(pageUrl, container);
         }
 
-        public FormResult redirect() {
-            return new FormResult(pageUrl);
+        public MascherlAction redirect() {
+            return new MascherlAction(pageUrl);
         }
 
     }
@@ -82,8 +82,8 @@ public class Mascherl {
             this.container = container;
         }
 
-        public FormResult withPageDef(MascherlPage mascherlPage) {
-            return new FormResult(container, pageUrl, mascherlPage);
+        public MascherlAction withPageDef(MascherlPage mascherlPage) {
+            return new MascherlAction(container, pageUrl, mascherlPage);
         }
 
     }

@@ -1,0 +1,42 @@
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            {{$titleBar}}
+                <a class="navbar-brand" href="/mail">WebMail powered by Mascherl &#x29d3;</a>
+            {{/titleBar}}
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            {{$userInfo}}
+                <form id="logoutFormNav" class="navbar-form navbar-right" action="/logout" method="post">
+                    <label style="color:white; margin-right: 5px;">
+                        {{#user}}
+                        <b>{{firstName}} {{lastName}} - {{email}}</b>
+                        {{/user}}
+                    </label>
+                    <button type="submit" class="btn btn-success">Sign out</button>
+                </form>
+            {{/userInfo}}
+        </div>
+    </div>
+</nav>
+
+{{$headContainer}}
+{{/headContainer}}
+
+<div class="container">
+    {{#infoMsg}}
+        <div class="alert alert-info" role="alert">{{.}}</div>
+    {{/infoMsg}}
+    {{#errorMsg}}
+        <div class="alert alert-danger" role="alert">{{.}}</div>
+    {{/errorMsg}}
+
+    {{$content}}
+    {{/content}}
+
+    <hr>
+    <footer>
+        <p>&copy; Jakob Korherr 2015</p>
+        <p>Version: {{applicationVersion}}</p>
+    </footer>
+</div>

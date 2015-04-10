@@ -4,7 +4,7 @@
     <persistence-unit name="mascherl" transaction-type="RESOURCE_LOCAL">
 
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <mapping-file>META-INF/test-web.orm.xml</mapping-file>
+        <mapping-file>META-INF/webmail-example.orm.xml</mapping-file>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <validation-mode>NONE</validation-mode>
 
