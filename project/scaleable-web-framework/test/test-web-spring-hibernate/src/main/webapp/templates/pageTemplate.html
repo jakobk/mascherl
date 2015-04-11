@@ -32,6 +32,9 @@
 {{/headContainer}}
 
 <div class="container">
+    {{#successMsg}}
+        <div class="alert alert-success" role="alert">{{.}}</div>
+    {{/successMsg}}
     {{#infoMsg}}
         <div class="alert alert-info" role="alert">{{.}}</div>
     {{/infoMsg}}

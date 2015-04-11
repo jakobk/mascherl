@@ -92,6 +92,32 @@ public class MailService {
         return convertToDomain(mailEntity);
     }
 
+    @Transactional
+    public void moveToTrash(List<String> uuids, User currentUser) {
+        em.createQuery(
+                "update MailEntity m " +
+                        "set m.mailType = :mailTypeTrash " +
+                        "where m.uuid in (:uuids) " +
+                        "and m.user.uuid = :userUuid ")
+                .setParameter("uuids", uuids)
+                .setParameter("userUuid", currentUser.getUuid())
+                .setParameter("mailTypeTrash", MailEntity.MailType.TRASH)
+                .executeUpdate();
+    }
+
+    @Transactional
+    public void permanentlyDeleteTrashMails(List<String> uuids, User currentUser) {
+        em.createQuery(
+                "delete from MailEntity m " +
+                        "where m.uuid in (:uuids) " +
+                        "and m.user.uuid = :userUuid " +
+                        "and m.mailType = :mailTypeTrash")
+                .setParameter("uuids", uuids)
+                .setParameter("userUuid", currentUser.getUuid())
+                .setParameter("mailTypeTrash", MailEntity.MailType.TRASH)
+                .executeUpdate();
+    }
+
     private Mail convertToDomain(MailEntity entity) {
         return new Mail(
                 entity.getUuid(),
