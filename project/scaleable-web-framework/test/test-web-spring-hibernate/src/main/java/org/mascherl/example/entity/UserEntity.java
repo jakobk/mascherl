@@ -25,6 +25,8 @@ public class UserEntity extends BaseEntity {
     @Column(name = "last_name", length = 100)
     private String lastName;
 
+    public UserEntity() {}
+
     public String getEmail() {
         return email;
     }

@@ -18,7 +18,7 @@
     <properties>
         <jackson.version>2.5.1</jackson.version>
         <spring.version>4.0.5.RELEASE</spring.version>
-        <hibernate.version>4.1.8.Final</hibernate.version>
+        <hibernate.version>4.3.8.Final</hibernate.version>
     </properties>
 
     <build>
@@ -171,8 +171,8 @@
             <!-- hibernate -->
             <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.0-api</artifactId>
-                <version>1.0.1.Final</version>
+                <artifactId>hibernate-jpa-2.1-api</artifactId>
+                <version>1.0.0.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -199,7 +199,7 @@
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
-                <version>4.0.1.Final</version>
+                <version>4.0.5.Final</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.logging</groupId>
@@ -222,6 +222,18 @@
                 <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
                 <version>2.3.2</version>
+            </dependency>
+
+            <!-- type converters for java.time and joda-time -->
+            <dependency>
+                <groupId>org.jadira.usertype</groupId>
+                <artifactId>usertype.core</artifactId>
+                <version>3.2.0.GA</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jadira.usertype</groupId>
+                <artifactId>usertype.extended</artifactId>
+                <version>3.2.0.GA</version>
             </dependency>
 
             <dependency>

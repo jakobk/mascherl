@@ -29,6 +29,7 @@ public class LoginService {
     public User login(String email, String password) {
         List<User> resultList = em.createQuery(
                 "select new " + User.class.getName() + " (" +
+                        "u.uuid, " +
                         "u.firstName, " +
                         "u.lastName, " +
                         "u.email " +

@@ -17,9 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Objects;
 
-import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CLIENT_URL;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
@@ -29,7 +27,7 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
  *
  * @author Jakob Korherr
  */
-@Produces(MediaType.WILDCARD)
+@Produces(MediaType.TEXT_HTML)
 public class MascherlMessageBodyWriter implements MessageBodyWriter<MascherlPage> {
 
     @Context
