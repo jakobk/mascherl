@@ -1,0 +1,28 @@
+{{< pageTemplate}}
+
+{{$content}}
+
+<button type="button" class="btn btn-default" aria-label="Go Back" onclick="history.back()">
+    <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+</button>
+
+{{#mail}}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{subject}}</h3>
+        </div>
+        <ul class="list-group">
+            <li class="list-group-item"><b>from</b> {{from}}</li>
+            <li class="list-group-item"><b>to</b> {{to}}</li>
+            {{#cc}}<li class="list-group-item"><b>cc</b> {{.}}</li>{{/cc}}
+            {{#bcc}}<li class="list-group-item"><b>cc</b> {{.}}</li>{{/bcc}}
+        </ul>
+        <div class="panel-body">
+            {{messageText}}
+        </div>
+    </div>
+{{/mail}}
+
+{{/content}}
+
+{{/pageTemplate}}

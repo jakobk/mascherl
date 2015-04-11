@@ -1,5 +1,7 @@
 package org.mascherl.example.entity;
 
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Type;
 import org.mascherl.example.domain.MailAddress;
 
 import javax.persistence.CollectionTable;
@@ -7,12 +9,14 @@ import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 /**
@@ -22,8 +26,28 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "mail")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public abstract class MailEntity extends BaseEntity {
+public class MailEntity extends BaseEntity {
+
+    public static enum MailType {
+        SENT, RECEIVED, DRAFT, TRASH
+    }
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private MailType mailType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_uuid")
+    @BatchSize(size = 100)
+    private UserEntity user;
+
+    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime")
+    @Column(name = "datetime")
+    private ZonedDateTime dateTime;
+
+    @Type(type = "org.hibernate.type.NumericBooleanType")
+    @Column(name = "is_unread", nullable = false)
+    private boolean isUnread;
 
     @Embedded
     private MailAddress from;
@@ -33,6 +57,7 @@ public abstract class MailEntity extends BaseEntity {
             name = "mail_to",
             joinColumns = @JoinColumn(name = "mail_uuid")
     )
+    @BatchSize(size = 100)
     private Set<MailAddress> to;
 
     @ElementCollection(fetch = FetchType.EAGER, targetClass = MailAddress.class)
@@ -40,6 +65,7 @@ public abstract class MailEntity extends BaseEntity {
             name = "mail_cc",
             joinColumns = @JoinColumn(name = "mail_uuid")
     )
+    @BatchSize(size = 100)
     private Set<MailAddress> cc;
 
     @ElementCollection(fetch = FetchType.EAGER, targetClass = MailAddress.class)
@@ -47,6 +73,7 @@ public abstract class MailEntity extends BaseEntity {
             name = "mail_bcc",
             joinColumns = @JoinColumn(name = "mail_uuid")
     )
+    @BatchSize(size = 100)
     private Set<MailAddress> bcc;
 
     @Column(name = "subject", length = 255)
@@ -56,7 +83,39 @@ public abstract class MailEntity extends BaseEntity {
     @Column(name = "message_text")
     private String messageText;
 
-    protected MailEntity() { }
+    protected MailEntity() {}
+
+    public MailEntity(MailType mailType) {
+        this.mailType = mailType;
+    }
+
+    public MailType getMailType() {
+        return mailType;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+
+    public ZonedDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(ZonedDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public boolean isUnread() {
+        return isUnread;
+    }
+
+    public void setUnread(boolean isUnread) {
+        this.isUnread = isUnread;
+    }
 
     public MailAddress getFrom() {
         return from;

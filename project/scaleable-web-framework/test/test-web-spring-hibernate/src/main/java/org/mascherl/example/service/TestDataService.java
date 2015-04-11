@@ -42,6 +42,15 @@ public class TestDataService {
                 userJakobKorherr);
         sendMailService.sendMail(
                 new Mail(
+                        new MailAddress("jakob.korherr@gmail.com"),
+                        Collections.singleton(new MailAddress("SPollmann@gmx.at")),
+                        null,
+                        null,
+                        "Test subject 2",
+                        "This is another test mail!"),
+                userJakobKorherr);
+        sendMailService.sendMail(
+                new Mail(
                         new MailAddress("SPollmann@gmx.at"),
                         Collections.singleton(new MailAddress("jakob.korherr@gmail.com")),
                         null,

@@ -1,10 +1,5 @@
-body div#main>div.container {
-    margin-top: 50px;
-    padding-top: 15px;
-}
-
-.jumbotron {
-    margin-top: 40px;
+#headContainer>.jumbotron {
+    margin-top: -20px;
 }
 
 .form-signin {

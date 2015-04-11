@@ -2,8 +2,7 @@ package org.mascherl.example.service;
 
 import org.mascherl.example.domain.Mail;
 import org.mascherl.example.domain.User;
-import org.mascherl.example.entity.ReceiveMailEntity;
-import org.mascherl.example.entity.SendMailEntity;
+import org.mascherl.example.entity.MailEntity;
 import org.mascherl.example.entity.UserEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,9 +37,10 @@ public class SendMailService {
 
         ZonedDateTime sendTime = ZonedDateTime.now();
 
-        SendMailEntity sendEntity = new SendMailEntity();
-        sendEntity.setSendUser(em.getReference(UserEntity.class, currentUser.getUuid()));
-        sendEntity.setSendDateTime(sendTime);
+        MailEntity sendEntity = new MailEntity(MailEntity.MailType.SENT);
+        sendEntity.setUser(em.getReference(UserEntity.class, currentUser.getUuid()));
+        sendEntity.setDateTime(sendTime);
+        sendEntity.setUnread(false);
         sendEntity.setFrom(mail.getFrom());
         sendEntity.setTo(mail.getTo());
         sendEntity.setCc(mail.getCc());
@@ -51,9 +51,10 @@ public class SendMailService {
 
         List<String> receiveUserUuids = findReceiveUserUuids(mail);
         for (String receiveUserUuid : receiveUserUuids) {
-            ReceiveMailEntity receiveEntity = new ReceiveMailEntity();
-            receiveEntity.setReceiveUser(em.getReference(UserEntity.class, receiveUserUuid));
-            receiveEntity.setReceiveDateTime(sendTime);
+            MailEntity receiveEntity = new MailEntity(MailEntity.MailType.RECEIVED);
+            receiveEntity.setUser(em.getReference(UserEntity.class, receiveUserUuid));
+            receiveEntity.setDateTime(sendTime);
+            receiveEntity.setUnread(true);
             receiveEntity.setFrom(mail.getFrom());
             receiveEntity.setTo(mail.getTo());
             receiveEntity.setCc(mail.getCc());

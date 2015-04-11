@@ -7,8 +7,6 @@
     <mapped-superclass class="org.mascherl.example.entity.BaseEntity" />
 
     <entity class="org.mascherl.example.entity.MailEntity"/>
-    <entity class="org.mascherl.example.entity.ReceiveMailEntity"/>
-    <entity class="org.mascherl.example.entity.SendMailEntity"/>
     <entity class="org.mascherl.example.entity.UserEntity"/>
 
 </entity-mappings>

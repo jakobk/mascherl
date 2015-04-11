@@ -1,5 +1,6 @@
 package org.mascherl.example.domain;
 
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 /**
@@ -9,6 +10,9 @@ import java.util.Set;
  */
 public class Mail {
 
+    private final String uuid;
+    private final ZonedDateTime dateTime;
+    private final boolean isUnread;
     private final MailAddress from;
     private final Set<MailAddress> to;
     private final Set<MailAddress> cc;
@@ -16,13 +20,43 @@ public class Mail {
     private final String subject;
     private final String messageText;
 
-    public Mail(MailAddress from, Set<MailAddress> to, Set<MailAddress> cc, Set<MailAddress> bcc, String subject, String messageText) {
+    public Mail(String uuid, ZonedDateTime dateTime, boolean isUnread,
+                MailAddress from, Set<MailAddress> to, Set<MailAddress> cc, Set<MailAddress> bcc,
+                String subject, String messageText) {
+        this.uuid = uuid;
+        this.dateTime = dateTime;
+        this.isUnread = isUnread;
         this.from = from;
         this.to = to;
         this.cc = cc;
         this.bcc = bcc;
         this.subject = subject;
         this.messageText = messageText;
+    }
+
+    public Mail(MailAddress from, Set<MailAddress> to, Set<MailAddress> cc, Set<MailAddress> bcc,
+                String subject, String messageText) {
+        this.uuid = null;
+        this.dateTime = null;
+        this.isUnread = false;
+        this.from = from;
+        this.to = to;
+        this.cc = cc;
+        this.bcc = bcc;
+        this.subject = subject;
+        this.messageText = messageText;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public ZonedDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public boolean isUnread() {
+        return isUnread;
     }
 
     public MailAddress getFrom() {
@@ -48,4 +82,5 @@ public class Mail {
     public String getMessageText() {
         return messageText;
     }
+
 }

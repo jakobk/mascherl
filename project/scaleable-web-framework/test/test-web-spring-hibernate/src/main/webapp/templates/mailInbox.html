@@ -1,0 +1,58 @@
+{{< pageTemplate}}
+
+{{$content}}
+
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active"><a href="#">
+        Inbox{{#unreadMailCount}} <span class="badge">{{unreadMailCount}}</span>{{/unreadMailCount}}
+    </a></li>
+    <li role="presentation"><a href="#">Sent mails</a></li>
+</ul>
+
+<p></p>
+<p>You have {{mailCount}} e-mails.</p>
+
+<table class="table">
+    <tr>
+        <th>
+            <label>
+                <input id="messageSelectAll" type="checkbox" aria-label="select all messages" />
+                <script>
+                    $("#messageSelectAll").click(function() {
+                        $(".messageSelect").prop("checked", $(this).prop("checked"));
+                    });
+                </script>
+            </label>
+        </th>
+        <th>From</th>
+        <th>Subject</th>
+        <th>Date</th>
+    </tr>
+    {{#mails}}
+        <tr>
+            <td>
+                <label>
+                    <input type="checkbox" class="messageSelect" aria-label="select message {{subject}}" />
+                </label>
+            </td>
+            <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{fromTo}}</a></td>
+            <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{subject}}</a></td>
+            <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{dateTime}}</a></td>
+        </tr>
+    {{/mails}}
+    {{^mails}}
+        <tr>
+            <td colspan="4"><i>No e-mails.</i></td>
+        </tr>
+    {{/mails}}
+</table>
+
+<script>
+    $(".messageSelect").click(function() {
+        $("#messageSelectAll").prop("checked", false);
+    });
+</script>
+
+{{/content}}
+
+{{/pageTemplate}}

@@ -26,7 +26,7 @@ public class IndexPage {
     private LoginService loginService;
 
     @Inject
-    private MailOverviewPage mailOverviewPage;
+    private MailInboxPage mailOverviewPage;
 
     @GET
     @Path("/")
@@ -49,7 +49,7 @@ public class IndexPage {
         User user = loginService.login(email, password);
         if (user != null) {
             session.put("user", user);
-            return Mascherl.navigate("/mail").renderAll().withPageDef(mailOverviewPage.index());
+            return Mascherl.navigate("/mail").renderAll().withPageDef(mailOverviewPage.inbox(1));
         } else {
             return Mascherl.navigate("/login").renderAll().withPageDef(
                     login().container("main", (model) -> model.put("errorMsg", "Invalid email or password!")));
