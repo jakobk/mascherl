@@ -1,6 +1,7 @@
 package org.mascherl.example.page;
 
 import org.mascherl.example.domain.Mail;
+import org.mascherl.example.domain.MailAddress;
 import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.page.data.MailOverviewDto;
@@ -43,53 +44,37 @@ public class MailInboxPage {
     @GET
     @Path("/mail")
     public MascherlPage inbox(@QueryParam("page") @DefaultValue("1") int page) {
-        MascherlSession session = MascherlSession.getInstance();
-        User user = session.get("user", User.class);
-
-        return Mascherl.page("/templates/mailInbox.html")
+        User user = getCurrentUser();
+        return mailInboxBasePage(user)
                 .pageTitle("Inbox - WebMail powered by Mascherl")
-                .container("userInfo", (model) -> model.put("user", user))
-                .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.RECEIVED));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.RECEIVED));
     }
 
     @GET
     @Path("/mail/sent")
     public MascherlPage sent(@QueryParam("page") @DefaultValue("1") int page) {
-        MascherlSession session = MascherlSession.getInstance();
-        User user = session.get("user", User.class);
-
-        return Mascherl.page("/templates/mailSent.html")
+        User user = getCurrentUser();
+        return mailInboxBasePage(user)
                 .pageTitle("Sent mails - WebMail powered by Mascherl")
-                .container("userInfo", (model) -> model.put("user", user))
-                .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.SENT));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.SENT));
     }
 
     @GET
     @Path("/mail/draft")
     public MascherlPage draft(@QueryParam("page") @DefaultValue("1") int page) {
-        MascherlSession session = MascherlSession.getInstance();
-        User user = session.get("user", User.class);
-
-        return Mascherl.page("/templates/mailDraft.html")
+        User user = getCurrentUser();
+        return mailInboxBasePage(user)
                 .pageTitle("Drafts - WebMail powered by Mascherl")
-                .container("userInfo", (model) -> model.put("user", user))
-                .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.DRAFT));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.DRAFT));
     }
 
     @GET
     @Path("/mail/trash")
     public MascherlPage trash(@QueryParam("page") @DefaultValue("1") int page) {
-        MascherlSession session = MascherlSession.getInstance();
-        User user = session.get("user", User.class);
-
-        return Mascherl.page("/templates/mailTrash.html")
+        User user = getCurrentUser();
+        return mailInboxBasePage(user)
                 .pageTitle("Trash - WebMail powered by Mascherl")
-                .container("userInfo", (model) -> model.put("user", user))
-                .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.TRASH));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.TRASH));
     }
 
     @POST
@@ -98,25 +83,34 @@ public class MailInboxPage {
             @FormParam("mailUuid") List<String> uuids,
             @FormParam("page") @DefaultValue("1") int page,
             @FormParam("mailType") @DefaultValue("RECEIVED") MailType mailType) {
-        MascherlSession session = MascherlSession.getInstance();
-        User user = session.get("user", User.class);
+        User user = getCurrentUser();
 
         if (!uuids.isEmpty()) {
             mailService.moveToTrash(uuids, user);
         }
 
         return Mascherl.stay().renderContainer("content").withPageDef(
-                determinePageForMailType(mailType, page)
-                        .container("content", (model) -> {
+                createPageForMailType(mailType, page)
+                        .container("messages", (model) -> {
                             if (uuids.isEmpty()) {
                                 model.put("errorMsg", "No mails selected.");
                             } else {
-                                model.put("successMsg", uuids.size() + " mails moved to trash.");
+                                model.put("successMsg", uuids.size() + " " + pluralize("mail", uuids) + " moved to trash.");
                             }
                         }));
     }
 
-    private MascherlPage determinePageForMailType(MailType mailType, int page) {
+    private MascherlPage mailInboxBasePage(User user) {
+        return Mascherl.page("/templates/mail/mailInbox.html")
+                .container("userInfo", (model) -> model.put("user", user));
+    }
+
+    private User getCurrentUser() {
+        MascherlSession session = MascherlSession.getInstance();
+        return session.get("user", User.class);
+    }
+
+    private MascherlPage createPageForMailType(MailType mailType, int page) {
         switch (mailType) {
             case RECEIVED: return inbox(page);
             case SENT:     return sent(page);
@@ -133,9 +127,7 @@ public class MailInboxPage {
         model.put("mails", convertToPageModel(mails));
 
         model.put("mailType", mailType.name());
-    }
 
-    private void populateMailTypeNavModel(User user, Model model) {
         long unreadMailCount = mailService.countUnreadMailsOfUser(user, MailType.RECEIVED);
         if (unreadMailCount > 0) {
             model.put("unreadInboxMailCount", unreadMailCount);
@@ -145,22 +137,47 @@ public class MailInboxPage {
         if (draftMailCount > 0) {
             model.put("draftMailCount", draftMailCount);
         }
+
+        switch (mailType) {
+            case RECEIVED:
+                model.put("inboxPage", true);
+                model.put("showFrom", true);
+                break;
+            case SENT:
+                model.put("sentPage", true);
+                model.put("showTo", true);
+                break;
+            case DRAFT:
+                model.put("draftPage", true);
+                model.put("showTo", true);
+                break;
+            case TRASH:
+                model.put("trashPage", true);
+                model.put("showFrom", true);
+                model.put("showTo", true);
+                break;
+            default: throw new IllegalArgumentException("Illegal MailType: " + mailType);
+        }
     }
+
 
     private List<MailOverviewDto> convertToPageModel(List<Mail> mails) {
-        return mails.stream().map((mail) -> new MailOverviewDto(
-                mail.getUuid(),
-                mail.isUnread(),
-                truncate(mail.getFrom().getAddress(), FROM_TO_MAX_LENGTH),
-                truncate(mail.getSubject(), SUBJECT_MAX_LENGTH),
-                formatDateTime(mail.getDateTime())
-        )).collect(Collectors.toList());
+        return mails.stream().map((mail) -> {
+            // need to put this into a separate variable first, because of a JDK bug..
+            String to = truncate(mail.getTo().stream().map(MailAddress::getAddress).collect(Collectors.joining(", ")), FROM_TO_MAX_LENGTH);
+            return new MailOverviewDto(
+                    mail.getUuid(),
+                    mail.isUnread(),
+                    truncate(mail.getFrom().getAddress(), FROM_TO_MAX_LENGTH),
+                    to,
+                    truncate(mail.getSubject(), SUBJECT_MAX_LENGTH),
+                    formatDateTime(mail.getDateTime())
+            );
+        }).collect(Collectors.toList());
     }
 
-
-    // TODO for send page
-    // String to = truncate(mail.getTo().stream().map(MailAddress::getAddress).collect(Collectors.joining(", ")), TO_MAX_LENGTH);
-
-
+    private String pluralize(String singular, List<?> dataList) {
+        return singular + (dataList.size() == 1 ? "" : "s");
+    }
 
 }

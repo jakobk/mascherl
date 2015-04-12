@@ -37,10 +37,10 @@ public class MailDetailPage {
         MascherlSession session = MascherlSession.getInstance();
         User user = session.get("user", User.class);
 
-        return Mascherl.page("/templates/mailDetail.html")
+        return Mascherl.page("/templates/mail/mailDetail.html")
                 .pageTitle("WebMail powered by Mascherl")
                 .container("userInfo", (model) -> model.put("user", user))
-                .container("content", (model) -> calculateContainerModel(mailUuid, user, model));
+                .container("pageContent", (model) -> calculateContainerModel(mailUuid, user, model));
     }
 
     private void calculateContainerModel(String mailUuid, User user, Model model) {

@@ -8,7 +8,6 @@ import org.mascherl.example.entity.MailEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
@@ -65,9 +64,6 @@ public class MailService {
 
         return resultList.stream().map(this::convertToDomain).collect(Collectors.toList());
     }
-
-    @Inject
-    private LoginService loginService;
 
     @Transactional
     public Mail readMail(String uuid, User currentUser) {

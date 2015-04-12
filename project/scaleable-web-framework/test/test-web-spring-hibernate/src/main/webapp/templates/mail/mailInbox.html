@@ -1,31 +1,42 @@
-{{< pageTemplate}}
+{{< ../pageTemplate}}
 
-{{$content}}
-
-{{>messages}}
+{{$pageContent}}
 
 <div class="well well-sm">
     <button id="deleteBtn" type="button" class="btn btn-default" aria-label="Delete">
         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
     </button>
+    <button id="refreshBtn" type="button" class="btn btn-default" aria-label="Refresh">
+        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+    </button>
     <script>
         $("#deleteBtn").click(function() {
-            var checkedMessages = $("input.messageSelect:checked");
-            var data = $.map(checkedMessages, function (n, i) {
-                return "mailUuid=" + $(n).attr("data-uuid");
+            var data = $.map($("input.messageSelect:checked"), function (checkbox, i) {
+                return "mailUuid=" + $(checkbox).attr("data-uuid");
             });
             var pageParameter = getParameterByName("page");
             if (pageParameter !== "") {
                 data.push("page=" + pageParameter);
             }
             data.push("mailType=" + "{{mailType}}");
-            submitData("/mail/moveToTrash", data.join("&"));
+            submitData("/mail/moveToTrash", data.join("&"), "content");
+        });
+        $("#refreshBtn").click(function() {
+            navigate(window.location.href, "content");
         });
     </script>
 </div>
 
-{{$mailTypeNav}}
-{{/mailTypeNav}}
+<ul class="nav nav-tabs">
+    <li role="presentation"{{#inboxPage}} class="active"{{/inboxPage}}><a href="/mail" m-container="content">
+        Inbox{{#unreadInboxMailCount}} <span class="badge">{{.}}</span>{{/unreadInboxMailCount}}
+    </a></li>
+    <li role="presentation"{{#sentPage}} class="active"{{/sentPage}}><a href="/mail/sent" m-container="content">Sent mails</a></li>
+    <li role="presentation"{{#draftPage}} class="active"{{/draftPage}}><a href="/mail/draft" m-container="content">
+        Drafts{{#draftMailCount}} <span class="badge">{{.}}</span>{{/draftMailCount}}
+    </a></li>
+    <li role="presentation"{{#trashPage}} class="active"{{/trashPage}}><a href="/mail/trash" m-container="content">Trash</a></li>
+</ul>
 
 <p></p>
 <p>You have {{mailCount}} e-mails.</p>
@@ -42,7 +53,8 @@
                 </script>
             </label>
         </th>
-        <th>From</th>
+        {{#showFrom}}<th>From</th>{{/showFrom}}
+        {{#showTo}}<th>To</th>{{/showTo}}
         <th>Subject</th>
         <th>Date</th>
     </tr>
@@ -53,7 +65,8 @@
                     <input type="checkbox" class="messageSelect" data-uuid="{{uuid}}" aria-label="select message {{subject}}" />
                 </label>
             </td>
-            <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{fromTo}}</a></td>
+            {{#showFrom}}<td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{from}}</a></td>{{/showFrom}}
+            {{#showTo}}<td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{to}}</a></td>{{/showTo}}
             <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{subject}}</a></td>
             <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}><a href="/mail/{{uuid}}">{{dateTime}}</a></td>
         </tr>
@@ -70,6 +83,6 @@
     });
 </script>
 
-{{/content}}
+{{/pageContent}}
 
-{{/pageTemplate}}
+{{/ ../pageTemplate}}

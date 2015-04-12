@@ -9,14 +9,16 @@ public class MailOverviewDto {
 
     private final String uuid;
     private final boolean isUnread;
-    private final String fromTo;
+    private final String from;
+    private final String to;
     private final String subject;
     private final String dateTime;
 
-    public MailOverviewDto(String uuid, boolean isUnread, String fromTo, String subject, String dateTime) {
+    public MailOverviewDto(String uuid, boolean isUnread, String from, String to, String subject, String dateTime) {
         this.uuid = uuid;
         this.isUnread = isUnread;
-        this.fromTo = fromTo;
+        this.from = from;
+        this.to = to;
         this.subject = subject;
         this.dateTime = dateTime;
     }
@@ -29,8 +31,12 @@ public class MailOverviewDto {
         return isUnread;
     }
 
-    public String getFromTo() {
-        return fromTo;
+    public String getFrom() {
+        return from;
+    }
+
+    public String getTo() {
+        return to;
     }
 
     public String getSubject() {

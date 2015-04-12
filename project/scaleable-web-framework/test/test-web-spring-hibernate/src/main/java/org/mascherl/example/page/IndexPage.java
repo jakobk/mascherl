@@ -31,14 +31,14 @@ public class IndexPage {
     @GET
     @Path("/")
     public MascherlPage start() {
-        return Mascherl.page("/templates/start.html")
+        return Mascherl.page("/templates/root/start.html")
                 .pageTitle("WebMail powered by Mascherl");
     }
 
     @GET
     @Path("/login")
     public MascherlPage login() {
-        return Mascherl.page("/templates/login.html")
+        return Mascherl.page("/templates/root/login.html")
                 .pageTitle("Login - WebMail powered by Mascherl");
     }
 
@@ -52,7 +52,7 @@ public class IndexPage {
             return Mascherl.navigate("/mail").renderAll().withPageDef(mailOverviewPage.inbox(1));
         } else {
             return Mascherl.navigate("/login").renderAll().withPageDef(
-                    login().container("content", (model) -> model.put("errorMsg", "Invalid email or password!")));
+                    login().container("messages", (model) -> model.put("errorMsg", "Invalid email or password!")));
         }
 
     }
@@ -63,9 +63,8 @@ public class IndexPage {
         MascherlSession session = MascherlSession.getInstance();
         session.remove("user");
         return Mascherl.navigate("/login").renderAll().withPageDef(
-                login().container("content", (model) -> model.put("infoMsg", "Successfully signed out!")));
+                login().container("messages", (model) -> model.put("infoMsg", "Successfully signed out!")));
 
     }
-
 
 }
