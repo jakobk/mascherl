@@ -106,15 +106,20 @@ public class MailService {
 
     @Transactional
     public void permanentlyDeleteTrashMails(List<String> uuids, User currentUser) {
-        em.createQuery(
-                "delete from MailEntity m " +
+        // unfortunately we cannot just "delete from MailEntity", b/c the @ElementCollection entries would not be
+        // deleted this way, which results in a foreign key violation
+        List<MailEntity> resultList = em.createQuery(
+                "select m from MailEntity m " +
                         "where m.uuid in (:uuids) " +
                         "and m.user.uuid = :userUuid " +
-                        "and m.mailType = :mailTypeTrash")
+                        "and m.mailType = :mailTypeTrash", MailEntity.class)
                 .setParameter("uuids", uuids)
                 .setParameter("userUuid", currentUser.getUuid())
                 .setParameter("mailTypeTrash", MailType.TRASH)
-                .executeUpdate();
+                .getResultList();
+
+        resultList.forEach(em::remove);
+        em.flush();
     }
 
 }

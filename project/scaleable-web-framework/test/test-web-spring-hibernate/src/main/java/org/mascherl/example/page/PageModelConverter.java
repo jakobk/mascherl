@@ -68,7 +68,7 @@ public class PageModelConverter {
             case RECEIVED: return "received";
             case SENT:     return "sent";
             case DRAFT:    return "created";
-            case TRASH:    return "time";  // TODO trash mails need to be handled differently.
+            case TRASH:    return "time";
             default:       throw new IllegalArgumentException("Illegal MailType: " + mailType);
         }
     }

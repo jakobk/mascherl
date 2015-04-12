@@ -5,13 +5,11 @@ import org.mascherl.example.domain.MailAddress;
 import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.page.data.MailOverviewDto;
-import org.mascherl.example.page.format.StringFormat;
 import org.mascherl.example.service.MailService;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlAction;
 import org.mascherl.page.MascherlPage;
 import org.mascherl.page.Model;
-import org.mascherl.session.MascherlSession;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -81,15 +79,24 @@ public class MailInboxPage {
     }
 
     @POST
-    @Path("/mail/moveToTrash")
-    public MascherlAction moveToTrash(
+    @Path("/mail/delete")
+    public MascherlAction delete(
             @FormParam("mailUuid") List<String> uuids,
             @FormParam("page") @DefaultValue("1") int page,
             @FormParam("mailType") @DefaultValue("RECEIVED") MailType mailType) {
         User user = getCurrentUser();
 
+        String whatWeDid;
         if (!uuids.isEmpty()) {
-            mailService.moveToTrash(uuids, user);
+            if (mailType == MailType.TRASH) {
+                mailService.permanentlyDeleteTrashMails(uuids, user);
+                whatWeDid = "permanently deleted";
+            } else {
+                mailService.moveToTrash(uuids, user);
+                whatWeDid = "moved to trash";
+            }
+        } else {
+            whatWeDid = null;
         }
 
         return Mascherl.stay().renderContainer("content").withPageDef(
@@ -98,7 +105,7 @@ public class MailInboxPage {
                             if (uuids.isEmpty()) {
                                 model.put("errorMsg", "No mails selected.");
                             } else {
-                                model.put("successMsg", uuids.size() + " " + pluralize("mail", uuids) + " moved to trash.");
+                                model.put("successMsg", uuids.size() + " " + pluralize("mail", uuids) + " " + whatWeDid + ".");
                             }
                         }));
     }

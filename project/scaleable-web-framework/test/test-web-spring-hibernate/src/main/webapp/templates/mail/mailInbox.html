@@ -28,7 +28,7 @@
                 data.push("page=" + pageParameter);
             }
             data.push("mailType={{mailType}}");
-            submitData("/mail/moveToTrash", data.join("&"), "content");
+            submitData("/mail/delete", data.join("&"), "content");
         });
     </script>
 </div>
