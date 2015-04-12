@@ -1,6 +1,7 @@
 package org.mascherl.example.domain;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,6 +40,34 @@ public class Mail {
     public Mail(MailAddress from, Set<MailAddress> to, Set<MailAddress> cc, Set<MailAddress> bcc,
                 String subject, String messageText) {
         this.uuid = null;
+        this.dateTime = null;
+        this.mailType = MailType.DRAFT;
+        this.isUnread = false;
+        this.from = from;
+        this.to = to;
+        this.cc = cc;
+        this.bcc = bcc;
+        this.subject = subject;
+        this.messageText = messageText;
+    }
+
+    public Mail(String uuid, Set<MailAddress> to, Set<MailAddress> cc, Set<MailAddress> bcc,
+                String subject, String messageText) {
+        this.uuid = uuid;
+        this.dateTime = null;
+        this.mailType = MailType.DRAFT;
+        this.isUnread = false;
+        this.from = null;
+        this.to = to;
+        this.cc = cc;
+        this.bcc = bcc;
+        this.subject = subject;
+        this.messageText = messageText;
+    }
+
+    public Mail(String uuid, MailAddress from, Set<MailAddress> to, Set<MailAddress> cc, Set<MailAddress> bcc,
+                String subject, String messageText) {
+        this.uuid = uuid;
         this.dateTime = null;
         this.mailType = MailType.DRAFT;
         this.isUnread = false;

@@ -1,0 +1,53 @@
+{{< ../pageTemplate}}
+
+{{$pageContent}}
+
+{{#mail}}
+    <div class="well well-sm">
+        <button id="backBtn" type="button" class="btn btn-default" aria-label="Go Back">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+        </button>
+        <script>
+            $("#backBtn").click(function() {
+                submitData("/mail/save/{{uuid}}", $("#composeForm").serialize(), "content");
+            });
+        </script>
+    </div>
+
+    <form id="composeForm" action="/mail/send/{{uuid}}" method="post">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <label for="inputSubject" class="sr-only">Subject</label>
+                    <input id="inputSubject" type="text" name="subject" value="{{subject}}" placeholder="Subject" style="width: 100%;" required autofocus>
+                </h3>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item"><b>from</b> {{from}}</li>
+                <li class="list-group-item">
+                    <label for="inputTo" style="font-weight: bold; width: 25px;">to</label>
+                    <input id="inputTo" type="text" name="to" value="{{to}}" style="width: 80%;" required>
+                </li>
+                <li class="list-group-item">
+                    <label for="inputCc" style="font-weight: bold; width: 25px;">cc</label>
+                    <input id="inputCc" type="text" name="cc" value="{{cc}}" style="width: 80%;">
+                </li>
+                <li class="list-group-item">
+                    <label for="inputBcc" style="font-weight: bold; width: 25px;">bcc</label>
+                    <input id="inputBcc" type="text" name="bcc" value="{{bcc}}" style="width: 80%;">
+                </li>
+            </ul>
+            <div class="panel-body">
+                <label for="messageText" class="sr-only">Message text</label>
+                <textarea id="messageText" rows="15" style="width:100%;" name="messageText">{{{messageText}}}</textarea>
+
+                <div>
+                    <button type="submit" class="btn btn-success btn-lg">Send</button>
+                </div>
+            </div>
+        </div>
+{{/mail}}
+
+{{/pageContent}}
+
+{{/ ../pageTemplate}}

@@ -2,13 +2,22 @@
 
 {{$pageContent}}
 
-<div class="well well-sm">
-    <button type="button" class="btn btn-default" aria-label="Go Back" onclick="history.back()">
-        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-    </button>
-</div>
-
 {{#mail}}
+    <div class="well well-sm">
+        <button type="button" class="btn btn-default" aria-label="Go Back" onclick="history.back()" style="margin-right: 10px;">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+        </button>
+        <button id="deleteBtn" type="button" class="btn btn-default" aria-label="Delete">
+            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+        </button>
+        <script>
+            $("#deleteBtn").click(function() {
+                var data = $.makeArray(["mailUuid={{uuid}}", "mailType={{mailType}}"]);
+                submitData("/mail/moveToTrash", data.join("&"), "content");
+            });
+        </script>
+    </div>
+
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">{{subject}}</h3>
@@ -21,7 +30,7 @@
             {{#bcc}}<li class="list-group-item"><b>cc</b> {{.}}</li>{{/bcc}}
         </ul>
         <div class="panel-body">
-            {{messageText}}
+            {{{messageText}}}
         </div>
     </div>
 {{/mail}}

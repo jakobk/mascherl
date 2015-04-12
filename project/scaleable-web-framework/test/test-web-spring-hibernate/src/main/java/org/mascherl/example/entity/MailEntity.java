@@ -77,7 +77,7 @@ public class MailEntity extends BaseEntity {
     private String subject;
 
     @Lob
-    @Column(name = "message_text")
+    @Column(name = "message_text", length = Integer.MAX_VALUE)
     private String messageText;
 
     protected MailEntity() {}
@@ -88,6 +88,10 @@ public class MailEntity extends BaseEntity {
 
     public MailType getMailType() {
         return mailType;
+    }
+
+    public void setMailType(MailType mailType) {
+        this.mailType = mailType;
     }
 
     public UserEntity getUser() {

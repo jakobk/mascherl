@@ -107,6 +107,7 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- type converters for java.time and joda-time -->
         <dependency>
             <groupId>org.jadira.usertype</groupId>
             <artifactId>usertype.core</artifactId>

@@ -13,6 +13,8 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.mascherl.example.service.MailConverter.convertToDomain;
+
 /**
  * Service for accessing a user's mails.
  *
@@ -62,7 +64,7 @@ public class MailService {
                 .setHint(QueryHints.HINT_FETCH_SIZE, pageSize)
                 .getResultList();
 
-        return resultList.stream().map(this::convertToDomain).collect(Collectors.toList());
+        return resultList.stream().map(MailConverter::convertToDomain).collect(Collectors.toList());
     }
 
     @Transactional
@@ -113,20 +115,6 @@ public class MailService {
                 .setParameter("userUuid", currentUser.getUuid())
                 .setParameter("mailTypeTrash", MailType.TRASH)
                 .executeUpdate();
-    }
-
-    private Mail convertToDomain(MailEntity entity) {
-        return new Mail(
-                entity.getUuid(),
-                entity.getDateTime(),
-                entity.getMailType(),
-                entity.isUnread(),
-                entity.getFrom(),
-                entity.getTo(),
-                entity.getCc(),
-                entity.getBcc(),
-                entity.getSubject(),
-                entity.getMessageText());
     }
 
 }

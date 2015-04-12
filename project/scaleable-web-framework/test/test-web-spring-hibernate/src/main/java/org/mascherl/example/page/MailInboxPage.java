@@ -5,6 +5,7 @@ import org.mascherl.example.domain.MailAddress;
 import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.page.data.MailOverviewDto;
+import org.mascherl.example.page.format.StringFormat;
 import org.mascherl.example.service.MailService;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlAction;
@@ -23,11 +24,13 @@ import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.mascherl.example.page.PageUtils.getCurrentUser;
 import static org.mascherl.example.page.format.DateTimeFormat.formatDateTime;
+import static org.mascherl.example.page.format.StringFormat.pluralize;
 import static org.mascherl.example.page.format.StringFormat.truncate;
 
 /**
- * TODO
+ * Page class for the inbox overview pages (inbox, sent mails, drafts, trash).
  *
  * @author Jakob Korherr
  */
@@ -35,8 +38,8 @@ import static org.mascherl.example.page.format.StringFormat.truncate;
 public class MailInboxPage {
 
     private static final int PAGE_SIZE = 20;
-    private static final int FROM_TO_MAX_LENGTH = 100;
-    private static final int SUBJECT_MAX_LENGTH = 200;
+    private static final int FROM_TO_MAX_LENGTH = 60;
+    private static final int SUBJECT_MAX_LENGTH = 60;
 
     @Inject
     private MailService mailService;
@@ -105,11 +108,6 @@ public class MailInboxPage {
                 .container("userInfo", (model) -> model.put("user", user));
     }
 
-    private User getCurrentUser() {
-        MascherlSession session = MascherlSession.getInstance();
-        return session.get("user", User.class);
-    }
-
     private MascherlPage createPageForMailType(MailType mailType, int page) {
         switch (mailType) {
             case RECEIVED: return inbox(page);
@@ -138,6 +136,12 @@ public class MailInboxPage {
             model.put("draftMailCount", draftMailCount);
         }
 
+        if (mailType == MailType.DRAFT) {
+            model.put("mailDetailLink", "/mail/compose");
+        } else {
+            model.put("mailDetailLink", "/mail");
+        }
+
         switch (mailType) {
             case RECEIVED:
                 model.put("inboxPage", true);
@@ -160,7 +164,6 @@ public class MailInboxPage {
         }
     }
 
-
     private List<MailOverviewDto> convertToPageModel(List<Mail> mails) {
         return mails.stream().map((mail) -> {
             // need to put this into a separate variable first, because of a JDK bug..
@@ -174,10 +177,6 @@ public class MailInboxPage {
                     formatDateTime(mail.getDateTime())
             );
         }).collect(Collectors.toList());
-    }
-
-    private String pluralize(String singular, List<?> dataList) {
-        return singular + (dataList.size() == 1 ? "" : "s");
     }
 
 }

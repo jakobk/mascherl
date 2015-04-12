@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 /**
- * TODO
+ * Date time format utils.
  *
  * @author Jakob Korherr
  */

@@ -8,6 +8,7 @@ package org.mascherl.example.page.data;
 public class MailDetailDto {
 
     private final String uuid;
+    private final String mailType;
     private final String from;
     private final String to;
     private final String cc;
@@ -17,8 +18,9 @@ public class MailDetailDto {
     private final String dateTime;
     private final String dateTimeLabel;
 
-    public MailDetailDto(String uuid, String from, String to, String cc, String bcc, String subject, String messageText, String dateTime, String dateTimeLabel) {
+    public MailDetailDto(String uuid, String mailType, String from, String to, String cc, String bcc, String subject, String messageText, String dateTime, String dateTimeLabel) {
         this.uuid = uuid;
+        this.mailType = mailType;
         this.from = from;
         this.to = to;
         this.cc = cc;
@@ -31,6 +33,10 @@ public class MailDetailDto {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public String getMailType() {
+        return mailType;
     }
 
     public String getFrom() {

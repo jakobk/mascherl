@@ -30,7 +30,7 @@ public class SendMailService {
     @Transactional
     public void sendMail(Mail mail, User currentUser) {
         if (!Objects.equals(currentUser.getEmail(), mail.getFrom().getAddress())) {
-            throw new IllegalArgumentException("User can only send email from his own address");
+            throw new IllegalArgumentException("User can only send an email from his own address");
         }
         if (mail.getTo() == null || mail.getTo().isEmpty()) {
             throw new IllegalArgumentException("Receiver list cannot be empty");
@@ -38,8 +38,20 @@ public class SendMailService {
 
         ZonedDateTime sendTime = ZonedDateTime.now();
 
-        MailEntity sendEntity = new MailEntity(MailType.SENT);
-        sendEntity.setUser(em.getReference(UserEntity.class, currentUser.getUuid()));
+        MailEntity sendEntity;
+        if (mail.getUuid() != null) {
+            sendEntity = em.find(MailEntity.class, mail.getUuid());
+            if (!Objects.equals(sendEntity.getUser().getUuid(), currentUser.getUuid())) {
+                throw new IllegalArgumentException("The mail to be sent is not a draft of the current user.");
+            }
+            if (sendEntity.getMailType() != MailType.DRAFT) {
+                throw new IllegalArgumentException("The mail to be sent needs to be a draft, but it is of type " + sendEntity.getMailType());
+            }
+            sendEntity.setMailType(MailType.SENT);
+        } else {
+            sendEntity = new MailEntity(MailType.SENT);
+            sendEntity.setUser(em.getReference(UserEntity.class, currentUser.getUuid()));
+        }
         sendEntity.setDateTime(sendTime);
         sendEntity.setUnread(false);
         sendEntity.setFrom(mail.getFrom());

@@ -22,6 +22,7 @@
             <ref bean="signUpPage" />
             <ref bean="mailInboxPage" />
             <ref bean="mailDetailPage" />
+            <ref bean="mailComposePage" />
         </jaxrs:serviceBeans>
         <jaxrs:providers>
             <bean class="org.mascherl.jaxrs.MascherlMessageBodyWriter" />
