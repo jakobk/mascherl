@@ -96,7 +96,8 @@ public class MailInboxPage {
     @Path("/mail/moveToTrash")
     public MascherlAction moveToTrash(
             @FormParam("mailUuid") List<String> uuids,
-            @FormParam("page") @DefaultValue("1") int page) {
+            @FormParam("page") @DefaultValue("1") int page,
+            @FormParam("mailType") @DefaultValue("RECEIVED") MailEntity.MailType mailType) {
         MascherlSession session = MascherlSession.getInstance();
         User user = session.get("user", User.class);
 
@@ -105,7 +106,7 @@ public class MailInboxPage {
         }
 
         return Mascherl.stay().renderAll().withPageDef(
-                inbox(page)   // TODO not always inbox
+                determinePageForMailType(mailType, page)
                         .container("main", (model) -> {
                             if (uuids.isEmpty()) {
                                 model.put("errorMsg", "No mails selected.");
@@ -115,11 +116,23 @@ public class MailInboxPage {
                         }));
     }
 
+    private MascherlPage determinePageForMailType(MailEntity.MailType mailType, int page) {
+        switch (mailType) {
+            case RECEIVED: return inbox(page);
+            case SENT:     return sent(page);
+            case DRAFT:    return draft(page);
+            case TRASH:    return trash(page);
+            default:       throw new IllegalArgumentException("Illegal MailType: " + mailType);
+        }
+    }
+
     private void populateModelWithMailData(int page, User user, Model model, MailEntity.MailType mailType) {
         model.put("mailCount", mailService.countMailsOfUser(user, mailType));
 
         List<Mail> mails = mailService.getMailsForUser(user, mailType, (page - 1) * PAGE_SIZE, PAGE_SIZE);
         model.put("mails", convertToPageModel(mails));
+
+        model.put("mailType", mailType.name());
     }
 
     private void populateMailTypeNavModel(User user, Model model) {

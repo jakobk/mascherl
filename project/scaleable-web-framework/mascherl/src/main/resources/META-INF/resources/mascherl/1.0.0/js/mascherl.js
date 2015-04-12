@@ -48,14 +48,16 @@ function navigate(url, container, page) {
     });
 }
 
-function submitForm(url, form, container, page) {
+function submitData(url, data, container) {
+    if (typeof container === "undefined" || container === "") {
+        container = "main";
+    }
     $.ajax({
         url: url,
-        data: $("#" + form).serialize()
-            + "&m-form=" + form
-            + "&m-container=" + container
-            + "&m-app-version=" + window.mascherl.applicationVersion
-            + (typeof page === "undefined" ? "" : "&m-page=" + page),
+        data: data
+            + (data === "" || typeof data === "undefined" ? "" : "&")
+            + "m-container=" + container
+            + "&m-app-version=" + window.mascherl.applicationVersion,
         type: "POST",
         dataType: "html",
         //contentType: "application/json; charset=UTF-8",
@@ -89,6 +91,10 @@ function submitForm(url, form, container, page) {
     });
 }
 
+function submitForm(url, formElement, container) {
+    submitData(url, formElement.serialize(), container);
+}
+
 function addNavigationHandlers(id) {
     $(id + " a:not([m-ignore])").click(function(event) {
         var container = $(this).attr("m-container");
@@ -109,7 +115,7 @@ function addNavigationHandlers(id) {
             container = "main";
         }
         var navMeta = calculateNavigationMeta(container);
-        submitForm(event.target.action, $(this).attr("id"), navMeta.container, navMeta.page);
+        submitForm(event.target.action, $(this), navMeta.container);
         return false;  // stop handling event
     });
 }

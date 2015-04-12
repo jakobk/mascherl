@@ -7,18 +7,17 @@
         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
     </button>
     <script>
-        // TODO mascherl must provide a better way for doing this
         $("#deleteBtn").click(function() {
-            var mailDeleteForm = $("#mailDeleteForm");
-            mailDeleteForm.empty();
-            $("input.messageSelect:checked").each(function() {
-                mailDeleteForm.append($('<input type="hidden" name="mailUuid" value="' + $(this).attr("data-uuid") + '" />'));
+            var checkedMessages = $("input.messageSelect:checked");
+            var data = $.map(checkedMessages, function (n, i) {
+                return "mailUuid=" + $(n).attr("data-uuid");
             });
             var pageParameter = getParameterByName("page");
             if (pageParameter !== "") {
-                mailDeleteForm.append($('<input type="hidden" name="page" value="' + pageParameter + '" />'));
+                data.push("page=" + pageParameter);
             }
-            mailDeleteForm.submit();
+            data.push("mailType=" + "{{mailType}}");
+            submitData("/mail/moveToTrash", data.join("&"));
         });
     </script>
 </div>
@@ -63,10 +62,6 @@
         </tr>
     {{/mails}}
 </table>
-
-<form id="mailDeleteForm" action="/mail/moveToTrash" method="post">
-</form>
-
 <script>
     $(".messageSelect").click(function() {
         $("#messageSelectAll").prop("checked", false);
