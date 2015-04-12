@@ -3,6 +3,7 @@ package org.mascherl.example.entity;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Type;
 import org.mascherl.example.domain.MailAddress;
+import org.mascherl.example.domain.MailType;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -27,10 +28,6 @@ import java.util.Set;
 @Entity
 @Table(name = "mail")
 public class MailEntity extends BaseEntity {
-
-    public static enum MailType {
-        SENT, RECEIVED, DRAFT, TRASH
-    }
 
     @Column
     @Enumerated(EnumType.STRING)

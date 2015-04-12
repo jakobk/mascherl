@@ -2,6 +2,7 @@ package org.mascherl.example.page;
 
 import org.mascherl.example.domain.Mail;
 import org.mascherl.example.domain.MailAddress;
+import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.page.data.MailDetailDto;
 import org.mascherl.example.service.MailService;
@@ -56,7 +57,18 @@ public class MailDetailPage {
                 mail.getBcc().stream().map(MailAddress::getAddress).collect(Collectors.joining(", ")),
                 mail.getSubject(),
                 mail.getMessageText(),
-                formatDateTime(mail.getDateTime()));
+                formatDateTime(mail.getDateTime()),
+                calculateDateTimeLabel(mail.getMailType()));
+    }
+
+    private String calculateDateTimeLabel(MailType mailType) {
+        switch (mailType) {
+            case RECEIVED: return "received";
+            case SENT:     return "sent";
+            case DRAFT:    return "created";
+            case TRASH:    return "time";  // TODO trash mails need to be handled differently.
+            default:       throw new IllegalArgumentException("Illegal MailType: " + mailType);
+        }
     }
 
 }

@@ -52,7 +52,7 @@ public class IndexPage {
             return Mascherl.navigate("/mail").renderAll().withPageDef(mailOverviewPage.inbox(1));
         } else {
             return Mascherl.navigate("/login").renderAll().withPageDef(
-                    login().container("main", (model) -> model.put("errorMsg", "Invalid email or password!")));
+                    login().container("content", (model) -> model.put("errorMsg", "Invalid email or password!")));
         }
 
     }
@@ -63,7 +63,7 @@ public class IndexPage {
         MascherlSession session = MascherlSession.getInstance();
         session.remove("user");
         return Mascherl.navigate("/login").renderAll().withPageDef(
-                login().container("main", (model) -> model.put("infoMsg", "Successfully signed out!")));
+                login().container("content", (model) -> model.put("infoMsg", "Successfully signed out!")));
 
     }
 

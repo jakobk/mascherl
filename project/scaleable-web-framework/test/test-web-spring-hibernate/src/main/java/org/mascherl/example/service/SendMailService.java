@@ -1,6 +1,7 @@
 package org.mascherl.example.service;
 
 import org.mascherl.example.domain.Mail;
+import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.entity.MailEntity;
 import org.mascherl.example.entity.UserEntity;
@@ -37,7 +38,7 @@ public class SendMailService {
 
         ZonedDateTime sendTime = ZonedDateTime.now();
 
-        MailEntity sendEntity = new MailEntity(MailEntity.MailType.SENT);
+        MailEntity sendEntity = new MailEntity(MailType.SENT);
         sendEntity.setUser(em.getReference(UserEntity.class, currentUser.getUuid()));
         sendEntity.setDateTime(sendTime);
         sendEntity.setUnread(false);
@@ -51,7 +52,7 @@ public class SendMailService {
 
         List<String> receiveUserUuids = findReceiveUserUuids(mail);
         for (String receiveUserUuid : receiveUserUuids) {
-            MailEntity receiveEntity = new MailEntity(MailEntity.MailType.RECEIVED);
+            MailEntity receiveEntity = new MailEntity(MailType.RECEIVED);
             receiveEntity.setUser(em.getReference(UserEntity.class, receiveUserUuid));
             receiveEntity.setDateTime(sendTime);
             receiveEntity.setUnread(true);

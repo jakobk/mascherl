@@ -12,6 +12,7 @@ public class Mail {
 
     private final String uuid;
     private final ZonedDateTime dateTime;
+    private final MailType mailType;
     private final boolean isUnread;
     private final MailAddress from;
     private final Set<MailAddress> to;
@@ -20,11 +21,12 @@ public class Mail {
     private final String subject;
     private final String messageText;
 
-    public Mail(String uuid, ZonedDateTime dateTime, boolean isUnread,
+    public Mail(String uuid, ZonedDateTime dateTime, MailType mailType, boolean isUnread,
                 MailAddress from, Set<MailAddress> to, Set<MailAddress> cc, Set<MailAddress> bcc,
                 String subject, String messageText) {
         this.uuid = uuid;
         this.dateTime = dateTime;
+        this.mailType = mailType;
         this.isUnread = isUnread;
         this.from = from;
         this.to = to;
@@ -38,6 +40,7 @@ public class Mail {
                 String subject, String messageText) {
         this.uuid = null;
         this.dateTime = null;
+        this.mailType = MailType.DRAFT;
         this.isUnread = false;
         this.from = from;
         this.to = to;
@@ -53,6 +56,10 @@ public class Mail {
 
     public ZonedDateTime getDateTime() {
         return dateTime;
+    }
+
+    public MailType getMailType() {
+        return mailType;
     }
 
     public boolean isUnread() {

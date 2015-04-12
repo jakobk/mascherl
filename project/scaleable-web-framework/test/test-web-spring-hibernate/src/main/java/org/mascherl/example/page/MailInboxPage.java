@@ -1,8 +1,8 @@
 package org.mascherl.example.page;
 
 import org.mascherl.example.domain.Mail;
+import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
-import org.mascherl.example.entity.MailEntity;
 import org.mascherl.example.page.data.MailOverviewDto;
 import org.mascherl.example.service.MailService;
 import org.mascherl.page.Mascherl;
@@ -47,10 +47,10 @@ public class MailInboxPage {
         User user = session.get("user", User.class);
 
         return Mascherl.page("/templates/mailInbox.html")
-                .pageTitle("WebMail powered by Mascherl")
+                .pageTitle("Inbox - WebMail powered by Mascherl")
                 .container("userInfo", (model) -> model.put("user", user))
                 .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailEntity.MailType.RECEIVED));
+                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.RECEIVED));
     }
 
     @GET
@@ -60,10 +60,10 @@ public class MailInboxPage {
         User user = session.get("user", User.class);
 
         return Mascherl.page("/templates/mailSent.html")
-                .pageTitle("WebMail powered by Mascherl")
+                .pageTitle("Sent mails - WebMail powered by Mascherl")
                 .container("userInfo", (model) -> model.put("user", user))
                 .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailEntity.MailType.SENT));
+                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.SENT));
     }
 
     @GET
@@ -73,10 +73,10 @@ public class MailInboxPage {
         User user = session.get("user", User.class);
 
         return Mascherl.page("/templates/mailDraft.html")
-                .pageTitle("WebMail powered by Mascherl")
+                .pageTitle("Drafts - WebMail powered by Mascherl")
                 .container("userInfo", (model) -> model.put("user", user))
                 .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailEntity.MailType.DRAFT));
+                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.DRAFT));
     }
 
     @GET
@@ -86,10 +86,10 @@ public class MailInboxPage {
         User user = session.get("user", User.class);
 
         return Mascherl.page("/templates/mailTrash.html")
-                .pageTitle("WebMail powered by Mascherl")
+                .pageTitle("Trash - WebMail powered by Mascherl")
                 .container("userInfo", (model) -> model.put("user", user))
                 .container("mailTypeNav", (model) -> populateMailTypeNavModel(user, model))
-                .container("content", (model) -> populateModelWithMailData(page, user, model, MailEntity.MailType.TRASH));
+                .container("content", (model) -> populateModelWithMailData(page, user, model, MailType.TRASH));
     }
 
     @POST
@@ -97,7 +97,7 @@ public class MailInboxPage {
     public MascherlAction moveToTrash(
             @FormParam("mailUuid") List<String> uuids,
             @FormParam("page") @DefaultValue("1") int page,
-            @FormParam("mailType") @DefaultValue("RECEIVED") MailEntity.MailType mailType) {
+            @FormParam("mailType") @DefaultValue("RECEIVED") MailType mailType) {
         MascherlSession session = MascherlSession.getInstance();
         User user = session.get("user", User.class);
 
@@ -105,9 +105,9 @@ public class MailInboxPage {
             mailService.moveToTrash(uuids, user);
         }
 
-        return Mascherl.stay().renderAll().withPageDef(
+        return Mascherl.stay().renderContainer("content").withPageDef(
                 determinePageForMailType(mailType, page)
-                        .container("main", (model) -> {
+                        .container("content", (model) -> {
                             if (uuids.isEmpty()) {
                                 model.put("errorMsg", "No mails selected.");
                             } else {
@@ -116,7 +116,7 @@ public class MailInboxPage {
                         }));
     }
 
-    private MascherlPage determinePageForMailType(MailEntity.MailType mailType, int page) {
+    private MascherlPage determinePageForMailType(MailType mailType, int page) {
         switch (mailType) {
             case RECEIVED: return inbox(page);
             case SENT:     return sent(page);
@@ -126,7 +126,7 @@ public class MailInboxPage {
         }
     }
 
-    private void populateModelWithMailData(int page, User user, Model model, MailEntity.MailType mailType) {
+    private void populateModelWithMailData(int page, User user, Model model, MailType mailType) {
         model.put("mailCount", mailService.countMailsOfUser(user, mailType));
 
         List<Mail> mails = mailService.getMailsForUser(user, mailType, (page - 1) * PAGE_SIZE, PAGE_SIZE);
@@ -136,9 +136,14 @@ public class MailInboxPage {
     }
 
     private void populateMailTypeNavModel(User user, Model model) {
-        long unreadMailCount = mailService.countUnreadMailsOfUser(user, MailEntity.MailType.RECEIVED);
+        long unreadMailCount = mailService.countUnreadMailsOfUser(user, MailType.RECEIVED);
         if (unreadMailCount > 0) {
             model.put("unreadInboxMailCount", unreadMailCount);
+        }
+
+        long draftMailCount = mailService.countMailsOfUser(user, MailType.DRAFT);
+        if (draftMailCount > 0) {
+            model.put("draftMailCount", draftMailCount);
         }
     }
 

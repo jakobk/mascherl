@@ -2,6 +2,7 @@ package org.mascherl.example.service;
 
 import org.hibernate.jpa.QueryHints;
 import org.mascherl.example.domain.Mail;
+import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.entity.MailEntity;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class MailService {
     @PersistenceContext
     private EntityManager em;
 
-    public long countMailsOfUser(User currentUser, MailEntity.MailType mailType) {
+    public long countMailsOfUser(User currentUser, MailType mailType) {
         return em.createQuery(
                 "select count(m.uuid) " +
                         "from MailEntity m " +
@@ -35,7 +36,7 @@ public class MailService {
                 .getSingleResult();
     }
 
-    public long countUnreadMailsOfUser(User currentUser, MailEntity.MailType mailType) {
+    public long countUnreadMailsOfUser(User currentUser, MailType mailType) {
         return em.createQuery(
                 "select count(m.uuid) " +
                         "from MailEntity m " +
@@ -47,7 +48,7 @@ public class MailService {
                 .getSingleResult();
     }
 
-    public List<Mail> getMailsForUser(User currentUser, MailEntity.MailType mailType, int offset, int pageSize) {
+    public List<Mail> getMailsForUser(User currentUser, MailType mailType, int offset, int pageSize) {
         List<MailEntity> resultList = em.createQuery(
                 "select m " +
                         "from MailEntity m " +
@@ -101,7 +102,7 @@ public class MailService {
                         "and m.user.uuid = :userUuid ")
                 .setParameter("uuids", uuids)
                 .setParameter("userUuid", currentUser.getUuid())
-                .setParameter("mailTypeTrash", MailEntity.MailType.TRASH)
+                .setParameter("mailTypeTrash", MailType.TRASH)
                 .executeUpdate();
     }
 
@@ -114,7 +115,7 @@ public class MailService {
                         "and m.mailType = :mailTypeTrash")
                 .setParameter("uuids", uuids)
                 .setParameter("userUuid", currentUser.getUuid())
-                .setParameter("mailTypeTrash", MailEntity.MailType.TRASH)
+                .setParameter("mailTypeTrash", MailType.TRASH)
                 .executeUpdate();
     }
 
@@ -122,6 +123,7 @@ public class MailService {
         return new Mail(
                 entity.getUuid(),
                 entity.getDateTime(),
+                entity.getMailType(),
                 entity.isUnread(),
                 entity.getFrom(),
                 entity.getTo(),

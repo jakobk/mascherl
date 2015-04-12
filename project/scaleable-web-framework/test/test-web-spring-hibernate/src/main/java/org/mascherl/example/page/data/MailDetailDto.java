@@ -1,7 +1,5 @@
 package org.mascherl.example.page.data;
 
-import java.util.List;
-
 /**
  * TODO
  *
@@ -17,8 +15,9 @@ public class MailDetailDto {
     private final String subject;
     private final String messageText;
     private final String dateTime;
+    private final String dateTimeLabel;
 
-    public MailDetailDto(String uuid, String from, String to, String cc, String bcc, String subject, String messageText, String dateTime) {
+    public MailDetailDto(String uuid, String from, String to, String cc, String bcc, String subject, String messageText, String dateTime, String dateTimeLabel) {
         this.uuid = uuid;
         this.from = from;
         this.to = to;
@@ -27,6 +26,7 @@ public class MailDetailDto {
         this.subject = subject;
         this.messageText = messageText;
         this.dateTime = dateTime;
+        this.dateTimeLabel = dateTimeLabel;
     }
 
     public String getUuid() {
@@ -59,5 +59,9 @@ public class MailDetailDto {
 
     public String getDateTime() {
         return dateTime;
+    }
+
+    public String getDateTimeLabel() {
+        return dateTimeLabel;
     }
 }
