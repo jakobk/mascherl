@@ -1,5 +1,7 @@
 package org.mascherl.example.page.data;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import javax.ws.rs.FormParam;
 
 /**
@@ -9,7 +11,16 @@ import javax.ws.rs.FormParam;
  */
 public class ComposeMailBean {
 
+    /**
+     * Validation group for mail sending.
+     */
+    public static interface Send {}
+
+    // TODO custom validators for to, cc, bcc
+
     @FormParam("to")
+    @NotNull(groups = Send.class)
+    @Size(min = 1, groups = Send.class)
     private String to;
 
     @FormParam("cc")
@@ -19,9 +30,12 @@ public class ComposeMailBean {
     private String bcc;
 
     @FormParam("subject")
+    @NotNull(groups = Send.class)
+    @Size(min = 1, groups = Send.class)
     private String subject;
 
     @FormParam("messageText")
+    @NotNull(groups = Send.class)
     private String messageText;
 
     public ComposeMailBean() {

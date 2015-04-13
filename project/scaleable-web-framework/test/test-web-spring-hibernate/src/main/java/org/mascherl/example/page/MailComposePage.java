@@ -9,9 +9,14 @@ import org.mascherl.example.service.SendMailService;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlAction;
 import org.mascherl.page.MascherlPage;
+import org.mascherl.validation.ValidationResult;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -31,6 +36,9 @@ import static org.mascherl.example.page.PageModelConverter.convertToPageModelFor
  */
 @Component
 public class MailComposePage {
+
+    @Inject
+    private ValidationResult validationResult;
 
     @Inject
     private User user;
@@ -65,7 +73,21 @@ public class MailComposePage {
 
     @POST
     @Path("/mail/send/{mailUuid}")
-    public MascherlAction send(@PathParam("mailUuid") String mailUuid, @BeanParam ComposeMailBean composeMailBean) {
+    public MascherlAction send(
+            @PathParam("mailUuid") String mailUuid,
+            @Valid @ConvertGroup(from = Default.class, to = ComposeMailBean.Send.class) @BeanParam ComposeMailBean composeMailBean) {
+        if (!validationResult.isValid()) {
+            return Mascherl
+                    .stay()
+                    .renderContainer("messages")
+                    .withPageDef(compose(mailUuid)
+                            .container("messages", (model) -> {
+                                for (ConstraintViolation<?> constraintViolation : validationResult.getConstraintViolations()) {
+                                    model.put("errorMsg", constraintViolation.getMessage());
+                                }
+                            }));
+        }
+
         Mail draft = composeMailService.openDraft(mailUuid, user);
         Mail sendMail = new Mail(
                 draft.getUuid(),
@@ -88,7 +110,9 @@ public class MailComposePage {
 
     @POST
     @Path("/mail/save/{mailUuid}")
-    public MascherlAction saveOnExit(@PathParam("mailUuid") String mailUuid, @BeanParam ComposeMailBean composeMailBean) {
+    public MascherlAction saveOnExit(
+            @PathParam("mailUuid") String mailUuid,
+            @BeanParam ComposeMailBean composeMailBean) {
         Mail draft = new Mail(
                 mailUuid,
                 parseMailAddresses(composeMailBean.getTo()),

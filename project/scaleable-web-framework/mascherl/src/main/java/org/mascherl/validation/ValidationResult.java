@@ -36,10 +36,6 @@ public class ValidationResult {
         return constraintViolations.isEmpty();
     }
 
-    public boolean isFailed() {
-        return !isValid();
-    }
-
     public Set<ConstraintViolation<?>> getConstraintViolations() {
         return constraintViolations;
     }
