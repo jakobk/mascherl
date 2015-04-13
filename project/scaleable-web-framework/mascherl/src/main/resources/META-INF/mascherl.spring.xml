@@ -6,7 +6,7 @@
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/aop   http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <!-- Allow injection of MascherlSession -->
+    <!-- Allow injection of MascherlSession and ValidationResult -->
     <bean id="mascherlBeanFactory" class="org.mascherl.ioc.MascherlBeanFactory" />
     <bean id="mascherlSession" factory-bean="mascherlBeanFactory" factory-method="getSession" scope="request">
         <aop:scoped-proxy />
