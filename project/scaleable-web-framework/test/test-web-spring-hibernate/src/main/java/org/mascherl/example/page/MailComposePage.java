@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
-import static org.mascherl.example.page.PageUtils.getCurrentUser;
 
 /**
  * Page class for the mail composing page.
@@ -32,6 +31,9 @@ import static org.mascherl.example.page.PageUtils.getCurrentUser;
  */
 @Component
 public class MailComposePage {
+
+    @Inject
+    private User user;
 
     @Inject
     private MailInboxPage mailInboxPage;
@@ -45,8 +47,6 @@ public class MailComposePage {
     @GET
     @Path("/mail/compose/{mailUuid}")
     public MascherlPage compose(@PathParam("mailUuid") String mailUuid) {
-        User user = getCurrentUser();
-
         return Mascherl.page("/templates/mail/mailCompose.html")
                 .pageTitle("Compose - WebMail powered by Mascherl")
                 .container("userInfo", (model) -> model.put("user", user))
@@ -56,7 +56,6 @@ public class MailComposePage {
     @POST
     @Path("/mail/compose")
     public MascherlAction composeNew() {
-        User user = getCurrentUser();
         String mailUuid = composeMailService.composeNewMail(user);
         return Mascherl
                 .navigate(UriBuilder.fromMethod(getClass(), "compose").build(mailUuid))
@@ -67,8 +66,6 @@ public class MailComposePage {
     @POST
     @Path("/mail/send/{mailUuid}")
     public MascherlAction send(@PathParam("mailUuid") String mailUuid, @BeanParam ComposeMailBean composeMailBean) {
-        User user = getCurrentUser();
-
         Mail draft = composeMailService.openDraft(mailUuid, user);
         Mail sendMail = new Mail(
                 draft.getUuid(),
@@ -92,8 +89,6 @@ public class MailComposePage {
     @POST
     @Path("/mail/save/{mailUuid}")
     public MascherlAction saveOnExit(@PathParam("mailUuid") String mailUuid, @BeanParam ComposeMailBean composeMailBean) {
-        User user = getCurrentUser();
-
         Mail draft = new Mail(
                 mailUuid,
                 parseMailAddresses(composeMailBean.getTo()),

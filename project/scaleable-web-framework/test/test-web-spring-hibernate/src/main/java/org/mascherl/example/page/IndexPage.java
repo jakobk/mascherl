@@ -23,6 +23,9 @@ import javax.ws.rs.Path;
 public class IndexPage {
 
     @Inject
+    private MascherlSession session;
+
+    @Inject
     private LoginService loginService;
 
     @Inject
@@ -45,7 +48,6 @@ public class IndexPage {
     @POST
     @Path("/login")
     public MascherlAction loginAction(@FormParam("email") String email, @FormParam("password") String password) {
-        MascherlSession session = MascherlSession.getInstance();
         User user = loginService.login(email, password);
         if (user != null) {
             session.put("user", user);

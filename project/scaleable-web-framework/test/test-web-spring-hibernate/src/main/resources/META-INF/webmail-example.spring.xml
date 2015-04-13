@@ -12,6 +12,7 @@
 
     <import resource="classpath:META-INF/cxf/cxf.xml" />
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+    <import resource="classpath:META-INF/mascherl.spring.xml" />
 
     <context:annotation-config />
     <context:component-scan base-package="org.mascherl.example" />
@@ -47,5 +48,11 @@
 
     <!-- process the @Transactional annotations: -->
     <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+
+    <!-- allow injection of the current user -->
+    <bean id="pageBeanDependencyFactory" class="org.mascherl.example.page.PageBeanDependencyFactory" />
+    <bean id="user" factory-bean="pageBeanDependencyFactory" factory-method="getCurrentUser" scope="request">
+        <aop:scoped-proxy />
+    </bean>
 
 </beans>

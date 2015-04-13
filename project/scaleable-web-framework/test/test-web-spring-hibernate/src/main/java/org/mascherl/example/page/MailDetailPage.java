@@ -25,14 +25,14 @@ import static org.mascherl.example.page.PageModelConverter.convertToPageModelFor
 public class MailDetailPage {
 
     @Inject
+    private User user;
+
+    @Inject
     private MailService mailService;
 
     @GET
     @Path("/mail/{mailUuid}")
     public MascherlPage inbox(@PathParam("mailUuid") String mailUuid) {
-        MascherlSession session = MascherlSession.getInstance();
-        User user = session.get("user", User.class);
-
         return Mascherl.page("/templates/mail/mailDetail.html")
                 .pageTitle("WebMail powered by Mascherl")
                 .container("userInfo", (model) -> model.put("user", user))

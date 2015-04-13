@@ -22,7 +22,6 @@ import javax.ws.rs.QueryParam;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.mascherl.example.page.PageUtils.getCurrentUser;
 import static org.mascherl.example.page.format.DateTimeFormat.formatDateTime;
 import static org.mascherl.example.page.format.StringFormat.pluralize;
 import static org.mascherl.example.page.format.StringFormat.truncate;
@@ -40,12 +39,14 @@ public class MailInboxPage {
     private static final int SUBJECT_MAX_LENGTH = 60;
 
     @Inject
+    private User user;
+
+    @Inject
     private MailService mailService;
 
     @GET
     @Path("/mail")
     public MascherlPage inbox(@QueryParam("page") @DefaultValue("1") int page) {
-        User user = getCurrentUser();
         return mailInboxBasePage(user)
                 .pageTitle("Inbox - WebMail powered by Mascherl")
                 .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.RECEIVED));
@@ -54,7 +55,6 @@ public class MailInboxPage {
     @GET
     @Path("/mail/sent")
     public MascherlPage sent(@QueryParam("page") @DefaultValue("1") int page) {
-        User user = getCurrentUser();
         return mailInboxBasePage(user)
                 .pageTitle("Sent mails - WebMail powered by Mascherl")
                 .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.SENT));
@@ -63,7 +63,6 @@ public class MailInboxPage {
     @GET
     @Path("/mail/draft")
     public MascherlPage draft(@QueryParam("page") @DefaultValue("1") int page) {
-        User user = getCurrentUser();
         return mailInboxBasePage(user)
                 .pageTitle("Drafts - WebMail powered by Mascherl")
                 .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.DRAFT));
@@ -72,7 +71,6 @@ public class MailInboxPage {
     @GET
     @Path("/mail/trash")
     public MascherlPage trash(@QueryParam("page") @DefaultValue("1") int page) {
-        User user = getCurrentUser();
         return mailInboxBasePage(user)
                 .pageTitle("Trash - WebMail powered by Mascherl")
                 .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.TRASH));
@@ -84,8 +82,6 @@ public class MailInboxPage {
             @FormParam("mailUuid") List<String> uuids,
             @FormParam("page") @DefaultValue("1") int page,
             @FormParam("mailType") @DefaultValue("RECEIVED") MailType mailType) {
-        User user = getCurrentUser();
-
         String whatWeDid;
         if (!uuids.isEmpty()) {
             if (mailType == MailType.TRASH) {
