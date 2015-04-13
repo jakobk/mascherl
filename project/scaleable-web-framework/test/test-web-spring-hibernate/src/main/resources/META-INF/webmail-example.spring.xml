@@ -31,6 +31,9 @@
             <bean class="org.mascherl.jaxrs.MascherlResponseFilter" />
             <bean class="org.mascherl.example.filter.WebMailRequestFilter" />
         </jaxrs:providers>
+        <jaxrs:inInterceptors>
+            <bean class="org.mascherl.validation.cxf.CxfBeanValidationInInterceptor" />
+        </jaxrs:inInterceptors>
     </jaxrs:server>
 
     <!-- JPA Entity Manager Factory -->

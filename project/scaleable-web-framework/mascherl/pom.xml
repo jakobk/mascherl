@@ -31,6 +31,14 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- for JAX-RS container specific features, like e.g. BeanValidation -->
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>

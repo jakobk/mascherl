@@ -37,6 +37,7 @@ public class MascherlConstants {
     public static final String MAIN_CONTAINER = "main";
 
     public static final String MASCHERL_SESSION_REQUEST_ATTRIBUTE = "MASCHERL_SESSION";
+    public static final String MASCHERL_VALIDATION_RESULT_REQUEST_ATTRIBUTE = "MASCHERL_VALIDATION_RESULT";
     public static final String MASCHERL_APPLICATION_CONTEXT_ATTRIBUTE = "MASCHERL_APPLICATION";
 
 

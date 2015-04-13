@@ -82,7 +82,7 @@ public class MascherlApplication {
 
     private final ServletContext servletContext;
     private final MascherlRendererFactory mascherlRendererFactory;
-    private MascherlSessionStorage mascherlSessionStorage;
+    private final MascherlSessionStorage mascherlSessionStorage;
     private final ApplicationVersion applicationVersion;
     private final boolean developmentMode;
     private final String mascherlVersion;

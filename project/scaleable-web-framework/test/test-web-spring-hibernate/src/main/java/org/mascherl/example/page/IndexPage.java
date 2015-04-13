@@ -1,15 +1,18 @@
 package org.mascherl.example.page;
 
-import org.mascherl.page.MascherlAction;
+import org.mascherl.example.domain.User;
+import org.mascherl.example.page.data.LoginBean;
+import org.mascherl.example.service.LoginService;
 import org.mascherl.page.Mascherl;
+import org.mascherl.page.MascherlAction;
 import org.mascherl.page.MascherlPage;
 import org.mascherl.session.MascherlSession;
-import org.mascherl.example.domain.User;
-import org.mascherl.example.service.LoginService;
+import org.mascherl.validation.ValidationResult;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.ws.rs.FormParam;
+import javax.validation.Valid;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,6 +24,9 @@ import javax.ws.rs.Path;
  */
 @Component
 public class IndexPage {
+
+    @Inject
+    private ValidationResult validationResult;
 
     @Inject
     private MascherlSession session;
@@ -47,8 +53,13 @@ public class IndexPage {
 
     @POST
     @Path("/login")
-    public MascherlAction loginAction(@FormParam("email") String email, @FormParam("password") String password) {
-        User user = loginService.login(email, password);
+    public MascherlAction loginAction(@Valid @BeanParam LoginBean loginBean) {
+        User user;
+        if (validationResult.isValid()) {
+            user = loginService.login(loginBean.getEmail(), loginBean.getPassword());
+        } else {
+            user = null;
+        }
         if (user != null) {
             session.put("user", user);
             return Mascherl.navigate("/mail").renderAll().withPageDef(mailOverviewPage.inbox(1));
