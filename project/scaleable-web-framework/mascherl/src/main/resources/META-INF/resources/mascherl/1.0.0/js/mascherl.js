@@ -17,13 +17,11 @@ function navigate(url, container, page) {
         success: function (data, status, xhr) {
             container = xhr.getResponseHeader("X-Mascherl-Container");
 
-            if (container !== "dialogContent") {  // TODO find something better, more generic
-                $("div.modal-backdrop").remove();
-            }
+            $(window).triggerHandler("mascherlresponse", container);
 
             if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
                 window.fireHistoryChange = false;
-                History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));
+                History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));  // TODO could also be a replaceState(), if we pushed a state before
                 window.fireHistoryChange = true;
             }
 
@@ -60,9 +58,10 @@ function submitData(url, data, container) {
             + "&m-app-version=" + window.mascherl.applicationVersion,
         type: "POST",
         dataType: "html",
-        //contentType: "application/json; charset=UTF-8",
         success: function (data, status, xhr) {
             container = xhr.getResponseHeader("X-Mascherl-Container");
+
+            $(window).triggerHandler("mascherlresponse", container);
 
             if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
                 window.fireHistoryChange = false;
