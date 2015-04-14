@@ -52,12 +52,14 @@ function submitData(url, data, container) {
     }
     $.ajax({
         url: url,
-        data: data
-            + (data === "" || typeof data === "undefined" ? "" : "&")
-            + "m-container=" + container
-            + "&m-app-version=" + window.mascherl.applicationVersion,
+        headers: {
+            "X-Mascherl-Container": container,
+            "X-Mascherl-App-Version": window.mascherl.applicationVersion
+        },
+        data: data,
         type: "POST",
         dataType: "html",
+        cache: false,
         success: function (data, status, xhr) {
             container = xhr.getResponseHeader("X-Mascherl-Container");
 
@@ -90,10 +92,6 @@ function submitData(url, data, container) {
     });
 }
 
-function submitForm(url, formElement, container) {
-    submitData(url, formElement.serialize(), container);
-}
-
 function addNavigationHandlers(id) {
     $(id + " a:not([m-ignore])").click(function(event) {
         var container = $(this).attr("m-container");
@@ -114,7 +112,7 @@ function addNavigationHandlers(id) {
             container = "main";
         }
         var navMeta = calculateNavigationMeta(container);
-        submitForm(event.target.action, $(this), navMeta.container);
+        submitData(event.target.action, $(this).serialize(), navMeta.container);
         return false;  // stop handling event
     });
 }

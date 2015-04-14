@@ -27,6 +27,11 @@ public class MascherlConstants {
         public static final String X_POWERED_BY = "X-Powered-By";
     }
 
+    public static class RequestHeaders {
+        public static final String X_MASCHERL_CONTAINER = "X-Mascherl-Container";
+        public static final String X_MASCHERL_APP_VERSION = "X-Mascherl-App-Version";
+    }
+
     public static class RootScopeVariables {
         public static final String TITLE = "title";
         public static final String APPLICATION_VERSION = "applicationVersion";

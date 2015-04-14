@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Objects;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
+import static org.mascherl.MascherlConstants.RequestHeaders.X_MASCHERL_APP_VERSION;
+import static org.mascherl.MascherlConstants.RequestHeaders.X_MASCHERL_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_APP_VERSION;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_PAGE;
@@ -60,6 +62,9 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
             String container = (String) request.getAttribute(M_CONTAINER);
             if (container == null) {
                 container = request.getParameter(M_CONTAINER);
+                if (container == null) {
+                    container = request.getHeader(X_MASCHERL_CONTAINER);
+                }
             }
             if (container != null) {
                 String requestPageGroup = request.getParameter(M_PAGE);
@@ -77,9 +82,8 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
     }
 
     private void verifyApplicationVersion(MascherlApplication mascherlApplication, ContainerRequestContext requestContext) {
-        if (isPartialRequest()) {  // TODO does not work for POST requests --> use HTTP headers for container and version??
-            ApplicationVersion clientAppVersion = new ApplicationVersion(
-                    requestContext.getUriInfo().getQueryParameters().getFirst(M_APP_VERSION));
+        if (isPartialRequest()) {
+            ApplicationVersion clientAppVersion = getRequestApplicationVersion(requestContext);
             if (!mascherlApplication.getApplicationVersion().equals(clientAppVersion)) {
                 Config config = ConfigFactory.load();
                 String msg = config.getString(OUTDATED_VERSION_MSG_CONFIG);
@@ -89,8 +93,23 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
         }
     }
 
+    private ApplicationVersion getRequestApplicationVersion(ContainerRequestContext requestContext) {
+        String version;
+        if (Objects.equals("GET", request.getMethod())) {
+            version = requestContext.getUriInfo().getQueryParameters().getFirst(M_APP_VERSION);
+        } else {
+            version = request.getHeader(X_MASCHERL_APP_VERSION);
+        }
+        return new ApplicationVersion(version);
+    }
+
     private boolean isPartialRequest() {
-        String container = request.getParameter(M_CONTAINER);
+        String container;
+        if (Objects.equals("GET", request.getMethod())) {
+            container = request.getParameter(M_CONTAINER);
+        } else {
+            container = request.getHeader(X_MASCHERL_CONTAINER);
+        }
         return (container != null);
     }
 
