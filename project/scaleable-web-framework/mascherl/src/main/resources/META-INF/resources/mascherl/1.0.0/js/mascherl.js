@@ -2,7 +2,8 @@ $(document).ready(function() {
     addNavigationHandlers("body");
 });
 
-window.fireHistoryChange = true;
+window.mascherl = window.mascherl || {};
+window.mascherl.handleHistoryChange = true;
 
 function navigate(url, container, page) {
     $.ajax({
@@ -14,15 +15,16 @@ function navigate(url, container, page) {
             "m-app-version": window.mascherl.applicationVersion
         },
         dataType: "html",
+        cache: false,
         success: function (data, status, xhr) {
             container = xhr.getResponseHeader("X-Mascherl-Container");
 
             $(window).triggerHandler("mascherlresponse", container);
 
             if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
-                window.fireHistoryChange = false;
+                window.mascherl.handleHistoryChange = false;
                 History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));  // TODO could also be a replaceState(), if we pushed a state before
-                window.fireHistoryChange = true;
+                window.mascherl.handleHistoryChange = true;
             }
 
             var containerDiv = $("#" + container);
@@ -66,9 +68,9 @@ function submitData(url, data, container) {
             $(window).triggerHandler("mascherlresponse", container);
 
             if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
-                window.fireHistoryChange = false;
+                window.mascherl.handleHistoryChange = false;
                 History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));
-                window.fireHistoryChange = true;
+                window.mascherl.handleHistoryChange = true;
             }
 
             var containerDiv = $("#" + container);
@@ -122,7 +124,7 @@ History.Adapter.bind(window, 'statechange', function() {
 });
 
 function onStateChange() {
-    if (!window.fireHistoryChange || History.getState().data.error === true) {
+    if (!window.mascherl.handleHistoryChange || History.getState().data.error === true) {
         return;
     }
 
