@@ -16,7 +16,7 @@ import static org.mascherl.example.page.format.DateTimeFormat.formatDateTime;
  *
  * @author Jakob Korherr
  */
-public class PageModelConverter {
+class PageModelConverter {
 
     private static final String LINE_FEED_HTML_ESCAPED = "&#10;";
     private static final String HTML_BR = "<br/>";

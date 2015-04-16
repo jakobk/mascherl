@@ -1,5 +1,6 @@
 package org.mascherl.example.page;
 
+import org.mascherl.example.page.data.SelectOption;
 import org.mascherl.example.page.data.SignUpPart1Bean;
 import org.mascherl.example.service.SignUpService;
 import org.mascherl.page.Mascherl;
@@ -9,14 +10,18 @@ import org.mascherl.validation.ValidationResult;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-import static org.mascherl.example.page.PageUtils.getValidationErrorMessages;
+import static javax.validation.Path.Node;
 
 /**
  * Page class for the sign-up dialog.
@@ -37,7 +42,11 @@ public class SignUpPage {
     public MascherlPage signUp() {
         return Mascherl.page("/templates/root/signupStep1.html")
                 .pageTitle("SignUp - WebMail powered by Mascherl")
-                .container("stateContainer", (model) -> model.put("states", signUpService.getStates("AT")));
+                .container("dialogContent", (model) -> {
+                    model.put("bean", new SignUpPart1Bean());
+                    model.put("countries", convertToSelectOptions(signUpService.getCountries(), null));
+                })
+                .container("stateContainer", (model) -> model.put("states", convertToSelectOptions(signUpService.getStates("Austria"), null)));
     }
 
     @POST
@@ -46,12 +55,13 @@ public class SignUpPage {
         return Mascherl
                 .stay()
                 .renderContainer("stateContainer")
-                .withPageDef(signUp().container("stateContainer", (model) -> model.put("states", signUpService.getStates(country))));
+                .withPageDef(signUp()
+                        .container("stateContainer", (model) -> model.put("states", convertToSelectOptions(signUpService.getStates(country), null))));
     }
 
     @POST
-    @Path("/signup/part1")
-    public MascherlAction signupPart1(@Valid @BeanParam SignUpPart1Bean bean) {
+    @Path("/signup/step1")
+    public MascherlAction signupStep1(@Valid @BeanParam SignUpPart1Bean bean) {
         if (validationResult.isValid()) {
             return Mascherl
                     .navigate("/login")
@@ -59,10 +69,48 @@ public class SignUpPage {
         } else {
             return Mascherl
                     .stay()
-                    .renderContainer("dialogMessages")
+                    .renderContainer("dialogContent")
                     .withPageDef(signUp()
-                            .container("dialogMessages", (model) -> model.put("errorMsg", getValidationErrorMessages(validationResult))));
+                            .container("dialogContent", (model) -> {
+                                model.put("bean", bean);
+                                model.put("countries", convertToSelectOptions(signUpService.getCountries(), bean.getCountry()));
+
+                                if (hasValidationError("firstName")) {
+                                    model.put("firstNameError", true);
+                                }
+                                if (hasValidationError("lastName")) {
+                                    model.put("lastNameError", true);
+                                }
+                                if (hasValidationError("dateOfBirth")) {
+                                    model.put("dateOfBirthError", true);
+                                }
+                                if (hasValidationError("country")) {
+                                    model.put("countryError", true);
+                                }
+                                if (hasValidationError("state")) {
+                                    model.put("stateError", true);
+                                }
+                            })
+                            .container("stateContainer", (model) -> model.put("states", convertToSelectOptions(signUpService.getStates(bean.getCountry()), bean.getState())))
+                            .container("dialogMessages", (model) -> model.put("errorMsg", "Invalid input.")));
         }
+    }
+
+    private boolean hasValidationError(String field) {
+        return validationResult.getConstraintViolations().stream()
+                .map(ConstraintViolation::getPropertyPath)
+                .map((path) -> {
+                    Node last = null;
+                    for (Node node : path) {
+                        last = node;
+                    }
+                    return last == null ? null : last.getName();
+                })
+                .anyMatch((property) -> Objects.equals(property, field));
+    }
+
+    private List<SelectOption> convertToSelectOptions(List<String> options, String selected) {
+        return options.stream().map((option) -> new SelectOption(option, option, Objects.equals(option, selected))).collect(Collectors.toList());
     }
 
 }

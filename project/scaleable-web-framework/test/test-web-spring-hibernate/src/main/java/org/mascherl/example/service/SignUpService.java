@@ -3,7 +3,6 @@ package org.mascherl.example.service;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,7 @@ public class SignUpService {
 
     private static final Map<String, List<String>> countryStateIndex = new HashMap<>();
     static {
-        countryStateIndex.put("AT", Arrays.asList(
+        countryStateIndex.put("Austria", Arrays.asList(
                 "Vienna",
                 "Lower Austria",
                 "Upper Austria",
@@ -29,7 +28,7 @@ public class SignUpService {
                 "Burgenland",
                 "Carinthia"
         ));
-        countryStateIndex.put("DE", Arrays.asList(
+        countryStateIndex.put("Germany", Arrays.asList(
                 "Baden-Württemberg",
                 "Bavaria",
                 "Berlin",
@@ -47,6 +46,10 @@ public class SignUpService {
                 "Schleswig-Holstein",
                 "Thuringia"
         ));
+    }
+
+    public List<String> getCountries() {
+        return Arrays.asList("Austria", "Germany", "other");
     }
 
     public List<String> getStates(String country) {
