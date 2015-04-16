@@ -1,0 +1,26 @@
+{{< start}}
+
+{{$pageContent}}
+    {{$dialog}}
+    <div class="modal" id="signUpDialog" tabindex="-1" role="dialog" aria-labelledby="Sign up Dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                {{$dialogContent}}
+                {{/dialogContent}}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $("div.modal-backdrop").remove();
+        var dialog = $('#signUpDialog');
+        dialog.modal('show');
+        dialog.on('hide.bs.modal', function (e) {
+            $("div.modal-backdrop").remove();
+            History.pushState({"container": "dialog"}, null, "/");
+        })
+    </script>
+    {{/dialog}}
+{{/pageContent}}
+
+{{/ start}}

@@ -18,7 +18,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
 /**
- * TODO
+ * Page controller for the root page of the application, and login and logout actions.
  *
  * @author Jakob Korherr
  */
