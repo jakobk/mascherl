@@ -18,6 +18,8 @@ import javax.validation.Valid;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
 import javax.ws.rs.BeanParam;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -28,6 +30,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
+import static org.mascherl.example.page.PageUtils.determineReturnToPage;
+import static org.mascherl.example.page.PageUtils.parsePageParameter;
 
 /**
  * Page class for the mail composing page.
@@ -47,6 +51,10 @@ public class MailComposePage {
     private MailInboxPage mailInboxPage;
 
     @Inject
+    private MailDetailPage mailDetailPage;
+
+
+    @Inject
     private ComposeMailService composeMailService;
 
     @Inject
@@ -55,10 +63,20 @@ public class MailComposePage {
     @GET
     @Path("/mail/compose/{mailUuid}")
     public MascherlPage compose(@PathParam("mailUuid") String mailUuid) {
-        return Mascherl.page("/templates/mail/mailCompose.html")
-                .pageTitle("Compose - WebMail powered by Mascherl")
-                .container("userInfo", (model) -> model.put("user", user))
-                .container("pageContent", (model) -> model.put("mail", convertToPageModelForEdit(composeMailService.openDraft(mailUuid, user))));
+        try {
+            return Mascherl.page("/templates/mail/mailCompose.html")
+                    .pageTitle("Compose - WebMail powered by Mascherl")
+                    .container("userInfo", (model) -> model.put("user", user))
+                    .container("pageContent", (model) -> {
+                        Mail mail = composeMailService.openDraft(mailUuid, user);
+                        if (mail != null) {
+                            model.put("mail", convertToPageModelForEdit(mail));
+                        }
+                    });
+        } catch (IllegalStateException e) {
+            return mailDetailPage.mailDetail(mailUuid)
+                    .replaceUrl(UriBuilder.fromMethod(MailDetailPage.class, "mailDetail").build(mailUuid));
+        }
     }
 
     @POST
@@ -112,7 +130,8 @@ public class MailComposePage {
     @Path("/mail/save/{mailUuid}")
     public MascherlAction saveOnExit(
             @PathParam("mailUuid") String mailUuid,
-            @BeanParam ComposeMailBean composeMailBean) {
+            @BeanParam ComposeMailBean composeMailBean,
+            @FormParam("returnTo") @DefaultValue("/mail") String returnTo) {
         Mail draft = new Mail(
                 mailUuid,
                 parseMailAddresses(composeMailBean.getTo()),
@@ -127,7 +146,7 @@ public class MailComposePage {
                 .navigate("/mail")
                 .renderContainer("content")
                 .withPageDef(
-                        mailInboxPage.inbox(1)
+                        determineReturnToPage(mailInboxPage, returnTo, parsePageParameter(returnTo))
                                 .container("messages", (model) -> model.put("infoMsg", "Draft saved!")));
     }
 

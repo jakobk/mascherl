@@ -2,6 +2,16 @@
 
 {{$pageContent}}
 
+{{^mail}}
+<div class="alert alert-danger" role="alert">Mail not found.</div>
+
+<div class="well well-sm">
+    <button type="button" class="btn btn-default" aria-label="Go Back" onclick="history.back()">
+        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+    </button>
+</div>
+{{/mail}}
+
 {{#mail}}
     <div class="well well-sm">
         <button id="backBtn" type="button" class="btn btn-default" aria-label="Go Back">
@@ -9,7 +19,14 @@
         </button>
         <script>
             $("#backBtn").click(function() {
-                submitData("/mail/save/{{uuid}}", $("#composeForm").serialize(), "content");
+                var formData = $("#composeForm").serialize();
+
+                var lastState = History.getStateByIndex(-2);
+                if (typeof lastState !== "undefined") {
+                    formData += "&returnTo=" + encodeURIComponent(History.getShortUrl(lastState.url));
+                }
+
+                submitData("/mail/save/{{uuid}}", formData, "content");
             });
         </script>
     </div>

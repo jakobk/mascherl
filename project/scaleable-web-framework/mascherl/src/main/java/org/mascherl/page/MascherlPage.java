@@ -2,6 +2,8 @@ package org.mascherl.page;
 
 import org.mascherl.render.ContainerMeta;
 
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,6 +19,7 @@ public class MascherlPage {
     private final String template;
     private final Set<String> containersToEvaluate = new HashSet<>();
     private final Map<String, Model> containerModels = new HashMap<>();
+    private URI replaceUrl;
 
     private String pageTitle;
 
@@ -51,6 +54,15 @@ public class MascherlPage {
         return this;
     }
 
+    public MascherlPage replaceUrl(String url) {
+        return replaceUrl(UriBuilder.fromUri(url).build());
+    }
+
+    public MascherlPage replaceUrl(URI newUrl) {
+        this.replaceUrl = newUrl;
+        return this;
+    }
+
     public String getTemplate() {
         return template;
     }
@@ -61,5 +73,9 @@ public class MascherlPage {
 
     public Map<String, Model> getContainerModels() {
         return containerModels;
+    }
+
+    public URI getReplaceUrl() {
+        return replaceUrl;
     }
 }

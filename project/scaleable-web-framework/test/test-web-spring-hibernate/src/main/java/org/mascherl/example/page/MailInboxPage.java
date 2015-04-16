@@ -19,6 +19,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.UriBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,34 +47,54 @@ public class MailInboxPage {
 
     @GET
     @Path("/mail")
-    public MascherlPage inbox(@QueryParam("page") @DefaultValue("1") int page) {
-        return mailInboxBasePage(user)
+    public MascherlPage inbox(@QueryParam("page") @DefaultValue("1") int pageParam) {
+        long mailCount = mailService.countMailsOfUser(user, MailType.RECEIVED);
+        int page = calculateMaxPage(pageParam, mailCount);
+
+        MascherlPage pageDef = mailInboxBasePage(user)
                 .pageTitle("Inbox - WebMail powered by Mascherl")
-                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.RECEIVED));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.RECEIVED, mailCount));
+        adjustPageUriIfNecessary(pageParam, page, pageDef, "/mail");
+        return pageDef;
     }
 
     @GET
     @Path("/mail/sent")
-    public MascherlPage sent(@QueryParam("page") @DefaultValue("1") int page) {
-        return mailInboxBasePage(user)
+    public MascherlPage sent(@QueryParam("page") @DefaultValue("1") int pageParam) {
+        long mailCount = mailService.countMailsOfUser(user, MailType.SENT);
+        int page = calculateMaxPage(pageParam, mailCount);
+
+        MascherlPage pageDef = mailInboxBasePage(user)
                 .pageTitle("Sent mails - WebMail powered by Mascherl")
-                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.SENT));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.SENT, mailCount));
+        adjustPageUriIfNecessary(pageParam, page, pageDef, "/mail/sent");
+        return pageDef;
     }
 
     @GET
     @Path("/mail/draft")
-    public MascherlPage draft(@QueryParam("page") @DefaultValue("1") int page) {
-        return mailInboxBasePage(user)
+    public MascherlPage draft(@QueryParam("page") @DefaultValue("1") int pageParam) {
+        long mailCount = mailService.countMailsOfUser(user, MailType.DRAFT);
+        int page = calculateMaxPage(pageParam, mailCount);
+
+        MascherlPage pageDef = mailInboxBasePage(user)
                 .pageTitle("Drafts - WebMail powered by Mascherl")
-                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.DRAFT));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.DRAFT, mailCount));
+        adjustPageUriIfNecessary(pageParam, page, pageDef, "/mail/draft");
+        return pageDef;
     }
 
     @GET
     @Path("/mail/trash")
-    public MascherlPage trash(@QueryParam("page") @DefaultValue("1") int page) {
-        return mailInboxBasePage(user)
+    public MascherlPage trash(@QueryParam("page") @DefaultValue("1") int pageParam) {
+        long mailCount = mailService.countMailsOfUser(user, MailType.TRASH);
+        int page = calculateMaxPage(pageParam, mailCount);
+
+        MascherlPage pageDef = mailInboxBasePage(user)
                 .pageTitle("Trash - WebMail powered by Mascherl")
-                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.TRASH));
+                .container("pageContent", (model) -> populateModelWithMailData(page, user, model, MailType.TRASH, mailCount));
+        adjustPageUriIfNecessary(pageParam, page, pageDef, "/mail/trash");
+        return pageDef;
     }
 
     @POST
@@ -121,10 +142,10 @@ public class MailInboxPage {
         }
     }
 
-    private void populateModelWithMailData(int page, User user, Model model, MailType mailType) {
-        model.put("mailCount", mailService.countMailsOfUser(user, mailType));
+    private void populateModelWithMailData(int page, User user, Model model, MailType mailType, long mailCount) {
+        model.put("mailCount", mailCount);
 
-        List<Mail> mails = mailService.getMailsForUser(user, mailType, (page - 1) * PAGE_SIZE, PAGE_SIZE);
+        List<Mail> mails = mailService.getMailsForUser(user, mailType, calculateOffset(page), PAGE_SIZE);
         model.put("mails", convertToPageModel(mails));
 
         model.put("mailType", mailType.name());
@@ -164,6 +185,27 @@ public class MailInboxPage {
                 model.put("showTo", true);
                 break;
             default: throw new IllegalArgumentException("Illegal MailType: " + mailType);
+        }
+    }
+
+    private int calculateOffset(int page) {
+        return (page - 1) * PAGE_SIZE;
+    }
+
+    private int calculateMaxPage(int page, long mailCount) {
+        if (calculateOffset(page) > mailCount) {
+            page = ((int) (mailCount / PAGE_SIZE)) + 1;
+        }
+        return page;
+    }
+
+    private void adjustPageUriIfNecessary(int pageParam, int page, MascherlPage pageDef, String uriTemplate) {
+        if (page != pageParam) {
+            UriBuilder uri = UriBuilder.fromUri(uriTemplate);
+            if (page > 1) {
+                uri.queryParam("page", page);
+            }
+            pageDef.replaceUrl(uri.build());
         }
     }
 

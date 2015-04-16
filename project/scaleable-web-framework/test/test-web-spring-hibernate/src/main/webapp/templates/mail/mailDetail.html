@@ -2,22 +2,32 @@
 
 {{$pageContent}}
 
-{{#mail}}
-    <div class="well well-sm">
-        <button type="button" class="btn btn-default" aria-label="Go Back" onclick="history.back()" style="margin-right: 10px;">
-            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-        </button>
+{{^mail}}
+<div class="alert alert-danger" role="alert">Mail not found.</div>
+{{/mail}}
+
+<div class="well well-sm">
+    <button type="button" class="btn btn-default" aria-label="Go Back" onclick="history.back()" style="margin-right: 10px;">
+        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+    </button>
+    {{#mail}}
         <button id="deleteBtn" type="button" class="btn btn-default" aria-label="Delete">
             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
         </button>
         <script>
             $("#deleteBtn").click(function() {
-                var data = $.makeArray(["mailUuid={{uuid}}", "mailType={{mailType}}"]);
-                submitData("/mail/delete", data.join("&"), "content");
+                var lastState = History.getStateByIndex(-2);
+                var data = $.makeArray([]);
+                if (typeof lastState !== "undefined") {
+                    data.push("returnTo=" + History.getShortUrl(lastState.url));
+                }
+                submitData("/mail/{{uuid}}/delete", data.join("&"), "content");
             });
         </script>
-    </div>
+    {{/mail}}
+</div>
 
+{{#mail}}
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">{{subject}}</h3>

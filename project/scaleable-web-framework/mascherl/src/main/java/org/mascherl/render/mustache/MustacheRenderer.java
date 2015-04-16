@@ -19,6 +19,7 @@ import java.util.Objects;
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_CONTAINER;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
+import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_REPLACE_URL;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_URL;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_POWERED_BY;
@@ -75,7 +76,18 @@ public class MustacheRenderer implements MascherlRenderer {
             scope.setCurrentContainer(container);
         }
 
-        mustache.execute(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), scope).flush();
+        OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+        mustache.execute(writer, scope).flush();
+
+        if (!isPartial && page.getReplaceUrl() != null) {
+            writer.write(
+                    "<script>" +
+                            "window.mascherl.handleHistoryChange = false;" +
+                            "History.replaceState({\"container\": \"main\"}, null, \"" + page.getReplaceUrl() + "\");" +
+                            "window.mascherl.handleHistoryChange = true;" +
+                            "</script>\n");
+            writer.flush();
+        }
     }
 
     private void addGeneralHttpHeaders(MascherlApplication mascherlApplication, MultivaluedMap<String, Object> httpHeaders) {
@@ -91,6 +103,8 @@ public class MustacheRenderer implements MascherlRenderer {
         httpHeaders.putSingle(X_MASCHERL_CONTAINER, container);
         if (clientUrl != null) {
             httpHeaders.putSingle(X_MASCHERL_URL, clientUrl);
+        } else if (page.getReplaceUrl() != null) {
+            httpHeaders.putSingle(X_MASCHERL_REPLACE_URL, page.getReplaceUrl().toString());
         }
     }
 

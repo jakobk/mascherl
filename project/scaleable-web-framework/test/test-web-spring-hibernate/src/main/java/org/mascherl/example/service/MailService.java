@@ -78,7 +78,7 @@ public class MailService {
                 .setParameter("userUuid", currentUser.getUuid())
                 .getResultList();
         if (resultList.isEmpty()) {
-            throw new IllegalArgumentException("Mail with uuid " + uuid + " does not exist for user " + currentUser);
+            return null;
         }
 
         MailEntity mailEntity = resultList.get(0);

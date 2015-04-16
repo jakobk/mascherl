@@ -47,17 +47,19 @@ public class ComposeMailService {
                 "select m " +
                         "from MailEntity m " +
                         "where m.uuid = :uuid " +
-                        "and m.user.uuid = :userUuid " +
-                        "and m.mailType = :mailTypeDraft", MailEntity.class)
+                        "and m.user.uuid = :userUuid", MailEntity.class)
                 .setParameter("uuid", uuid)
                 .setParameter("userUuid", currentUser.getUuid())
-                .setParameter("mailTypeDraft", MailType.DRAFT)
                 .setHint(QueryHints.HINT_READONLY, Boolean.TRUE)
                 .getResultList();
         if (resultList.isEmpty()) {
-            throw new IllegalArgumentException("Mail with uuid " + uuid + " does not exist for user " + currentUser);
+            return null;
         }
-        return convertToDomain(resultList.get(0));
+        MailEntity entity = resultList.get(0);
+        if (entity.getMailType() != MailType.DRAFT) {
+            throw new IllegalStateException("Mail with uuid " + uuid + " + is not of type draft");
+        }
+        return convertToDomain(entity);
     }
 
     @Transactional

@@ -21,9 +21,13 @@ function navigate(url, container, page) {
 
             $(window).triggerHandler("mascherlresponse", container);
 
-            if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
+            if (xhr.getResponseHeader("X-Mascherl-Url") != null) {   // TODO remove?!?!
                 window.mascherl.handleHistoryChange = false;
-                History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));  // TODO could also be a replaceState(), if we pushed a state before
+                History.replaceState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));
+                window.mascherl.handleHistoryChange = true;
+            } else if (xhr.getResponseHeader("X-Mascherl-Replace-Url") != null) {
+                window.mascherl.handleHistoryChange = false;
+                History.replaceState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Replace-Url"));
                 window.mascherl.handleHistoryChange = true;
             }
 
@@ -67,7 +71,7 @@ function submitData(url, data, container) {
 
             $(window).triggerHandler("mascherlresponse", container);
 
-            if (xhr.getResponseHeader("X-Mascherl-Url") !== "") {
+            if (xhr.getResponseHeader("X-Mascherl-Url") != null) {
                 window.mascherl.handleHistoryChange = false;
                 History.pushState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));
                 window.mascherl.handleHistoryChange = true;
