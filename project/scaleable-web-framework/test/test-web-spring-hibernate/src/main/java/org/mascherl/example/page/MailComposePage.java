@@ -13,7 +13,6 @@ import org.mascherl.validation.ValidationResult;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
@@ -31,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
 import static org.mascherl.example.page.PageUtils.determineReturnToPage;
+import static org.mascherl.example.page.PageUtils.getValidationErrorMessages;
 import static org.mascherl.example.page.PageUtils.parsePageParameter;
 
 /**
@@ -99,11 +99,7 @@ public class MailComposePage {
                     .stay()
                     .renderContainer("messages")
                     .withPageDef(compose(mailUuid)
-                            .container("messages", (model) -> {
-                                for (ConstraintViolation<?> constraintViolation : validationResult.getConstraintViolations()) {
-                                    model.put("errorMsg", constraintViolation.getMessage());
-                                }
-                            }));
+                            .container("messages", (model) -> model.put("errorMsg", getValidationErrorMessages(validationResult))));
         }
 
         Mail draft = composeMailService.openDraft(mailUuid, user);

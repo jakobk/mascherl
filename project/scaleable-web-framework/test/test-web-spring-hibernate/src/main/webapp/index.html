@@ -34,7 +34,7 @@
 
 <script>
     $(window).bind("mascherlresponse", function(event, container) {
-        if (container !== "dialogContent") {
+        if (container !== "dialogContent" && container !== "stateContainer" && container !== "dialogMessages") {
             $("div.modal-backdrop").remove();
         }
     });

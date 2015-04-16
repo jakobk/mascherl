@@ -1,5 +1,6 @@
 package org.mascherl.example.page.data;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.ws.rs.FormParam;
 
@@ -12,10 +13,12 @@ public class LoginBean {
 
     @FormParam("email")
     @Size(min = 1)
+    @NotNull
     private String email;
 
     @FormParam("password")
     @Size(min = 1)
+    @NotNull
     private String password;
 
     public String getEmail() {

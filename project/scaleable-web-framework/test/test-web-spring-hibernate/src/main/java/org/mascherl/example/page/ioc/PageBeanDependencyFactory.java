@@ -1,4 +1,4 @@
-package org.mascherl.example.page;
+package org.mascherl.example.page.ioc;
 
 import org.mascherl.example.domain.User;
 import org.mascherl.session.MascherlSession;

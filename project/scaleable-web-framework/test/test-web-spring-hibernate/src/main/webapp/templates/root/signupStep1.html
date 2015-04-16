@@ -1,19 +1,59 @@
 {{< signupDialog}}
 
 {{$dialogContent}}
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <h4 class="modal-title" id="myModalLabel">Sign Up - Step 1</h4>
-</div>
-<div class="modal-body">
 
-    content
+<form id="signUpForm" action="/signup/part1" method="post">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Sign Up - Step 1</h4>
+    </div>
+    <div class="modal-body">
+        {{$dialogMessages}}
+            {{> ../messages}}
+        {{/dialogMessages}}
 
-</div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-    <button type="button" class="btn btn-primary">Save changes</button>
-</div>
+        <div class="form-group">
+            <label for="inputFirstName">First name</label>
+            <input id="inputFirstName" type="text" name="firstName" class="form-control" placeholder="First name"  autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="inputLastName">Last name</label>
+            <input id="inputLastName" type="text" name="lastName" class="form-control" placeholder="Last name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="inputDateOfBirth">Date of birth</label>
+            <input id="inputDateOfBirth" type="date" name="dateOfBirth" class="form-control" placeholder="Date of birth" required>
+        </div>
+
+        <div class="form-group">
+            <label for="inputCountry">Country</label>
+            <select id="inputCountry" name="country" class="form-control" required onchange="submitData('/signup/selectCountry', $('#inputCountry').serialize(), 'stateContainer')">
+                <option value="AT">Austria</option>
+                <option value="DE">Germany</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        {{$stateContainer}}
+            <div class="form-group">
+                <label for="inputState">State</label>
+                <select id="inputState" name="state" class="form-control" required{{^states}} disabled{{/states}}>
+                    {{#states}}
+                        <option value="{{.}}">{{.}}</option>
+                    {{/states}}
+                    {{^states}}
+                        <option>Please select the country first</option>
+                    {{/states}}
+                </select>
+            </div>
+        {{/stateContainer}}
+    </div>
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Next step</button>
+    </div>
+</form>
 {{/dialogContent}}
 
 {{/ signupDialog}}

@@ -1,9 +1,12 @@
 package org.mascherl.example.page;
 
 import org.mascherl.page.MascherlPage;
+import org.mascherl.validation.ValidationResult;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Utils for our page classes.
@@ -33,6 +36,12 @@ public class PageUtils {
         } else {
             return mailInboxPage.inbox(page);
         }
+    }
+
+    public static List<String> getValidationErrorMessages(ValidationResult validationResult) {
+        return validationResult.getConstraintViolations().stream()
+                .map((violation) -> violation.getPropertyPath().toString() + ": " + violation.getMessage())
+                .collect(Collectors.toList());
     }
 
 }

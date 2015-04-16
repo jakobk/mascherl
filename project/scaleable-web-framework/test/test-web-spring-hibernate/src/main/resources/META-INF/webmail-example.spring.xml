@@ -30,6 +30,7 @@
             <bean class="org.mascherl.jaxrs.MascherlRequestFilter" />
             <bean class="org.mascherl.jaxrs.MascherlResponseFilter" />
             <bean class="org.mascherl.example.filter.WebMailRequestFilter" />
+            <bean class="org.mascherl.example.page.convert.LocalDateConverterProvider" />
         </jaxrs:providers>
         <jaxrs:inInterceptors>
             <bean class="org.mascherl.validation.cxf.CxfBeanValidationInInterceptor" />
@@ -53,7 +54,7 @@
     <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
 
     <!-- allow injection of the current user -->
-    <bean id="pageBeanDependencyFactory" class="org.mascherl.example.page.PageBeanDependencyFactory" />
+    <bean id="pageBeanDependencyFactory" class="org.mascherl.example.page.ioc.PageBeanDependencyFactory" />
     <bean id="user" factory-bean="pageBeanDependencyFactory" factory-method="getCurrentUser" scope="request">
         <aop:scoped-proxy />
     </bean>
