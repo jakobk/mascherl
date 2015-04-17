@@ -4,10 +4,12 @@
        xmlns:jaxrs="http://cxf.apache.org/jaxrs"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/aop   http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
             http://cxf.apache.org/jaxrs                   http://cxf.apache.org/schemas/jaxrs.xsd">
 
     <import resource="classpath:META-INF/cxf/cxf.xml" />
@@ -17,7 +19,7 @@
     <context:annotation-config />
     <context:component-scan base-package="org.mascherl.example" />
 
-    <jaxrs:server id="mascherlServer" address="/">
+    <jaxrs:server address="/">
         <jaxrs:serviceBeans>
             <ref bean="indexPage" />
             <ref bean="signUpPage" />
@@ -55,8 +57,11 @@
 
     <!-- allow injection of the current user -->
     <bean id="pageBeanDependencyFactory" class="org.mascherl.example.page.ioc.PageBeanDependencyFactory" />
-    <bean id="user" factory-bean="pageBeanDependencyFactory" factory-method="getCurrentUser" scope="request">
+    <bean id="user" factory-bean="pageBeanDependencyFactory" factory-method="getCurrentUser" scope="prototype">
         <aop:scoped-proxy />
     </bean>
+
+    <!--<task:annotation-driven executor="sendMailServiceExecutor" />-->
+    <task:executor id="sendMailServiceExecutor" pool-size="10" queue-capacity="50" />
 
 </beans>

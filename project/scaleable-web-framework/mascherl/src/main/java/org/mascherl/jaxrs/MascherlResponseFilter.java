@@ -1,5 +1,6 @@
 package org.mascherl.jaxrs;
 
+import org.apache.cxf.jaxrs.impl.tl.ThreadLocalProxy;
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlAction;
 import org.mascherl.servlet.MascherlFilter;
@@ -42,9 +43,27 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
     @Context
     private ResourceContext resourceContext;
 
+    @Context
+    private HttpServletRequest threadLocalRequest;
+
+    @Context
+    private HttpServletResponse threadLocalResponse;
+
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         MascherlApplication mascherlApplication = MascherlApplication.getInstance(servletContext);
+
+        if (threadLocalRequest instanceof ThreadLocalProxy) {
+            @SuppressWarnings("unchecked")
+            ThreadLocalProxy<HttpServletRequest> checkedRequest = (ThreadLocalProxy<HttpServletRequest>) threadLocalRequest;
+            MascherlFilter.setRequest(checkedRequest.get());
+        }
+        if (threadLocalResponse instanceof ThreadLocalProxy) {
+            @SuppressWarnings("unchecked")
+            ThreadLocalProxy<HttpServletResponse> checkedResponse = (ThreadLocalProxy<HttpServletResponse>) threadLocalResponse;
+            MascherlFilter.setResponse(checkedResponse.get());
+        }
+
         HttpServletRequest request = MascherlFilter.getRequest();
         HttpServletResponse response = MascherlFilter.getResponse();
 

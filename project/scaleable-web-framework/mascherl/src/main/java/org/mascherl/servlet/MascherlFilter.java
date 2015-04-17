@@ -16,7 +16,7 @@ import java.io.IOException;
  *
  * @author Jakob Korherr
  */
-@WebFilter(urlPatterns = "/*")
+@WebFilter(urlPatterns = "/*", asyncSupported = true)
 public class MascherlFilter implements Filter {
 
     private static ThreadLocal<HttpServletRequest> requestThreadLocal;
@@ -28,6 +28,22 @@ public class MascherlFilter implements Filter {
 
     public static HttpServletResponse getResponse() {
         return responseThreadLocal.get();
+    }
+
+    public static void setRequest(HttpServletRequest request) {
+        if (request != null) {
+            requestThreadLocal.set(request);
+        } else {
+            requestThreadLocal.remove();
+        }
+    }
+
+    public static void setResponse(HttpServletResponse response) {
+        if (response != null) {
+            responseThreadLocal.set(response);
+        } else {
+            responseThreadLocal.remove();
+        }
     }
 
     @Override

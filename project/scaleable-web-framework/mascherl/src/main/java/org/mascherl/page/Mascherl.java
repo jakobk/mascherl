@@ -5,6 +5,10 @@ import org.mascherl.render.ContainerMeta;
 import org.mascherl.render.MascherlRenderer;
 import org.mascherl.servlet.MascherlFilter;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.CompletionCallback;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
@@ -17,6 +21,17 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
  * @author Jakob Korherr
  */
 public class Mascherl {
+
+    public static void async(AsyncResponse asyncResponse, HttpServletRequest request, HttpServletResponse response) {
+        asyncResponse.register((CompletionCallback) throwable -> cleanupAsync());
+        MascherlFilter.setRequest(request);
+        MascherlFilter.setResponse(response);
+    }
+
+    public static void cleanupAsync() {
+        MascherlFilter.setRequest(null);
+        MascherlFilter.setResponse(null);
+    }
 
     public static MascherlPage page(String template) {
         MascherlApplication application = getMascherlApplication();
