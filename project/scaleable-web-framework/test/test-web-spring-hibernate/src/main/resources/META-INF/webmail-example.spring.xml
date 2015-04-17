@@ -62,6 +62,7 @@
     </bean>
 
     <!--<task:annotation-driven executor="sendMailServiceExecutor" />-->
+    <task:executor id="composeMailServiceExecutor" pool-size="10" queue-capacity="50" />
     <task:executor id="sendMailServiceExecutor" pool-size="10" queue-capacity="50" />
 
 </beans>

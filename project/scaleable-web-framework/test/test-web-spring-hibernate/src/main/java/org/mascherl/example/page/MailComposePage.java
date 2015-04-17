@@ -5,6 +5,7 @@ import org.mascherl.example.domain.MailAddress;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.page.data.ComposeMailBean;
 import org.mascherl.example.service.ComposeMailService;
+import org.mascherl.example.service.ComposeMailServiceAsync;
 import org.mascherl.example.service.SendMailServiceAsync;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlAction;
@@ -34,6 +35,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriBuilder;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
@@ -63,6 +66,9 @@ public class MailComposePage {
 
     @Inject
     private ComposeMailService composeMailService;
+
+    @Inject
+    private ComposeMailServiceAsync composeMailServiceAsync;
 
     @Inject
     private SendMailServiceAsync sendMailService;
@@ -113,18 +119,18 @@ public class MailComposePage {
             return;
         }
 
-        Mail draft = composeMailService.openDraft(mailUuid, user);
-        Mail sendMail = new Mail(
-                draft.getUuid(),
-                draft.getFrom(),
-                parseMailAddresses(composeMailBean.getTo()),
-                parseMailAddresses(composeMailBean.getCc()),
-                parseMailAddresses(composeMailBean.getBcc()),
-                composeMailBean.getSubject(),
-                composeMailBean.getMessageText());
-
         User localUser = MascherlSession.getInstance().get("user", User.class);
-        sendMailService.sendMail(sendMail, localUser)
+        composeMailServiceAsync.openDraft(mailUuid, localUser)
+                .map((draft) -> new Mail(
+                        draft.getUuid(),
+                        draft.getFrom(),
+                        parseMailAddresses(composeMailBean.getTo()),
+                        parseMailAddresses(composeMailBean.getCc()),
+                        parseMailAddresses(composeMailBean.getBcc()),
+                        composeMailBean.getSubject(),
+                        composeMailBean.getMessageText()))
+                .flatMap((sendMail) -> sendMailService.sendMail(sendMail, localUser))
+                .timeout(10, TimeUnit.SECONDS)
                 .subscribe(
                         (voidResult) -> {
                             Mascherl.async(asyncResponse, request, response);
@@ -139,6 +145,9 @@ public class MailComposePage {
                             Mascherl.cleanupAsync();
                         },
                         (error) -> {
+                            if (error instanceof TimeoutException) {
+                                System.out.println("timeout of RxJava got effective");
+                            }
                             asyncResponse.resume(error);
                         }
                 );
