@@ -6,7 +6,6 @@ import org.mascherl.render.MascherlRenderer;
 import org.mascherl.servlet.MascherlFilter;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
@@ -20,29 +19,24 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
  */
 public class Mascherl {
 
-    public static void async(HttpServletRequest request, HttpServletResponse response) {
-        MascherlFilter.setRequest(request);
-        MascherlFilter.setResponse(response);
-    }
-
-    public static void cleanupAsync() {
-        MascherlFilter.setRequest(null);
-        MascherlFilter.setResponse(null);
-    }
-
     public static MascherlPage page(String template) {
-        MascherlApplication application = getMascherlApplication();
+        HttpServletRequest request = MascherlFilter.getRequest();
+        if (request != null) {
+            ContainerMeta containerMeta = getContainerMeta(template, request);
+            return new MascherlPage(template, containerMeta);
+        } else {
+            return new LazyMascherlPage(template);
+        }
+    }
+
+    static ContainerMeta getContainerMeta(String template, HttpServletRequest request) {
+        MascherlApplication application = MascherlApplication.getInstance(request.getServletContext());
         MascherlRenderer mascherlRenderer = application.getMascherlRendererFactory().createMascherlRenderer();
-        String requestContainer = (String) MascherlFilter.getRequest().getAttribute(M_CONTAINER);
+        String requestContainer = (String) request.getAttribute(M_CONTAINER);
         if (requestContainer == null) {
             requestContainer = MAIN_CONTAINER;
         }
-        ContainerMeta containerMeta = mascherlRenderer.getContainerMeta(template, requestContainer);
-        return new MascherlPage(template, containerMeta);
-    }
-
-    private static MascherlApplication getMascherlApplication() {
-        return MascherlApplication.getInstance(MascherlFilter.getRequest().getServletContext());
+        return mascherlRenderer.getContainerMeta(template, requestContainer);
     }
 
     public static NavigationHolder stay() {
@@ -74,7 +68,10 @@ public class Mascherl {
         }
 
         public ContainerHolder renderContainer(String container) {
-            MascherlFilter.getRequest().setAttribute(M_CONTAINER, container);
+            HttpServletRequest request = MascherlFilter.getRequest();
+            if (request != null) {
+                request.setAttribute(M_CONTAINER, container);
+            }
             return new ContainerHolder(pageUrl, container);
         }
 

@@ -5,13 +5,15 @@ import org.apache.cxf.jaxrs.impl.AsyncResponseImpl;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.MessageContentsList;
 import rx.Observable;
+import rx.schedulers.Schedulers;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * TODO
+ * Custom JAX-RS invoker for CXF, that handles {@link rx.Observable} return values of resource methods by
+ * creating an {@link javax.ws.rs.container.AsyncResponse}.
  *
  * @author Jakob Korherr
  */
@@ -30,14 +32,16 @@ public class CxfObservableInvoker extends JAXRSInvoker {
                     AsyncResponseImpl asyncResponse = new AsyncResponseImpl(exchange.getInMessage());
                     asyncResponse.suspendContinuationIfNeeded();
 
-                    observable.subscribe(
-                            (entity) -> {
-                                asyncResponse.resume(entity);
-                            },
-                            (error) -> {
-                                asyncResponse.resume(error);
-                            }
-                    );
+                    observable
+                            .subscribeOn(Schedulers.computation())
+                            .subscribe(
+                                    (entity) -> {
+                                        asyncResponse.resume(entity);
+                                    },
+                                    (error) -> {
+                                        asyncResponse.resume(error);
+                                    }
+                            );
 
                     return new MessageContentsList(Collections.singletonList(null));  // like the method returned void
                 }

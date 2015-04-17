@@ -23,12 +23,16 @@ public class MascherlPage {
 
     private String pageTitle;
 
+    MascherlPage(String template) {
+        this.template = template;
+    }
+
     MascherlPage(String template, ContainerMeta requestContainerMeta) {
         this.template = template;
         findContainersToEvaluate(requestContainerMeta);
     }
 
-    private void findContainersToEvaluate(ContainerMeta containerMeta) {
+    protected void findContainersToEvaluate(ContainerMeta containerMeta) {
         containersToEvaluate.add(containerMeta.getContainerName());
         containerMeta.getChildren().forEach(this::findContainersToEvaluate);
     }
@@ -42,14 +46,14 @@ public class MascherlPage {
         return container(containerName, (model) -> {});
     }
 
-    public MascherlPage container(String containerName, ModelCalculator modelProvider) {
+    public MascherlPage container(String containerName, ModelCalculator modelCalculator) {
         if (containersToEvaluate.contains(containerName)) {
             Model model = containerModels.get(containerName);  // look for existing model --> model override
             if (model == null) {
                 model = new Model();
                 containerModels.put(containerName, model);
             }
-            modelProvider.populate(model);
+            modelCalculator.populate(model);
         }
         return this;
     }

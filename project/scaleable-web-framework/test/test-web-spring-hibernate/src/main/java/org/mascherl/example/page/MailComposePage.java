@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 import rx.Observable;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.groups.ConvertGroup;
 import javax.validation.groups.Default;
@@ -28,11 +26,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriBuilder;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
@@ -100,13 +98,11 @@ public class MailComposePage {
 
     @POST
     @Path("/mail/send/{mailUuid}")
-    public Observable<MascherlAction> send(
+    public Observable<Supplier<MascherlAction>> send(
             @PathParam("mailUuid") String mailUuid,
-            @Valid @ConvertGroup(from = Default.class, to = ComposeMailBean.Send.class) @BeanParam ComposeMailBean composeMailBean,
-            @Context HttpServletRequest request,
-            @Context HttpServletResponse response) {
+            @Valid @ConvertGroup(from = Default.class, to = ComposeMailBean.Send.class) @BeanParam ComposeMailBean composeMailBean) {
         if (!validationResult.isValid()) {
-            return Observable.just(Mascherl
+            return Observable.just(() -> Mascherl
                     .stay()
                     .renderContainer("messages")
                     .withPageDef(compose(mailUuid)
@@ -124,19 +120,13 @@ public class MailComposePage {
                         composeMailBean.getSubject(),
                         composeMailBean.getMessageText()))
                 .flatMap((sendMail) -> sendMailService.sendMail(sendMail, localUser))
-                .map((voidResult) -> {
-                    Mascherl.async(request, response);  // TODO do something better
-                    try {
-                        return Mascherl
+                .map((voidResult) -> (Supplier<MascherlAction>) () -> Mascherl
                                 .navigate(UriBuilder.fromMethod(MailInboxPage.class, "sent").build())
                                 .renderContainer("content")
                                 .withPageDef(
                                         mailInboxPage.sent(1)
-                                                .container("messages", (model) -> model.put("successMsg", "Message sent!")));
-                    } finally {
-                        Mascherl.cleanupAsync();  // TODO do something better
-                    }
-                })
+                                                .container("messages", (model) -> model.put("successMsg", "Message sent!")))
+                )
                 .timeout(10, TimeUnit.SECONDS);
     }
 

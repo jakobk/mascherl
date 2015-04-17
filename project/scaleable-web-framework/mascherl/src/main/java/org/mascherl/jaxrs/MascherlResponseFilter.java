@@ -1,7 +1,9 @@
 package org.mascherl.jaxrs;
 
 import org.mascherl.application.MascherlApplication;
+import org.mascherl.page.LazyMascherlPage;
 import org.mascherl.page.MascherlAction;
+import org.mascherl.page.MascherlPage;
 import org.mascherl.servlet.MascherlFilter;
 import org.mascherl.session.MascherlSession;
 import org.mascherl.session.MascherlSessionStorage;
@@ -21,6 +23,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
+import java.util.function.Supplier;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_APP_VERSION;
@@ -48,9 +51,29 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
         HttpServletRequest request = MascherlFilter.getRequest();
         HttpServletResponse response = MascherlFilter.getResponse();
 
+        evaluateLazyMascherlPage(responseContext, request);
+
         saveSession(mascherlApplication, response);
 
         handleMascherlActionEntity(responseContext, mascherlApplication, request, response);
+    }
+
+    private void evaluateLazyMascherlPage(ContainerResponseContext responseContext, HttpServletRequest request) {
+        if (responseContext.getEntity() instanceof Supplier<?>) {
+            Supplier<?> supplier = (Supplier<?>) responseContext.getEntity();
+            responseContext.setEntity(supplier.get());
+        }
+
+        if (responseContext.getEntity() instanceof LazyMascherlPage) {
+            LazyMascherlPage lazyMascherlPage = (LazyMascherlPage) responseContext.getEntity();
+            lazyMascherlPage.build(request);
+        } else if (responseContext.getEntity() instanceof MascherlAction) {
+            MascherlAction mascherlAction = (MascherlAction) responseContext.getEntity();
+            if (mascherlAction.getMascherlPage() instanceof LazyMascherlPage) {
+                LazyMascherlPage lazyMascherlPage = (LazyMascherlPage) responseContext.getEntity();
+                lazyMascherlPage.build(request);
+            }
+        }
     }
 
     private void saveSession(MascherlApplication mascherlApplication, HttpServletResponse response) {
