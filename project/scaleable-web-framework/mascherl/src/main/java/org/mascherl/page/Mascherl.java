@@ -7,8 +7,6 @@ import org.mascherl.servlet.MascherlFilter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.CompletionCallback;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
@@ -22,8 +20,7 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
  */
 public class Mascherl {
 
-    public static void async(AsyncResponse asyncResponse, HttpServletRequest request, HttpServletResponse response) {
-        asyncResponse.register((CompletionCallback) throwable -> cleanupAsync());
+    public static void async(HttpServletRequest request, HttpServletResponse response) {
         MascherlFilter.setRequest(request);
         MascherlFilter.setResponse(response);
     }

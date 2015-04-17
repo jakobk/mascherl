@@ -14,7 +14,6 @@ import org.mascherl.session.MascherlSession;
 import org.mascherl.validation.ValidationResult;
 import org.springframework.stereotype.Component;
 import rx.Observable;
-import rx.schedulers.Schedulers;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -29,14 +28,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriBuilder;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
@@ -104,23 +100,21 @@ public class MailComposePage {
 
     @POST
     @Path("/mail/send/{mailUuid}")
-    public void send(
+    public Observable<MascherlAction> send(
             @PathParam("mailUuid") String mailUuid,
             @Valid @ConvertGroup(from = Default.class, to = ComposeMailBean.Send.class) @BeanParam ComposeMailBean composeMailBean,
-            @Suspended AsyncResponse asyncResponse,
             @Context HttpServletRequest request,
             @Context HttpServletResponse response) {
         if (!validationResult.isValid()) {
-            asyncResponse.resume(Mascherl
+            return Observable.just(Mascherl
                     .stay()
                     .renderContainer("messages")
                     .withPageDef(compose(mailUuid)
                             .container("messages", (model) -> model.put("errorMsg", getValidationErrorMessages(validationResult)))));
-            return;
         }
 
         User localUser = MascherlSession.getInstance().get("user", User.class);
-        composeMailServiceAsync.openDraft(mailUuid, localUser)
+        return composeMailServiceAsync.openDraft(mailUuid, localUser)
                 .map((draft) -> new Mail(
                         draft.getUuid(),
                         draft.getFrom(),
@@ -130,27 +124,20 @@ public class MailComposePage {
                         composeMailBean.getSubject(),
                         composeMailBean.getMessageText()))
                 .flatMap((sendMail) -> sendMailService.sendMail(sendMail, localUser))
-                .timeout(10, TimeUnit.SECONDS)
-                .subscribe(
-                        (voidResult) -> {
-                            Mascherl.async(asyncResponse, request, response);
-                            asyncResponse.resume(
-                                    Mascherl
-                                            .navigate(UriBuilder.fromMethod(MailInboxPage.class, "sent").build())
-                                            .renderContainer("content")
-                                            .withPageDef(
-                                                    mailInboxPage.sent(1)
-                                                            .container("messages", (model) -> model.put("successMsg", "Message sent!")))
-                            );
-                            Mascherl.cleanupAsync();
-                        },
-                        (error) -> {
-                            if (error instanceof TimeoutException) {
-                                System.out.println("timeout of RxJava got effective");
-                            }
-                            asyncResponse.resume(error);
-                        }
-                );
+                .map((voidResult) -> {
+                    Mascherl.async(request, response);  // TODO do something better
+                    try {
+                        return Mascherl
+                                .navigate(UriBuilder.fromMethod(MailInboxPage.class, "sent").build())
+                                .renderContainer("content")
+                                .withPageDef(
+                                        mailInboxPage.sent(1)
+                                                .container("messages", (model) -> model.put("successMsg", "Message sent!")));
+                    } finally {
+                        Mascherl.cleanupAsync();  // TODO do something better
+                    }
+                })
+                .timeout(10, TimeUnit.SECONDS);
     }
 
     @POST

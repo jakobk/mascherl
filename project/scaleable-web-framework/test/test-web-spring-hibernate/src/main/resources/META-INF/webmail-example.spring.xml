@@ -37,6 +37,9 @@
         <jaxrs:inInterceptors>
             <bean class="org.mascherl.validation.cxf.CxfBeanValidationInInterceptor" />
         </jaxrs:inInterceptors>
+        <jaxrs:invoker>
+            <bean class="org.mascherl.async.cxf.CxfObservableInvoker" />
+        </jaxrs:invoker>
     </jaxrs:server>
 
     <!-- JPA Entity Manager Factory -->

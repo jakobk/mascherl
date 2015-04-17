@@ -1,6 +1,5 @@
 package org.mascherl.jaxrs;
 
-import org.apache.cxf.jaxrs.impl.tl.ThreadLocalProxy;
 import org.mascherl.application.MascherlApplication;
 import org.mascherl.page.MascherlAction;
 import org.mascherl.servlet.MascherlFilter;
@@ -14,12 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.ResourceContext;
-import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -45,27 +42,9 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
     @Context
     private ResourceContext resourceContext;
 
-    @Context
-    private HttpServletRequest threadLocalRequest;
-
-    @Context
-    private HttpServletResponse threadLocalResponse;
-
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
         MascherlApplication mascherlApplication = MascherlApplication.getInstance(servletContext);
-
-        if (threadLocalRequest instanceof ThreadLocalProxy) {
-            @SuppressWarnings("unchecked")
-            ThreadLocalProxy<HttpServletRequest> checkedRequest = (ThreadLocalProxy<HttpServletRequest>) threadLocalRequest;
-            MascherlFilter.setRequest(checkedRequest.get());
-        }
-        if (threadLocalResponse instanceof ThreadLocalProxy) {
-            @SuppressWarnings("unchecked")
-            ThreadLocalProxy<HttpServletResponse> checkedResponse = (ThreadLocalProxy<HttpServletResponse>) threadLocalResponse;
-            MascherlFilter.setResponse(checkedResponse.get());
-        }
-
         HttpServletRequest request = MascherlFilter.getRequest();
         HttpServletResponse response = MascherlFilter.getResponse();
 

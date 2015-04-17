@@ -1,5 +1,6 @@
 package org.mascherl.servlet;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -16,7 +17,7 @@ import java.io.IOException;
  *
  * @author Jakob Korherr
  */
-@WebFilter(urlPatterns = "/*", asyncSupported = true)
+@WebFilter(urlPatterns = "/*", asyncSupported = true, dispatcherTypes = {DispatcherType.REQUEST, DispatcherType.ASYNC})
 public class MascherlFilter implements Filter {
 
     private static ThreadLocal<HttpServletRequest> requestThreadLocal;
