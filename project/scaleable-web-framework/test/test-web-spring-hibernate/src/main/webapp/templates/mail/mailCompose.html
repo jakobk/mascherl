@@ -14,21 +14,9 @@
 
 {{#mail}}
     <div class="well well-sm">
-        <button id="backBtn" type="button" class="btn btn-default" aria-label="Go Back">
+        <button id="backBtn" type="button" class="btn btn-default" aria-label="Go Back" data-uuid="{{uuid}}">
             <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
         </button>
-        <script>
-            $("#backBtn").click(function() {
-                var formData = $("#composeForm").serialize();
-
-                var lastState = History.getStateByIndex(-2);
-                if (typeof lastState !== "undefined") {
-                    formData += "&returnTo=" + encodeURIComponent(History.getShortUrl(lastState.url));
-                }
-
-                submitData("/mail/save/{{uuid}}", formData, "content");
-            });
-        </script>
     </div>
 
     <form id="composeForm" action="/mail/send/{{uuid}}" method="post">

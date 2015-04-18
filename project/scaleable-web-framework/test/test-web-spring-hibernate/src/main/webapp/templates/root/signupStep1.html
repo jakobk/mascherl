@@ -30,7 +30,7 @@
 
         <div class="form-group{{#countryError}} has-error{{/countryError}}">
             <label for="inputCountry" class="control-label">Country</label>
-            <select id="inputCountry" name="country" class="form-control" required onchange="submitData('/signup/selectCountry', $('#inputCountry').serialize(), 'stateContainer')">
+            <select id="inputCountry" name="country" class="form-control" required>
                 {{#countries}}
                     <option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>
                 {{/countries}}

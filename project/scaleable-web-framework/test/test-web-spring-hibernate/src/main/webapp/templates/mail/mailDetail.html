@@ -11,19 +11,9 @@
         <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
     </button>
     {{#mail}}
-        <button id="deleteBtn" type="button" class="btn btn-default" aria-label="Delete">
+        <button id="deleteBtn" type="button" class="btn btn-default" aria-label="Delete" data-uuid="{{uuid}}">
             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
         </button>
-        <script>
-            $("#deleteBtn").click(function() {
-                var lastState = History.getStateByIndex(-2);
-                var data = $.makeArray([]);
-                if (typeof lastState !== "undefined") {
-                    data.push("returnTo=" + History.getShortUrl(lastState.url));
-                }
-                submitData("/mail/{{uuid}}/delete", data.join("&"), "content");
-            });
-        </script>
     {{/mail}}
 </div>
 

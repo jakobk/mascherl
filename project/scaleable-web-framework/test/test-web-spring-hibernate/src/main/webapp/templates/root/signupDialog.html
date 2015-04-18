@@ -10,16 +10,6 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            $("div.modal-backdrop").remove();
-            var dialog = $('#signUpDialog');
-            dialog.modal('show');
-            dialog.on('hide.bs.modal', function (e) {
-                $("div.modal-backdrop").remove();
-                History.pushState({"container": "dialog"}, null, "/");
-            })
-        </script>
     {{/dialog}}
 {{/pageContent}}
 

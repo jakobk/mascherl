@@ -62,10 +62,16 @@ public class IndexPage {
         }
         if (user != null) {
             session.put("user", user);
-            return Mascherl.navigate("/mail").renderAll().withPageDef(mailOverviewPage.inbox(1));
+            return Mascherl
+                    .navigate("/mail")
+                    .renderAll()
+                    .withPageDef(mailOverviewPage.inbox(1))
+                    .withPageGroup("MailInboxPage");
         } else {
-            return Mascherl.navigate("/login").renderAll().withPageDef(
-                    login().container("messages", (model) -> model.put("errorMsg", "Invalid email or password!")));
+            return Mascherl
+                    .navigate("/login")
+                    .renderAll()
+                    .withPageDef(login().container("messages", (model) -> model.put("errorMsg", "Invalid email or password!")));
         }
 
     }
@@ -75,8 +81,10 @@ public class IndexPage {
     public MascherlAction logoutAction() {
         MascherlSession session = MascherlSession.getInstance();
         session.remove("user");
-        return Mascherl.navigate("/login").renderAll().withPageDef(
-                login().container("messages", (model) -> model.put("infoMsg", "Successfully signed out!")));
+        return Mascherl
+                .navigate("/login")
+                .renderAll()
+                .withPageDef(login().container("messages", (model) -> model.put("infoMsg", "Successfully signed out!")));
 
     }
 

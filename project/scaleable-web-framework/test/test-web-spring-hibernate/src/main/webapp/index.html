@@ -7,38 +7,19 @@
     <title>{{title}}</title>
 
     <link rel="stylesheet" href="/webjars/bootstrap/3.3.4/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/resources/style.css" />
-
-    <script src="/webjars/jquery/2.1.3/jquery.min.js"></script>
-    <script src="/webjars/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-    <script src="/webjars/historyjs/1.8.0/scripts/bundled/html4+html5/jquery.history.js"></script>
+    <link rel="stylesheet" href="/resources/1.0.0/style.css" />
 
     <script>
-        function getParameterByName(name) {
-            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-                    results = regex.exec(location.search);
-            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-        }
+        window.mascherlConfig = {
+            applicationVersion: "{{applicationVersion}}",
+            pageGroup: "{{pageGroup}}"
+        };
     </script>
 </head>
 <body>
 {{$main}}{{/main}}
 
-<script>
-    window.mascherl = window.mascherl || {};
-    window.mascherl.applicationVersion = "{{applicationVersion}}";
-</script>
-
-<script src="/mascherl/1.0.0/js/mascherl.js"></script>
-
-<script>
-    $(window).bind("mascherlresponse", function(event, container) {
-        if (container !== "dialogContent" && container !== "stateContainer" && container !== "dialogMessages") {
-            $("div.modal-backdrop").remove();
-        }
-    });
-</script>
+<script data-main="/resources/1.0.0/main.js" src="/webjars/requirejs/2.1.17/require.min.js"></script>
 
 <script id="error" type="text/x-error-template">
     <nav class="navbar navbar-inverse">

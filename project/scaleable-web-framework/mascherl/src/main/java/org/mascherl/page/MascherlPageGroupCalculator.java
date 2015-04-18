@@ -24,10 +24,10 @@ public class MascherlPageGroupCalculator {
     public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo, String actionPageGroup) {
         String pageGroup = findPageGroup(resourceInfo, actionPageGroup);
 
-        if (!mascherlApplication.isDevelopmentMode()) {
-            // SHA-256 plain resource page id in order to hide resource class + method
-            pageGroup = sha256(pageGroup);
-        }
+//        if (!mascherlApplication.isDevelopmentMode()) {
+//            // SHA-256 plain resource page id in order to hide resource class + method
+//            pageGroup = sha256(pageGroup);
+//        }
 
         return pageGroup;
     }
@@ -40,7 +40,7 @@ public class MascherlPageGroupCalculator {
         if (pageGroupAnnotation != null) {
             return pageGroupAnnotation.value();
         } else {
-            return resourceInfo.getResourceClass().getName();
+            return resourceInfo.getResourceClass().getSimpleName();
         }
     }
 

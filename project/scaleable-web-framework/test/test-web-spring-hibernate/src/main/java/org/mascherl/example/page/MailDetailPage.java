@@ -79,7 +79,8 @@ public class MailDetailPage {
                 .navigate(returnTo)
                 .renderContainer("content")
                 .withPageDef(determineReturnToPage(mailInboxPage, returnTo, page)
-                        .container("messages", (model) -> model.put("successMsg", "Mail " + whatWeDid + ".")));
+                        .container("messages", (model) -> model.put("successMsg", "Mail " + whatWeDid + ".")))
+                .withPageGroup("MailInboxPage");
     }
 
 }

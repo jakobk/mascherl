@@ -127,7 +127,9 @@ public class MailComposePage {
                                                 .renderContainer("content")
                                                 .withPageDef(
                                                         mailInboxPage.sent(1)
-                                                                .container("messages", (model) -> model.put("successMsg", "Message sent!"))))
+                                                                .container("messages", (model) -> model.put("successMsg", "Message sent!")))
+                                                .withPageGroup("MailInboxPage")
+                                )
                 );
     }
 
@@ -152,7 +154,8 @@ public class MailComposePage {
                 .renderContainer("content")
                 .withPageDef(
                         determineReturnToPage(mailInboxPage, returnTo, parsePageParameter(returnTo))
-                                .container("messages", (model) -> model.put("infoMsg", "Draft saved!")));
+                                .container("messages", (model) -> model.put("infoMsg", "Draft saved!")))
+                .withPageGroup("MailInboxPage");
     }
 
     private Set<MailAddress> parseMailAddresses(String mailAddressInput) {
