@@ -1,0 +1,56 @@
+{{!
+Copyright 2015, Jakob Korherr
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+}}
+
+{{< signupDialog}}
+
+{{$dialogContent}}
+
+{{#bean}}
+<form id="signUpForm" action="/signup/step2" method="post">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Sign Up - Step 2</h4>
+    </div>
+    <div class="modal-body">
+        {{$dialogMessages}}
+            {{> ../messages}}
+        {{/dialogMessages}}
+
+        <div class="form-group{{#emailError}} has-error{{/emailError}}">
+            <label for="inputEmail" class="control-label">E-Mail</label>
+            <input id="inputEmail" type="email" name="email" class="form-control" placeholder="E-Mail" value="{{email}}" required autofocus>
+        </div>
+
+        <div class="form-group{{#passwordError}} has-error{{/passwordError}}">
+            <label for="inputPassword" class="control-label">Password</label>
+            <input id="inputPassword" type="password" name="password" class="form-control" placeholder="Password" value="{{password}}" required>
+        </div>
+
+        <div class="form-group{{#passwordRepeatError}} has-error{{/passwordRepeatError}}">
+            <label for="inputPasswordRepeat" class="control-label">Repeat Password</label>
+            <input id="inputPasswordRepeat" type="password" name="passwordRepeat" class="form-control" placeholder="Repeat Password" value="{{passwordRepeat}}" required>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn" onclick="history.back()">Back</button>
+        <button type="submit" class="btn btn-primary">Finish</button>
+    </div>
+</form>
+{{/bean}}
+
+{{/dialogContent}}
+
+{{/ signupDialog}}

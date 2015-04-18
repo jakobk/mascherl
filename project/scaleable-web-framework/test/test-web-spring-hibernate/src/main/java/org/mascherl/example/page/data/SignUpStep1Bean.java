@@ -22,11 +22,11 @@ import javax.ws.rs.FormParam;
 import java.time.LocalDate;
 
 /**
- * Bean for sign up form, part 1.
+ * Bean for sign up form, step 1.
  *
  * @author Jakob Korherr
  */
-public class SignUpPart1Bean {
+public class SignUpStep1Bean {
 
     @FormParam("firstName")
     @Size(min = 1)

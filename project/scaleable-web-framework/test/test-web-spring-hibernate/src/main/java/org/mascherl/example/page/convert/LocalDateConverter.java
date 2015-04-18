@@ -30,7 +30,11 @@ public class LocalDateConverter implements ParamConverter<LocalDate> {
 
     @Override
     public LocalDate fromString(String value) {
-        return LocalDate.parse(value, DateTimeFormatter.ofPattern(PATTERN));
+        try {
+            return LocalDate.parse(value, DateTimeFormatter.ofPattern(PATTERN));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot parse " + value + " into LocalDate");
+        }
     }
 
     @Override

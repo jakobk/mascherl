@@ -107,8 +107,8 @@ public class MascherlSession {
         if (jsonRootNode.has(key)) {
             try {
                 return objectMapper.reader(expectedType).readValue(jsonRootNode.path(key));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (IOException | RuntimeException e) {
+                return null;
             }
         }
         return null;

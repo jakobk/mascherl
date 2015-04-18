@@ -15,12 +15,23 @@
  */
 package org.mascherl.example.service;
 
+import org.mascherl.example.domain.Mail;
+import org.mascherl.example.domain.MailAddress;
+import org.mascherl.example.domain.SignUpRequest;
+import org.mascherl.example.entity.UserEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.mascherl.example.service.LoginService.sha256;
 
 /**
  * Service for sign up of new users.
@@ -63,6 +74,12 @@ public class SignUpService {
         ));
     }
 
+    @PersistenceContext
+    private EntityManager em;
+
+    @Inject
+    private SendMailService sendMailService;
+
     public List<String> getCountries() {
         return Arrays.asList("Austria", "Germany", "other");
     }
@@ -74,6 +91,44 @@ public class SignUpService {
         }
         return states;
     }
+
+    @Transactional
+    public void signUp(SignUpRequest signUpRequest) {
+        boolean userExists = !em.createQuery(
+                "select u.uuid from UserEntity u where u.email = :email")
+                .setParameter("email", signUpRequest.getEmail())
+                .getResultList().isEmpty();
+        if (userExists) {
+            throw new IllegalStateException("User with given email already exists");
+        }
+
+        UserEntity entity = new UserEntity();
+        entity.setFirstName(signUpRequest.getFirstName());
+        entity.setLastName(signUpRequest.getLastName());
+        entity.setEmail(signUpRequest.getEmail());
+        entity.setPasswordHash(sha256(signUpRequest.getPassword()));
+        // TODO more fields
+
+        em.persist(entity);
+        em.flush();
+
+        sendMailService.sendMailFromSystem(new Mail(
+                new MailAddress("webmail@mascherl.org"),
+                Collections.singleton(new MailAddress(signUpRequest.getEmail())),
+                null,
+                null,
+                "Welcome to Mascherl WebMail!",
+                "Hello " + signUpRequest.getFirstName() + " " + signUpRequest.getLastName() + "!\n" +
+                        "\n" +
+                        "Your e-mail address is: " + signUpRequest.getEmail() + "\n" +
+                        "\n" +
+                        "We wish you a lot of fun with Mascherl WebMail.\n" +
+                        "\n" +
+                        "Cheers,\n" +
+                        "Your Mascherl WebMail team.\n"
+        ));
+    }
+
 
 
 }

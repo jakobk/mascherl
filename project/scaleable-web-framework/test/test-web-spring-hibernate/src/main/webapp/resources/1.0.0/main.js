@@ -27,6 +27,9 @@ require.config({
         history: {
             deps: ['jquery'],
             exports: 'History'
+        },
+        bootstrap: {
+            deps: ['jquery']
         }
     },
     deps: ['./webmail']

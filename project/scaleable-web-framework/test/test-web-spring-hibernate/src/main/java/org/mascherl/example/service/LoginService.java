@@ -73,7 +73,7 @@ public class LoginService {
         em.flush();
     }
 
-    private static String sha256(String value) {
+    public static String sha256(String value) {
         MessageDigest messageDigest = createMessageDigest();
         messageDigest.update(value.getBytes(StandardCharsets.UTF_8));
         byte[] digest = messageDigest.digest();

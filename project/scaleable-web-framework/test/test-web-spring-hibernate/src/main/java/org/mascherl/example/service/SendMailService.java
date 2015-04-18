@@ -95,6 +95,32 @@ public class SendMailService {
         em.flush();
     }
 
+    @Transactional
+    public void sendMailFromSystem(Mail mail) {
+        if (mail.getTo() == null || mail.getTo().isEmpty()) {
+            throw new IllegalArgumentException("Receiver list cannot be empty");
+        }
+
+        ZonedDateTime sendTime = ZonedDateTime.now();
+
+        List<String> receiveUserUuids = findReceiveUserUuids(mail);
+        for (String receiveUserUuid : receiveUserUuids) {
+            MailEntity receiveEntity = new MailEntity(MailType.RECEIVED);
+            receiveEntity.setUser(em.getReference(UserEntity.class, receiveUserUuid));
+            receiveEntity.setDateTime(sendTime);
+            receiveEntity.setUnread(true);
+            receiveEntity.setFrom(mail.getFrom());
+            receiveEntity.setTo(mail.getTo());
+            receiveEntity.setCc(mail.getCc());
+            receiveEntity.setBcc(mail.getBcc());
+            receiveEntity.setSubject(mail.getSubject());
+            receiveEntity.setMessageText(mail.getMessageText());
+            em.persist(receiveEntity);
+        }
+
+        em.flush();
+    }
+
     private List<String> findReceiveUserUuids(Mail mail) {
         Set<String> mailReceiver = new HashSet<>();
         mail.getTo().forEach((address) -> mailReceiver.add(address.getAddress()));

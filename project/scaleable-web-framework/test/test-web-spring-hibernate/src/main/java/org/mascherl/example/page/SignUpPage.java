@@ -15,12 +15,16 @@
  */
 package org.mascherl.example.page;
 
+import org.mascherl.example.domain.SignUpRequest;
 import org.mascherl.example.page.data.SelectOption;
-import org.mascherl.example.page.data.SignUpPart1Bean;
+import org.mascherl.example.page.data.SignUpStep1Bean;
+import org.mascherl.example.page.data.SignUpStep2Bean;
 import org.mascherl.example.service.SignUpService;
 import org.mascherl.page.Mascherl;
 import org.mascherl.page.MascherlAction;
 import org.mascherl.page.MascherlPage;
+import org.mascherl.page.Model;
+import org.mascherl.session.MascherlSession;
 import org.mascherl.validation.ValidationResult;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +36,7 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -52,16 +57,39 @@ public class SignUpPage {
     @Inject
     private ValidationResult validationResult;
 
+    @Inject
+    private MascherlSession session;
+
+    @Inject
+    private IndexPage indexPage;
+
     @GET
     @Path("/signup")
     public MascherlPage signUp() {
+        SignUpStep1Bean bean = session.get("signUpStep1", SignUpStep1Bean.class);
+
         return Mascherl.page("/templates/root/signupStep1.html")
                 .pageTitle("SignUp - WebMail powered by Mascherl")
                 .container("dialogContent", (model) -> {
-                    model.put("bean", new SignUpPart1Bean());
+                    model.put("bean", bean == null ? new SignUpStep1Bean() : bean);
                     model.put("countries", convertToSelectOptions(signUpService.getCountries(), null));
                 })
                 .container("stateContainer", (model) -> model.put("states", convertToSelectOptions(signUpService.getStates("Austria"), null)));
+    }
+
+    @GET
+    @Path("/signup/2")
+    public MascherlPage signUpStep2() {
+        SignUpStep1Bean signUpStep1 = session.get("signUpStep1", SignUpStep1Bean.class);
+        if (signUpStep1 != null) {
+            return Mascherl.page("/templates/root/signupStep2.html")
+                    .pageTitle("SignUp - WebMail powered by Mascherl")
+                    .container("dialogContent", (model) -> {
+                        model.put("bean", new SignUpStep2Bean());
+                    });
+        } else {
+            return signUp().replaceUrl("/signup");
+        }
     }
 
     @POST
@@ -76,11 +104,13 @@ public class SignUpPage {
 
     @POST
     @Path("/signup/step1")
-    public MascherlAction signupStep1(@Valid @BeanParam SignUpPart1Bean bean) {
+    public MascherlAction signUpStep1(@Valid @BeanParam SignUpStep1Bean bean) {
         if (validationResult.isValid()) {
+            session.put("signUpStep1", bean);
             return Mascherl
-                    .navigate("/login")
-                    .redirect(); // TODO next step
+                    .navigate("/signup/2")
+                    .renderContainer("dialogContent")
+                    .withPageDef(signUpStep2());
         } else {
             return Mascherl
                     .stay()
@@ -89,26 +119,81 @@ public class SignUpPage {
                             .container("dialogContent", (model) -> {
                                 model.put("bean", bean);
                                 model.put("countries", convertToSelectOptions(signUpService.getCountries(), bean.getCountry()));
-
-                                if (hasValidationError("firstName")) {
-                                    model.put("firstNameError", true);
-                                }
-                                if (hasValidationError("lastName")) {
-                                    model.put("lastNameError", true);
-                                }
-                                if (hasValidationError("dateOfBirth")) {
-                                    model.put("dateOfBirthError", true);
-                                }
-                                if (hasValidationError("country")) {
-                                    model.put("countryError", true);
-                                }
-                                if (hasValidationError("state")) {
-                                    model.put("stateError", true);
-                                }
+                                addValidationErrors(model, "firstName", "lastName", "dateOfBirth", "country", "state");
                             })
                             .container("stateContainer", (model) -> model.put("states", convertToSelectOptions(signUpService.getStates(bean.getCountry()), bean.getState())))
                             .container("dialogMessages", (model) -> model.put("errorMsg", "Invalid input.")));
         }
+    }
+
+    @POST
+    @Path("/signup/step2")
+    public MascherlAction signUpStep2(@Valid @BeanParam SignUpStep2Bean bean) {
+        SignUpStep1Bean signUpStep1 = session.get("signUpStep1", SignUpStep1Bean.class);
+        if (signUpStep1 == null) {
+            return Mascherl
+                    .navigate("/signup")
+                    .renderContainer("dialogContent")
+                    .withPageDef(signUp().container("dialogMessages", (model) -> model.put("errorMsg", "You need to complete step 1 first.")));
+        }
+
+        boolean serviceCallError = false;
+        if (validationResult.isValid()) {
+            try {
+                signUpService.signUp(new SignUpRequest(
+                        signUpStep1.getFirstName(),
+                        signUpStep1.getLastName(),
+                        signUpStep1.getDateOfBirth(),
+                        signUpStep1.getCountry(),
+                        signUpStep1.getState(),
+                        bean.getEmail(),
+                        bean.getPassword()
+                ));
+            } catch (RuntimeException e) {
+                serviceCallError = true;
+            }
+
+            if (!serviceCallError) {
+                session.remove("signUpStep1");
+                return Mascherl
+                        .navigate("/login")
+                        .renderAll()
+                        .withPageDef(
+                                indexPage.login()
+                                        .container("messages", (model) -> model.put("successMsg", "Successfully signed up. You can now log in.")));
+            }
+        }
+
+        boolean emailAddressExists = serviceCallError;
+        return Mascherl
+                .stay()
+                .renderContainer("dialogContent")
+                .withPageDef(signUpStep2()
+                        .container("dialogContent", (model) -> {
+                            model.put("bean", bean);
+                            addValidationErrors(model, "email", "password", "passwordRepeat");
+                            if (hasValidationError("passwordsMatching")) {
+                                model.put("passwordError", true);
+                                model.put("passwordRepeatError", true);
+                            }
+
+                            if (emailAddressExists) {
+                                model.put("emailError", true);
+                            }
+                        })
+                        .container("dialogMessages", (model) -> {
+                            if (emailAddressExists) {
+                                model.put("errorMsg", "User with this email address already exists.");
+                            } else {
+                                model.put("errorMsg", "Invalid input.");
+                            }
+                        }));
+    }
+
+    private void addValidationErrors(Model model, String... fields) {
+        Arrays.stream(fields)
+                .filter(this::hasValidationError)
+                .forEach(field -> model.put(field + "Error", true));
     }
 
     private boolean hasValidationError(String field) {
