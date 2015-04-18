@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import static org.mascherl.example.service.MailConverter.convertToDomain;
+import static org.mascherl.example.service.convert.MailConverter.convertToDomain;
 
 /**
  * Service for composing mails.

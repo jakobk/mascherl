@@ -5,6 +5,7 @@ import org.mascherl.example.domain.Mail;
 import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.entity.MailEntity;
+import org.mascherl.example.service.convert.MailConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +14,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.mascherl.example.service.MailConverter.convertToDomain;
+import static org.mascherl.example.service.convert.MailConverter.convertToDomain;
 
 /**
  * Service for accessing a user's mails.

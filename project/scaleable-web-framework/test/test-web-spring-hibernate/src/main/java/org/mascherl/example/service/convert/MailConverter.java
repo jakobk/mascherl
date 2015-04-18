@@ -1,4 +1,4 @@
-package org.mascherl.example.service;
+package org.mascherl.example.service.convert;
 
 import org.mascherl.example.domain.Mail;
 import org.mascherl.example.entity.MailEntity;
@@ -8,9 +8,9 @@ import org.mascherl.example.entity.MailEntity;
  *
  * @author Jakob Korherr
  */
-class MailConverter {
+public class MailConverter {
 
-    static Mail convertToDomain(MailEntity entity) {
+    public static Mail convertToDomain(MailEntity entity) {
         return new Mail(
                 entity.getUuid(),
                 entity.getDateTime(),
