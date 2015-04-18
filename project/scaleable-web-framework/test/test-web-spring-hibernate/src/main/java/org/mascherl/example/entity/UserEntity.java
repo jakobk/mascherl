@@ -15,9 +15,12 @@
  */
 package org.mascherl.example.entity;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.time.LocalDate;
 
 /**
  * Entity for users.
@@ -39,6 +42,16 @@ public class UserEntity extends BaseEntity {
 
     @Column(name = "last_name", length = 100)
     private String lastName;
+
+    @Type(type = "org.jadira.usertype.dateandtime.threeten.PersistentLocalDate")
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "country", length = 50)
+    private String country;
+
+    @Column(name = "state", length = 50)
+    private String state;
 
     public UserEntity() {}
 
@@ -72,5 +85,29 @@ public class UserEntity extends BaseEntity {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

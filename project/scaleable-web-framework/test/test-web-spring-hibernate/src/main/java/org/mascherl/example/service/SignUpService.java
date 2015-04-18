@@ -107,8 +107,9 @@ public class SignUpService {
         entity.setLastName(signUpRequest.getLastName());
         entity.setEmail(signUpRequest.getEmail());
         entity.setPasswordHash(sha256(signUpRequest.getPassword()));
-        // TODO more fields
-
+        entity.setDateOfBirth(signUpRequest.getDateOfBirth());
+        entity.setCountry(signUpRequest.getCountry());
+        entity.setState(signUpRequest.getState());
         em.persist(entity);
         em.flush();
 

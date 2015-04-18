@@ -16,9 +16,7 @@
 package org.mascherl.example.service;
 
 import org.mascherl.example.domain.User;
-import org.mascherl.example.entity.UserEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -60,17 +58,6 @@ public class LoginService {
         } else {
             return null;
         }
-    }
-
-    @Transactional
-    public void createNewUser(User user, String password) {
-        UserEntity entity = new UserEntity();
-        entity.setFirstName(user.getFirstName());
-        entity.setLastName(user.getLastName());
-        entity.setEmail(user.getEmail());
-        entity.setPasswordHash(sha256(password));
-        em.persist(entity);
-        em.flush();
     }
 
     public static String sha256(String value) {
