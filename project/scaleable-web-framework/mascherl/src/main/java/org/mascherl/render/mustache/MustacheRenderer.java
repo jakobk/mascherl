@@ -19,7 +19,6 @@ import java.util.Objects;
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_CONTAINER;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_PAGE;
-import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_REPLACE_URL;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_TITLE;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_MASCHERL_URL;
 import static org.mascherl.MascherlConstants.ResponseHeaders.X_POWERED_BY;
@@ -104,7 +103,7 @@ public class MustacheRenderer implements MascherlRenderer {
         if (clientUrl != null) {
             httpHeaders.putSingle(X_MASCHERL_URL, clientUrl);
         } else if (page.getReplaceUrl() != null) {
-            httpHeaders.putSingle(X_MASCHERL_REPLACE_URL, page.getReplaceUrl().toString());
+            httpHeaders.putSingle(X_MASCHERL_URL, page.getReplaceUrl().toString());
         }
     }
 
