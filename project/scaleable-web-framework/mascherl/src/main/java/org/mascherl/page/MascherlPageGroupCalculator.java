@@ -3,10 +3,6 @@ package org.mascherl.page;
 import org.mascherl.application.MascherlApplication;
 
 import javax.ws.rs.container.ResourceInfo;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 /**
  * Calculator for the page group, which is attached to every container in HTML.
@@ -15,21 +11,12 @@ import java.util.Base64;
  */
 public class MascherlPageGroupCalculator {
 
-    private static final String SHA_256 = "SHA-256";
-
     public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo) {
         return calculatePageGroup(mascherlApplication, resourceInfo, null);
     }
 
     public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo, String actionPageGroup) {
-        String pageGroup = findPageGroup(resourceInfo, actionPageGroup);
-
-//        if (!mascherlApplication.isDevelopmentMode()) {
-//            // SHA-256 plain resource page id in order to hide resource class + method
-//            pageGroup = sha256(pageGroup);
-//        }
-
-        return pageGroup;
+        return findPageGroup(resourceInfo, actionPageGroup);
     }
 
     private static String findPageGroup(ResourceInfo resourceInfo, String actionPageGroup) {
@@ -50,22 +37,6 @@ public class MascherlPageGroupCalculator {
             pageGroupAnnotation = resourceInfo.getResourceClass().getAnnotation(PageGroup.class);
         }
         return pageGroupAnnotation;
-    }
-
-    private static String sha256(String value) {
-        MessageDigest messageDigest = createMessageDigest();
-        messageDigest.update(value.getBytes(StandardCharsets.UTF_8));
-        byte[] digest = messageDigest.digest();
-        byte[] base64Digest = Base64.getEncoder().encode(digest);
-        return new String(base64Digest, StandardCharsets.UTF_8);
-    }
-
-    private static MessageDigest createMessageDigest() {
-        try {
-            return MessageDigest.getInstance(SHA_256);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
