@@ -64,7 +64,7 @@ public class MailComposePage {
     private ComposeMailServiceAsync composeMailServiceAsync;
 
     @Inject
-    private SendMailServiceAsync sendMailService;
+    private SendMailServiceAsync sendMailServiceAsync;
 
     @GET
     @Path("/mail/compose/{mailUuid}")
@@ -118,7 +118,7 @@ public class MailComposePage {
                         parseMailAddresses(composeMailBean.getBcc()),
                         composeMailBean.getSubject(),
                         composeMailBean.getMessageText()))
-                .flatMap((sendMail) -> sendMailService.sendMail(sendMail, localUser))
+                .flatMap((sendMail) -> sendMailServiceAsync.sendMail(sendMail, localUser))
                 .timeout(10, TimeUnit.SECONDS)
                 .map((voidResult) ->
                                 Mascherl.deferredAction(() ->
