@@ -12,8 +12,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Custom JAX-RS invoker for CXF, that handles {@link rx.Observable} return values of resource methods by
+ * CXF specific JAX-RS invoker, that handles {@link rx.Observable} return values of resource methods by
  * creating an {@link javax.ws.rs.container.AsyncResponse}.
+ *
+ * This can currently not be done with plain JAX-RS api.
+ *
+ * Register via the following code in your spring.xml:
+ * <pre>
+ *     <jaxrs:invoker>
+ *         <bean class="org.mascherl.async.cxf.CxfObservableInvoker" />
+ *     </jaxrs:invoker>
+ * </pre>
  *
  * @author Jakob Korherr
  */

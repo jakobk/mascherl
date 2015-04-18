@@ -16,6 +16,13 @@ import static org.mascherl.MascherlConstants.MASCHERL_VALIDATION_RESULT_REQUEST_
  *
  * This can currently not be done with plain JAX-RS api.
  *
+ * Register via the following code in your spring.xml:
+ * <pre>
+ *     <jaxrs:inInterceptors>
+ *         <bean class="org.mascherl.validation.cxf.CxfBeanValidationInInterceptor" />
+ *     </jaxrs:inInterceptors>
+ * </pre>
+ *
  * @author Jakob Korherr
  */
 public class CxfBeanValidationInInterceptor extends JAXRSBeanValidationInInterceptor {
