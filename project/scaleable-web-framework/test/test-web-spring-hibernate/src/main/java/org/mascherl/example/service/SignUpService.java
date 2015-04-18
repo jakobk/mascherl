@@ -118,7 +118,7 @@ public class SignUpService {
                 Collections.singleton(new MailAddress(signUpRequest.getEmail())),
                 null,
                 null,
-                "Welcome to Mascherl WebMail!",
+                "Welcome to Mascherl WebMail",
                 "Hello " + signUpRequest.getFirstName() + " " + signUpRequest.getLastName() + "!\n" +
                         "\n" +
                         "Your e-mail address is: " + signUpRequest.getEmail() + "\n" +

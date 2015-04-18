@@ -47,7 +47,6 @@
             <bean class="org.mascherl.jaxrs.MascherlRequestFilter" />
             <bean class="org.mascherl.jaxrs.MascherlResponseFilter" />
             <bean class="org.mascherl.example.filter.WebMailRequestFilter" />
-            <bean class="org.mascherl.example.page.convert.LocalDateConverterProvider" />
         </jaxrs:providers>
         <jaxrs:inInterceptors>
             <bean class="org.mascherl.validation.cxf.CxfBeanValidationInInterceptor" />

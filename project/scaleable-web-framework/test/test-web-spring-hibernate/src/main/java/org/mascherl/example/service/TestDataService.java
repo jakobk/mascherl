@@ -18,17 +18,11 @@ package org.mascherl.example.service;
 import org.mascherl.example.domain.Mail;
 import org.mascherl.example.domain.MailAddress;
 import org.mascherl.example.domain.User;
-import org.mascherl.example.entity.UserEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collections;
-
-import static org.mascherl.example.service.LoginService.sha256;
 
 /**
  * Inserts some test data upon server startup.
@@ -44,13 +38,10 @@ public class TestDataService {
     @Inject
     private SendMailService sendMailService;
 
-    @PersistenceContext
-    private EntityManager em;
-
     @PostConstruct
     public void init() {
-        createNewTestUser(new User("Jakob", "Korherr", "jakob.korherr@gmail.com"), "pwd");
-        createNewTestUser(new User("Steffi", "Pollmann", "steffi.pollmann@gmail.com"), "pwd");
+        loginService.createNewTestUser(new User("Jakob", "Korherr", "jakob.korherr@gmail.com"), "pwd");
+        loginService.createNewTestUser(new User("Steffi", "Pollmann", "steffi.pollmann@gmail.com"), "pwd");
 
         User userJakobKorherr = loginService.login("jakob.korherr@gmail.com", "pwd");
         User userSteffiPollmann = loginService.login("steffi.pollmann@gmail.com", "pwd");
@@ -82,17 +73,6 @@ public class TestDataService {
                         "RE: Test subject",
                         "This is a test mail!"),
                 userSteffiPollmann);
-    }
-
-    @Transactional
-    public void createNewTestUser(User user, String password) {
-        UserEntity entity = new UserEntity();
-        entity.setFirstName(user.getFirstName());
-        entity.setLastName(user.getLastName());
-        entity.setEmail(user.getEmail());
-        entity.setPasswordHash(sha256(password));
-        em.persist(entity);
-        em.flush();
     }
 
 }

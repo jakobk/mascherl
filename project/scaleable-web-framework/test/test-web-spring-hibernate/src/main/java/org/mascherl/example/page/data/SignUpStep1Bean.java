@@ -15,11 +15,15 @@
  */
 package org.mascherl.example.page.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.ws.rs.FormParam;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Bean for sign up form, step 1.
@@ -39,9 +43,20 @@ public class SignUpStep1Bean {
     private String lastName;
 
     @FormParam("dateOfBirth")
+    @NotNull
+    @Pattern(regexp = "[0-9]{4}-[0-9]{2}-[0-9]{2}")
+    private String dateOfBirth;
+
     @Past
     @NotNull
-    private LocalDate dateOfBirth;
+    @JsonIgnore
+    public LocalDate getDateOfBirthParsed() {
+        try {
+            return LocalDate.parse(dateOfBirth, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
 
     @FormParam("country")
     @Size(min = 2)
@@ -69,11 +84,11 @@ public class SignUpStep1Bean {
         this.lastName = lastName;
     }
 
-    public LocalDate getDateOfBirth() {
+    public String getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
+    public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 

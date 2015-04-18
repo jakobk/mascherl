@@ -120,6 +120,9 @@ public class SignUpPage {
                                 model.put("bean", bean);
                                 model.put("countries", convertToSelectOptions(signUpService.getCountries(), bean.getCountry()));
                                 addValidationErrors(model, "firstName", "lastName", "dateOfBirth", "country", "state");
+                                if (hasValidationError("dateOfBirthParsed")) {
+                                    model.put("dateOfBirthError", true);
+                                }
                             })
                             .container("stateContainer", (model) -> model.put("states", convertToSelectOptions(signUpService.getStates(bean.getCountry()), bean.getState())))
                             .container("dialogMessages", (model) -> model.put("errorMsg", "Invalid input.")));
@@ -143,7 +146,7 @@ public class SignUpPage {
                 signUpService.signUp(new SignUpRequest(
                         signUpStep1.getFirstName(),
                         signUpStep1.getLastName(),
-                        signUpStep1.getDateOfBirth(),
+                        signUpStep1.getDateOfBirthParsed(),
                         signUpStep1.getCountry(),
                         signUpStep1.getState(),
                         bean.getEmail(),
