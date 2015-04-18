@@ -50,7 +50,7 @@ import static org.mascherl.example.page.format.StringFormat.truncate;
 @Component
 public class MailInboxPage {
 
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 10;
     private static final int FROM_TO_MAX_LENGTH = 60;
     private static final int SUBJECT_MAX_LENGTH = 60;
 
@@ -175,6 +175,13 @@ public class MailInboxPage {
             model.put("draftMailCount", draftMailCount);
         }
 
+        if (page > 1) {
+            model.put("previousPage", page - 1);
+        }
+        if (page < getLastPage(mailCount)) {
+            model.put("nextPage", page + 1);
+        }
+
         if (mailType == MailType.DRAFT) {
             model.put("mailDetailLink", "/mail/compose");
         } else {
@@ -209,9 +216,13 @@ public class MailInboxPage {
 
     private int calculateMaxPage(int page, long mailCount) {
         if (calculateOffset(page) > mailCount) {
-            page = ((int) (mailCount / PAGE_SIZE)) + 1;
+            page = getLastPage(mailCount);
         }
         return page;
+    }
+
+    private int getLastPage(long mailCount) {
+        return ((int) (mailCount / PAGE_SIZE)) + (mailCount % PAGE_SIZE > 0 ? 1 : 0);
     }
 
     private void adjustPageUriIfNecessary(int pageParam, int page, MascherlPage pageDef, String uriTemplate) {

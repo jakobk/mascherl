@@ -89,6 +89,17 @@ limitations under the License.
     {{/mails}}
 </table>
 
+<nav>
+    <ul class="pager">
+        <li class="previous{{^previousPage}} disabled{{/previousPage}}">
+            <a href="{{#previousPage}}?page={{.}}{{/previousPage}}{{^previousPage}}#{{/previousPage}}"><span aria-hidden="true">&larr;</span> Newer</a>
+        </li>
+        <li class="next{{^nextPage}} disabled{{/nextPage}}">
+            <a href="{{#nextPage}}?page={{.}}{{/nextPage}}{{^nextPage}}#{{/nextPage}}">Older <span aria-hidden="true">&rarr;</span></a>
+        </li>
+    </ul>
+</nav>
+
 {{/pageContent}}
 
 {{/ ../pageTemplate}}
