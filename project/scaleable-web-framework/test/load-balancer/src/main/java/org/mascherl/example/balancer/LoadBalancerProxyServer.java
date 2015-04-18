@@ -4,7 +4,7 @@ import org.mascherl.example.proxy.TcpProxy;
 import org.mascherl.example.proxy.TcpProxyConfig;
 
 /**
- * TODO
+ * Main class for the load balancing proxy server.
  *
  * @author Jakob Korherr
  */

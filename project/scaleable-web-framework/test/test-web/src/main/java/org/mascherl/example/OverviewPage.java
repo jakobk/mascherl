@@ -14,7 +14,7 @@ import javax.ws.rs.core.UriBuilder;
 import java.time.LocalDateTime;
 
 /**
- * TODO
+ * Page controller for the example pages.
  *
  * @author Jakob Korherr
  */

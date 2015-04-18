@@ -1,11 +1,10 @@
 package org.mascherl.example.domain;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
 
 /**
- * TODO
+ * Mail domain class.
  *
  * @author Jakob Korherr
  */

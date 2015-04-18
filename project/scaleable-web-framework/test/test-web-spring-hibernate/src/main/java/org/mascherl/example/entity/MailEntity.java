@@ -21,7 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.Set;
 
 /**
- * TODO
+ * Entity for mails.
  *
  * @author Jakob Korherr
  */

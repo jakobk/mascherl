@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * TODO
+ * Filter that performs authentication for the web mailing application.
  *
  * @author Jakob Korherr
  */

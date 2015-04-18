@@ -1,11 +1,3 @@
-/*
- * Copyright (c) 2011 CREDIT SUISSE Technology and Operations.
- *
- * All Rights reserved.
- *
- * This software is the proprietary information of CREDIT SUISSE Technology and
- * Operations. Use is subject to license and non-disclosure terms.
- */
 package org.mascherl.example.entity;
 
 import javax.persistence.Column;
@@ -15,6 +7,8 @@ import javax.persistence.PrePersist;
 import javax.persistence.Version;
 
 /**
+ * Base class for our entities, contains id and version handling.
+ *
  * @author Jakob Korherr
  */
 @MappedSuperclass

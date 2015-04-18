@@ -1,7 +1,7 @@
 package org.mascherl.example.domain;
 
 /**
- * TODO
+ * User domain class.
  *
  * @author Jakob Korherr
  */

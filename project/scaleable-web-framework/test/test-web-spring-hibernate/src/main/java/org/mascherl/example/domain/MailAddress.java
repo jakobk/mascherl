@@ -4,7 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
- * TODO
+ * A mail address.
  *
  * @author Jakob Korherr
  */

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * TODO
+ * Selects the configured servers per round robin strategy.
  *
  * @author Jakob Korherr
  */

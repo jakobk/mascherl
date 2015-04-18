@@ -1,7 +1,7 @@
 package org.mascherl.example.page.data;
 
 /**
- * TODO
+ * DTO for displaying a mail in detail.
  *
  * @author Jakob Korherr
  */

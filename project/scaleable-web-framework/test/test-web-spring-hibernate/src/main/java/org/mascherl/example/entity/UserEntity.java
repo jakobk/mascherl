@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 /**
- * TODO
+ * Entity for users.
  *
  * @author Jakob Korherr
  */

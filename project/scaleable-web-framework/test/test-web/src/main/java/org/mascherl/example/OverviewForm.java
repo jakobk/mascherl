@@ -3,7 +3,7 @@ package org.mascherl.example;
 import javax.ws.rs.FormParam;
 
 /**
- * TODO
+ * Form submission bean.
  *
  * @author Jakob Korherr
  */

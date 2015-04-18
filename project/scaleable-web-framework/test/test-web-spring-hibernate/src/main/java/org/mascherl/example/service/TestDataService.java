@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import java.util.Collections;
 
 /**
- * TODO
+ * Inserts some test data upon server startup.
  *
  * @author Jakob Korherr
  */
