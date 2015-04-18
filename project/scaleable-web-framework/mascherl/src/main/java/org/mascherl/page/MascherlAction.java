@@ -14,6 +14,10 @@ public class MascherlAction {
     private final MascherlPage mascherlPage;
     private String pageGroup;
 
+    MascherlAction() {
+        this(null);
+    }
+
     MascherlAction(URI pageUrl) {
         this(null, pageUrl, null);
     }

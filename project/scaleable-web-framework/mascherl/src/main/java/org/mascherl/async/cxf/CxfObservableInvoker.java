@@ -5,7 +5,7 @@ import org.apache.cxf.jaxrs.impl.AsyncResponseImpl;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.MessageContentsList;
 import rx.Observable;
-import rx.schedulers.Schedulers;
+import rx.internal.util.ScalarSynchronousObservable;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -29,21 +29,20 @@ public class CxfObservableInvoker extends JAXRSInvoker {
                 if (responseEntity instanceof Observable) {
                     Observable<?> observable = (Observable<?>) responseEntity;
 
-                    AsyncResponseImpl asyncResponse = new AsyncResponseImpl(exchange.getInMessage());
-                    asyncResponse.suspendContinuationIfNeeded();
-
-                    observable
-                            .subscribeOn(Schedulers.computation())
-                            .subscribe(
-                                    (entity) -> {
-                                        asyncResponse.resume(entity);
-                                    },
-                                    (error) -> {
-                                        asyncResponse.resume(error);
-                                    }
-                            );
-
-                    return new MessageContentsList(Collections.singletonList(null));  // like the method returned void
+                    if (observable instanceof ScalarSynchronousObservable) {
+                        ScalarSynchronousObservable syncObservable = (ScalarSynchronousObservable) observable;
+                        return new MessageContentsList(syncObservable.get());  // as if the method returned the value directly
+                    } else {
+                        // start asynchronous processing
+                        AsyncResponseImpl asyncResponse = new AsyncResponseImpl(exchange.getInMessage());
+                        asyncResponse.suspendContinuationIfNeeded();
+                        observable
+                                .subscribe(
+                                        (entity) -> asyncResponse.resume(entity),
+                                        (error) -> asyncResponse.resume(error)
+                                );
+                        return new MessageContentsList(Collections.singletonList(null));  // as if the method returned void
+                    }
                 }
             }
         }

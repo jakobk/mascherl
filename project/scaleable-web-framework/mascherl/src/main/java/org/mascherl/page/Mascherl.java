@@ -8,6 +8,7 @@ import org.mascherl.servlet.MascherlFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.function.Supplier;
 
 import static org.mascherl.MascherlConstants.MAIN_CONTAINER;
 import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
@@ -18,6 +19,14 @@ import static org.mascherl.MascherlConstants.RequestParameters.M_CONTAINER;
  * @author Jakob Korherr
  */
 public class Mascherl {
+
+    public static MascherlAction deferredAction(Supplier<MascherlAction> supplier) {
+        return new DeferredMascherlAction(supplier);
+    }
+
+    public static MascherlPage deferredPage(Supplier<MascherlPage> supplier) {
+        return new DeferredMascherlPage(supplier);
+    }
 
     public static MascherlPage page(String template) {
         HttpServletRequest request = MascherlFilter.getRequest();

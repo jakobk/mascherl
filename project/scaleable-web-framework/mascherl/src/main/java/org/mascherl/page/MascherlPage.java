@@ -23,6 +23,10 @@ public class MascherlPage {
 
     private String pageTitle;
 
+    MascherlPage() {
+        this(null);
+    }
+
     MascherlPage(String template) {
         this.template = template;
     }

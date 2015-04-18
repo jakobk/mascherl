@@ -30,7 +30,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
@@ -98,11 +97,11 @@ public class MailComposePage {
 
     @POST
     @Path("/mail/send/{mailUuid}")
-    public Observable<Supplier<MascherlAction>> send(
+    public Observable<MascherlAction> send(
             @PathParam("mailUuid") String mailUuid,
             @Valid @ConvertGroup(from = Default.class, to = ComposeMailBean.Send.class) @BeanParam ComposeMailBean composeMailBean) {
         if (!validationResult.isValid()) {
-            return Observable.just(() -> Mascherl
+            return Observable.just(Mascherl
                     .stay()
                     .renderContainer("messages")
                     .withPageDef(compose(mailUuid)
@@ -120,14 +119,16 @@ public class MailComposePage {
                         composeMailBean.getSubject(),
                         composeMailBean.getMessageText()))
                 .flatMap((sendMail) -> sendMailService.sendMail(sendMail, localUser))
-                .map((voidResult) -> (Supplier<MascherlAction>) () -> Mascherl
-                                .navigate(UriBuilder.fromMethod(MailInboxPage.class, "sent").build())
-                                .renderContainer("content")
-                                .withPageDef(
-                                        mailInboxPage.sent(1)
-                                                .container("messages", (model) -> model.put("successMsg", "Message sent!")))
-                )
-                .timeout(10, TimeUnit.SECONDS);
+                .timeout(10, TimeUnit.SECONDS)
+                .map((voidResult) ->
+                                Mascherl.deferredAction(() ->
+                                        Mascherl
+                                                .navigate(UriBuilder.fromMethod(MailInboxPage.class, "sent").build())
+                                                .renderContainer("content")
+                                                .withPageDef(
+                                                        mailInboxPage.sent(1)
+                                                                .container("messages", (model) -> model.put("successMsg", "Message sent!"))))
+                );
     }
 
     @POST
