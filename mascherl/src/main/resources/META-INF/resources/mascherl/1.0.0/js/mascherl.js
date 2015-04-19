@@ -64,7 +64,7 @@ define('mascherl', ['jquery', 'history'], function($, History) {
 
                 if (xhr.getResponseHeader("X-Mascherl-Url") != null) {
                     mascherl.handleHistoryChange = false;
-                    History.replaceState({"container": container}, null, xhr.getResponseHeader("X-Mascherl-Url"));
+                    History.replaceState({"container": container}, xhr.getResponseHeader("X-Mascherl-Title"), xhr.getResponseHeader("X-Mascherl-Url"));
                     mascherl.handleHistoryChange = true;
                 }
 
@@ -76,8 +76,7 @@ define('mascherl', ['jquery', 'history'], function($, History) {
 
                 $(window).triggerHandler("mascherlresponse", {
                     container: container,
-                    pageUrl: History.getShortUrl(History.getState().url),
-                    pageGroup: xhr.getResponseHeader("X-Mascherl-Page")
+                    pageUrl: History.getShortUrl(History.getState().url)
                 });
             },
             error: function (xhr, status, errorThrown) {
@@ -126,8 +125,7 @@ define('mascherl', ['jquery', 'history'], function($, History) {
 
                 $(window).triggerHandler("mascherlresponse", {
                     container: container,
-                    pageUrl: History.getShortUrl(History.getState().url),
-                    pageGroup: xhr.getResponseHeader("X-Mascherl-Page")
+                    pageUrl: History.getShortUrl(History.getState().url)
                 });
             },
             error: function (xhr, status, errorThrown) {

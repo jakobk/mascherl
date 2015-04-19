@@ -69,10 +69,10 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
 
         restoreSession(mascherlApplication);
 
-        calculateRequestContainer();
+        calculateRequestContainer(mascherlApplication);
     }
 
-    private void calculateRequestContainer() {
+    private void calculateRequestContainer(MascherlApplication mascherlApplication) {
         String container = (String) request.getAttribute(M_CONTAINER);
         if (container == null) {
             container = request.getParameter(M_CONTAINER);
@@ -82,7 +82,7 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
         }
         if (container != null) {
             String requestPageGroup = request.getParameter(M_PAGE);
-            String resourcePageGroup = calculatePageGroup(resourceInfo);
+            String resourcePageGroup = calculatePageGroup(mascherlApplication, resourceInfo);
             if (requestPageGroup != null && !Objects.equals(requestPageGroup, resourcePageGroup)) {
                 container = MAIN_CONTAINER;
             }

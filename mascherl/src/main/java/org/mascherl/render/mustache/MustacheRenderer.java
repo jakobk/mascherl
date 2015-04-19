@@ -55,7 +55,7 @@ public class MustacheRenderer implements MascherlRenderer {
     @Override
     public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
                            OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders) throws IOException {
-        String pageGroup = calculatePageGroup(resourceInfo);
+        String pageGroup = calculatePageGroup(mascherlApplication, resourceInfo);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
         render(mascherlApplication, page, pageGroup, outputStream, MAIN_CONTAINER, false);
     }
@@ -64,7 +64,7 @@ public class MustacheRenderer implements MascherlRenderer {
     public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
                                 String actionPageGroup, OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException {
-        String pageGroup = calculatePageGroup(resourceInfo, actionPageGroup, page);
+        String pageGroup = calculatePageGroup(mascherlApplication, resourceInfo, actionPageGroup, page);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
         addHttpHeadersForPartialResponse(page, pageGroup, httpHeaders, container, clientUrl);
         render(mascherlApplication, page, pageGroup, outputStream, container, true);

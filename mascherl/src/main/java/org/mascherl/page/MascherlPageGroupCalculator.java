@@ -18,6 +18,10 @@ package org.mascherl.page;
 import org.mascherl.application.MascherlApplication;
 
 import javax.ws.rs.container.ResourceInfo;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 /**
  * Calculator for the page group, which is attached to every container in HTML.
@@ -26,12 +30,24 @@ import javax.ws.rs.container.ResourceInfo;
  */
 public class MascherlPageGroupCalculator {
 
-    public static String calculatePageGroup(ResourceInfo resourceInfo) {
-        return calculatePageGroup(resourceInfo, null, null);
+    private static final String SHA_256 = "SHA-256";
+
+    public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo) {
+        return calculatePageGroup(mascherlApplication, resourceInfo, null, null);
     }
 
-    public static String calculatePageGroup(ResourceInfo resourceInfo, String actionPageGroup, MascherlPage page) {
-        return findPageGroup(resourceInfo, actionPageGroup, page);
+    public static String calculatePageGroup(MascherlApplication mascherlApplication,
+                                            ResourceInfo resourceInfo,
+                                            String actionPageGroup,
+                                            MascherlPage page) {
+        String pageGroup = findPageGroup(resourceInfo, actionPageGroup, page);
+
+        if (!mascherlApplication.isDevelopmentMode()) {
+            // SHA-256 plain resource page id in order to hide resource class + method
+            pageGroup = sha256(pageGroup);
+        }
+
+        return pageGroup;
     }
 
     private static String findPageGroup(ResourceInfo resourceInfo, String actionPageGroup, MascherlPage page) {
@@ -56,6 +72,22 @@ public class MascherlPageGroupCalculator {
             pageGroupAnnotation = resourceInfo.getResourceClass().getAnnotation(PageGroup.class);
         }
         return pageGroupAnnotation;
+    }
+
+    private static String sha256(String value) {
+        MessageDigest messageDigest = createMessageDigest();
+        messageDigest.update(value.getBytes(StandardCharsets.UTF_8));
+        byte[] digest = messageDigest.digest();
+        byte[] base64Digest = Base64.getEncoder().encode(digest);
+        return new String(base64Digest, StandardCharsets.UTF_8);
+    }
+
+    private static MessageDigest createMessageDigest() {
+        try {
+            return MessageDigest.getInstance(SHA_256);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
