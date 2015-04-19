@@ -20,6 +20,7 @@ import org.hibernate.annotations.Type;
 import org.mascherl.example.domain.MailAddress;
 import org.mascherl.example.domain.MailType;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -44,7 +45,7 @@ import java.util.Set;
 @Table(name = "mail")
 public class MailEntity extends BaseEntity {
 
-    @Column
+    @Column(name = "mail_type")
     @Enumerated(EnumType.STRING)
     private MailType mailType;
 
@@ -62,6 +63,7 @@ public class MailEntity extends BaseEntity {
     private boolean isUnread;
 
     @Embedded
+    @AttributeOverride(name = "address", column = @Column(name = "from_address", length = 255))
     private MailAddress from;
 
     @ElementCollection(fetch = FetchType.EAGER, targetClass = MailAddress.class)

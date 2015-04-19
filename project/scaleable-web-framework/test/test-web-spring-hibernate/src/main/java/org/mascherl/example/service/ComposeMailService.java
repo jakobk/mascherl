@@ -16,8 +16,11 @@
 package org.mascherl.example.service;
 
 import org.hibernate.jpa.QueryHints;
+import org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime;
+import org.jadira.usertype.dateandtime.threeten.columnmapper.TimestampColumnZonedDateTimeMapper;
 import org.mascherl.example.domain.Mail;
 import org.mascherl.example.domain.MailAddress;
+import org.mascherl.example.domain.MailAddressUsage;
 import org.mascherl.example.domain.MailType;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.entity.MailEntity;
@@ -27,9 +30,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.mascherl.example.service.convert.MailConverter.convertToDomain;
 
@@ -97,6 +103,68 @@ public class ComposeMailService {
         draftEntity.setMessageText(mail.getMessageText());
         em.persist(draftEntity);
         em.flush();
+    }
+
+    public List<MailAddressUsage> getLastSendToAddresses(User currentUser, int limit) {
+        // unfortunately, due to using an @ElementCollection, this query can only be done natively
+        @SuppressWarnings("unchecked")
+        List<Object[]> resultList = em.createNativeQuery(
+                "select distinct mto.address, m.datetime " +
+                        "from mail m " +
+                        "join mail_to mto on mto.mail_uuid = m.uuid " +
+                        "where m.user_uuid = :userUuid " +
+                        "and m.mail_type = :mailTypeSentName " +
+                        "and not exists (" +
+                        "   select 1 from mail m2 " +
+                        "   join mail_to mto2 on mto2.mail_uuid = m2.uuid " +
+                        "   where m2.user_uuid = :userUuid " +
+                        "   and m2.mail_type = :mailTypeSentName " +
+                        "   and mto2.address = mto.address " +
+                        "   and m2.datetime > m.datetime " +
+                        ") " +
+                        "order by m.datetime desc")
+                .setParameter("userUuid", currentUser.getUuid())
+                .setParameter("mailTypeSentName", MailType.SENT.name())
+                .setMaxResults(limit)
+                .getResultList();
+
+        TimestampColumnZonedDateTimeMapper dateTimeColumnMapper = new PersistentZonedDateTime().getColumnMapper();
+        return resultList.stream()
+                .map(row ->
+                        new MailAddressUsage(
+                                new MailAddress((String) row[0]),
+                                convertToZonedDateTime(dateTimeColumnMapper, (Timestamp) row[1])))
+                .collect(Collectors.toList());
+    }
+
+    public List<MailAddressUsage> getLastReceivedFromAddresses(User currentUser, int limit) {
+        return em.createQuery(
+                "select distinct new " + MailAddressUsage.class.getName() + "( " +
+                        "m.from, " +
+                        "m.dateTime" +
+                        ") " +
+                        "from MailEntity m " +
+                        "where m.user.uuid = :userUuid " +
+                        "and m.mailType = :mailTypeReceived " +
+                        "and not exists ( " +
+                        "   select m2.uuid from MailEntity m2 " +
+                        "   where m2.user.uuid = :userUuid " +
+                        "   and m2.mailType = :mailTypeReceived " +
+                        "   and m2.from.address = m.from.address " +
+                        "   and m2.dateTime > m.dateTime " +
+                        ") " +
+                        "order by m.dateTime desc", MailAddressUsage.class)
+                .setParameter("userUuid", currentUser.getUuid())
+                .setParameter("mailTypeReceived", MailType.RECEIVED)
+                .setMaxResults(limit)
+                .setHint(QueryHints.HINT_READONLY, Boolean.TRUE)
+                .getResultList();
+    }
+
+    private static ZonedDateTime convertToZonedDateTime(TimestampColumnZonedDateTimeMapper mapper, Timestamp dbTimestamp) {
+        return mapper.fromNonNullValue(dbTimestamp)
+                .withZoneSameLocal(ZoneId.of("Z"))
+                .withZoneSameInstant(ZoneId.systemDefault());
     }
 
 }

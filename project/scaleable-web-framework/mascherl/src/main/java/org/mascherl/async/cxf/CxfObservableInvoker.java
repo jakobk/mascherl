@@ -25,6 +25,8 @@ import rx.internal.util.ScalarSynchronousObservable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * CXF specific JAX-RS invoker, that handles {@link rx.Observable} return values of resource methods by
@@ -42,6 +44,8 @@ import java.util.List;
  * @author Jakob Korherr
  */
 public class CxfObservableInvoker extends JAXRSInvoker {
+
+    private static final Logger logger = Logger.getLogger(CxfObservableInvoker.class.getName());
 
     @Override
     protected Object invoke(Exchange exchange, Object serviceObject, Method m, List<Object> params) {
@@ -63,7 +67,10 @@ public class CxfObservableInvoker extends JAXRSInvoker {
                         observable
                                 .subscribe(
                                         (entity) -> asyncResponse.resume(entity),
-                                        (error) -> asyncResponse.resume(error)
+                                        (error) -> {
+                                            logger.log(Level.WARNING, "Resuming suspended request with exception", error);
+                                            asyncResponse.resume(error);
+                                        }
                                 );
                         return new MessageContentsList(Collections.singletonList(null));  // as if the method returned void
                     }

@@ -17,6 +17,7 @@ package org.mascherl.example.page;
 
 import org.mascherl.example.domain.Mail;
 import org.mascherl.example.domain.MailAddress;
+import org.mascherl.example.domain.MailAddressUsage;
 import org.mascherl.example.domain.User;
 import org.mascherl.example.page.data.ComposeMailBean;
 import org.mascherl.example.service.ComposeMailService;
@@ -42,7 +43,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.UriBuilder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -59,6 +63,8 @@ import static org.mascherl.example.page.PageUtils.parsePageParameter;
  */
 @Component
 public class MailComposePage {
+
+    private static final int RECEIVER_HINT_MAX_ADDRESSES = 3;
 
     @Inject
     private ValidationResult validationResult;
@@ -83,31 +89,75 @@ public class MailComposePage {
 
     @GET
     @Path("/mail/compose/{mailUuid}")
-    public MascherlPage compose(@PathParam("mailUuid") String mailUuid) {
-        try {
-            return Mascherl.page("/templates/mail/mailCompose.html")
-                    .pageTitle("Compose - WebMail powered by Mascherl")
-                    .container("userInfo", (model) -> model.put("user", user))
-                    .container("pageContent", (model) -> {
-                        Mail mail = composeMailService.openDraft(mailUuid, user);
-                        if (mail != null) {
-                            model.put("mail", convertToPageModelForEdit(mail));
+    public Observable<MascherlPage> compose(@PathParam("mailUuid") String mailUuid) {
+        User localUser = MascherlSession.getInstance().get("user", User.class);
+
+        Observable<List<MailAddressUsage>> sendToAddressesObservable =
+                composeMailServiceAsync.getLastSendToAddresses(localUser, RECEIVER_HINT_MAX_ADDRESSES)
+                        .timeout(500, TimeUnit.MILLISECONDS, Observable.just(Collections.emptyList()))
+                        .onErrorReturn((throwable) -> Collections.emptyList());
+        Observable<List<MailAddressUsage>> receivedAddressesObservable =
+                composeMailServiceAsync.getLastReceivedFromAddresses(localUser, RECEIVER_HINT_MAX_ADDRESSES)
+                        .timeout(500, TimeUnit.MILLISECONDS, Observable.just(Collections.emptyList()))
+                        .onErrorReturn((throwable) -> Collections.emptyList());
+
+        return sendToAddressesObservable
+                .zipWith(
+                        receivedAddressesObservable,
+                        (sendToList, receivedFromList) -> {
+                            List<MailAddressUsage> addresses = new ArrayList<>(RECEIVER_HINT_MAX_ADDRESSES * 2);
+                            if (receivedFromList != null) {
+                                addresses.addAll(receivedFromList);
+                            }
+                            if (sendToList != null) {
+                                addresses.addAll(sendToList);
+                            }
+                            return addresses.stream()
+                                    .distinct()
+                                    .sorted((u1, u2) -> u2.getDateTime().compareTo(u1.getDateTime()))
+                                    .limit(RECEIVER_HINT_MAX_ADDRESSES)
+                                    .collect(Collectors.toList());
                         }
-                    });
-        } catch (IllegalStateException e) {
-            return mailDetailPage.mailDetail(mailUuid)
-                    .replaceUrl(UriBuilder.fromMethod(MailDetailPage.class, "mailDetail").build(mailUuid));
-        }
+                )
+                .zipWith(
+                        composeMailServiceAsync.openDraft(mailUuid, localUser),
+                        (List<MailAddressUsage> receiverHintList, Mail mail) ->
+                                Mascherl.page("/templates/mail/mailCompose.html")
+                                        .pageTitle("Compose - WebMail powered by Mascherl")
+                                        .container("userInfo", (model) -> model.put("user", localUser))
+                                        .container("pageContent", (model) -> {
+                                            if (mail != null) {
+                                                model.put("mail", convertToPageModelForEdit(mail));
+                                            }
+
+                                            String receiverHint = receiverHintList.stream()
+                                                    .map((usage) -> usage.getMailAddress().getAddress())
+                                                    .collect(Collectors.joining(", "));
+                                            if (!receiverHint.isEmpty()) {
+                                                model.put("receiverHint", receiverHint);
+                                            }
+                                        })
+                )
+                .onErrorReturn((throwable) -> {
+                    if (throwable instanceof IllegalStateException) {
+                        return Mascherl.deferredPage(() ->
+                                mailDetailPage.mailDetail(mailUuid)
+                                        .replaceUrl(UriBuilder.fromMethod(MailDetailPage.class, "mailDetail").build(mailUuid))
+                                        .pageGroup("MailDetailPage"));
+                    }
+                    throw (RuntimeException) throwable;
+                });
     }
 
     @POST
     @Path("/mail/compose")
-    public MascherlAction composeNew() {
+    public Observable<MascherlAction> composeNew() {
         String mailUuid = composeMailService.composeNewMail(user);
-        return Mascherl
-                .navigate(UriBuilder.fromMethod(getClass(), "compose").build(mailUuid))
-                .renderContainer("content")
-                .withPageDef(compose(mailUuid));
+        return compose(mailUuid)
+                .map((pageDef) -> Mascherl
+                        .navigate(UriBuilder.fromMethod(getClass(), "compose").build(mailUuid))
+                        .renderContainer("content")
+                        .withPageDef(pageDef));
     }
 
     @POST
@@ -116,11 +166,12 @@ public class MailComposePage {
             @PathParam("mailUuid") String mailUuid,
             @Valid @ConvertGroup(from = Default.class, to = ComposeMailBean.Send.class) @BeanParam ComposeMailBean composeMailBean) {
         if (!validationResult.isValid()) {
-            return Observable.just(Mascherl
-                    .stay()
-                    .renderContainer("messages")
-                    .withPageDef(compose(mailUuid)
-                            .container("messages", (model) -> model.put("errorMsg", getValidationErrorMessages(validationResult)))));
+            return compose(mailUuid)
+                    .map((pageDef) -> Mascherl
+                            .stay()
+                            .renderContainer("messages")
+                            .withPageDef(pageDef
+                                    .container("messages", (model) -> model.put("errorMsg", getValidationErrorMessages(validationResult)))));
         }
 
         User localUser = MascherlSession.getInstance().get("user", User.class);
@@ -165,7 +216,7 @@ public class MailComposePage {
         composeMailService.saveDraft(draft, user);
 
         return Mascherl
-                .navigate("/mail")
+                .navigate(returnTo)
                 .renderContainer("content")
                 .withPageDef(
                         determineReturnToPage(mailInboxPage, returnTo, parsePageParameter(returnTo))
@@ -176,6 +227,5 @@ public class MailComposePage {
     private Set<MailAddress> parseMailAddresses(String mailAddressInput) {
         return Arrays.stream(mailAddressInput.split(",")).map(String::trim).filter((s) -> !s.isEmpty()).map(MailAddress::new).collect(Collectors.toSet());
     }
-
 
 }

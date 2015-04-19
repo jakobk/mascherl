@@ -48,6 +48,9 @@ limitations under the License.
                 <li class="list-group-item">
                     <label for="inputTo" style="font-weight: bold; width: 25px;">to</label>
                     <input id="inputTo" type="text" name="to" value="{{to}}" style="width: 80%;" required>
+                    {{#receiverHint}}
+                        <p class="help-block">Last used: {{.}}</p>
+                    {{/receiverHint}}
                 </li>
                 <li class="list-group-item">
                     <label for="inputCc" style="font-weight: bold; width: 25px;">cc</label>

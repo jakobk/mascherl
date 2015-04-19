@@ -35,6 +35,7 @@ public class MascherlPage {
     private final Set<String> containersToEvaluate = new HashSet<>();
     private final Map<String, Model> containerModels = new HashMap<>();
     private URI replaceUrl;
+    private String pageGroup;
 
     private String pageTitle;
 
@@ -86,6 +87,11 @@ public class MascherlPage {
         return this;
     }
 
+    public MascherlPage pageGroup(String pageGroup) {
+        this.pageGroup = pageGroup;
+        return this;
+    }
+
     public String getTemplate() {
         return template;
     }
@@ -100,5 +106,9 @@ public class MascherlPage {
 
     public URI getReplaceUrl() {
         return replaceUrl;
+    }
+
+    public String getPageGroup() {
+        return pageGroup;
     }
 }

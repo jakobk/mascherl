@@ -55,7 +55,7 @@ public class MustacheRenderer implements MascherlRenderer {
     @Override
     public void renderFull(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
                            OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders) throws IOException {
-        String pageGroup = calculatePageGroup(mascherlApplication, resourceInfo);
+        String pageGroup = calculatePageGroup(resourceInfo);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
         render(mascherlApplication, page, pageGroup, outputStream, MAIN_CONTAINER, false);
     }
@@ -64,7 +64,7 @@ public class MustacheRenderer implements MascherlRenderer {
     public void renderContainer(MascherlApplication mascherlApplication, MascherlPage page, ResourceInfo resourceInfo,
                                 String actionPageGroup, OutputStream outputStream, MultivaluedMap<String, Object> httpHeaders,
                                 String container, String clientUrl) throws IOException {
-        String pageGroup = calculatePageGroup(mascherlApplication, resourceInfo, actionPageGroup);
+        String pageGroup = calculatePageGroup(resourceInfo, actionPageGroup, page);
         addGeneralHttpHeaders(mascherlApplication, httpHeaders);
         addHttpHeadersForPartialResponse(page, pageGroup, httpHeaders, container, clientUrl);
         render(mascherlApplication, page, pageGroup, outputStream, container, true);
@@ -94,7 +94,7 @@ public class MustacheRenderer implements MascherlRenderer {
         mustache.execute(writer, scope).flush();
 
         if (!isPartial && page.getReplaceUrl() != null) {
-            writer.write(
+            writer.write(  // TODO jakobk: this won't work anymore (requireJS)
                     "<script>" +
                             "window.mascherl.handleHistoryChange = false;" +
                             "History.replaceState({\"container\": \"main\"}, null, \"" + page.getReplaceUrl() + "\");" +

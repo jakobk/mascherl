@@ -26,18 +26,22 @@ import javax.ws.rs.container.ResourceInfo;
  */
 public class MascherlPageGroupCalculator {
 
-    public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo) {
-        return calculatePageGroup(mascherlApplication, resourceInfo, null);
+    public static String calculatePageGroup(ResourceInfo resourceInfo) {
+        return calculatePageGroup(resourceInfo, null, null);
     }
 
-    public static String calculatePageGroup(MascherlApplication mascherlApplication, ResourceInfo resourceInfo, String actionPageGroup) {
-        return findPageGroup(resourceInfo, actionPageGroup);
+    public static String calculatePageGroup(ResourceInfo resourceInfo, String actionPageGroup, MascherlPage page) {
+        return findPageGroup(resourceInfo, actionPageGroup, page);
     }
 
-    private static String findPageGroup(ResourceInfo resourceInfo, String actionPageGroup) {
+    private static String findPageGroup(ResourceInfo resourceInfo, String actionPageGroup, MascherlPage page) {
         if (actionPageGroup != null) {
             return actionPageGroup;
         }
+        if (page != null && page.getPageGroup() != null) {
+            return page.getPageGroup();
+        }
+
         PageGroup pageGroupAnnotation = findPageGroupAnnotation(resourceInfo);
         if (pageGroupAnnotation != null) {
             return pageGroupAnnotation.value();

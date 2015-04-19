@@ -78,7 +78,7 @@ public class MascherlResponseFilter implements ContainerResponseFilter {
         } else if (responseContext.getEntity() instanceof MascherlAction) {
             MascherlAction mascherlAction = (MascherlAction) responseContext.getEntity();
             if (mascherlAction.getMascherlPage() instanceof LazyMascherlPage) {
-                LazyMascherlPage lazyMascherlPage = (LazyMascherlPage) responseContext.getEntity();
+                LazyMascherlPage lazyMascherlPage = (LazyMascherlPage) mascherlAction.getMascherlPage();
                 lazyMascherlPage.build(request);
             }
         }

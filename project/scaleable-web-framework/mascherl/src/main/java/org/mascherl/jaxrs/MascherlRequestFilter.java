@@ -69,27 +69,25 @@ public class MascherlRequestFilter implements ContainerRequestFilter {
 
         restoreSession(mascherlApplication);
 
-        calculateRequestContainer(mascherlApplication);
+        calculateRequestContainer();
     }
 
-    private void calculateRequestContainer(MascherlApplication mascherlApplication) {
-        if (MascherlPage.class.isAssignableFrom(resourceInfo.getResourceMethod().getReturnType())) {
-            String container = (String) request.getAttribute(M_CONTAINER);
+    private void calculateRequestContainer() {
+        String container = (String) request.getAttribute(M_CONTAINER);
+        if (container == null) {
+            container = request.getParameter(M_CONTAINER);
             if (container == null) {
-                container = request.getParameter(M_CONTAINER);
-                if (container == null) {
-                    container = request.getHeader(X_MASCHERL_CONTAINER);
-                }
+                container = request.getHeader(X_MASCHERL_CONTAINER);
             }
-            if (container != null) {
-                String requestPageGroup = request.getParameter(M_PAGE);
-                String resourcePageGroup = calculatePageGroup(mascherlApplication, resourceInfo);
-                if (requestPageGroup != null && !Objects.equals(requestPageGroup, resourcePageGroup)) {
-                    container = MAIN_CONTAINER;
-                }
-            }
-            request.setAttribute(M_CONTAINER, container);
         }
+        if (container != null) {
+            String requestPageGroup = request.getParameter(M_PAGE);
+            String resourcePageGroup = calculatePageGroup(resourceInfo);
+            if (requestPageGroup != null && !Objects.equals(requestPageGroup, resourcePageGroup)) {
+                container = MAIN_CONTAINER;
+            }
+        }
+        request.setAttribute(M_CONTAINER, container);
     }
 
     private void restoreSession(MascherlApplication mascherlApplication) {

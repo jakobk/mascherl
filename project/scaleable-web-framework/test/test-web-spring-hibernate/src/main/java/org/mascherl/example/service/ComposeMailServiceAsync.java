@@ -16,6 +16,7 @@
 package org.mascherl.example.service;
 
 import org.mascherl.example.domain.Mail;
+import org.mascherl.example.domain.MailAddressUsage;
 import org.mascherl.example.domain.User;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import rx.schedulers.Schedulers;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.List;
 
 /**
  * Asynchronous version of {@link ComposeMailService}, using RxJava.
@@ -45,6 +47,30 @@ public class ComposeMailServiceAsync {
             subscriber.onStart();
             try {
                 subscriber.onNext(composeMailService.openDraft(uuid, currentUser));
+            } catch (Throwable e) {
+                subscriber.onError(e);
+            }
+            subscriber.onCompleted();
+        }).subscribeOn(Schedulers.from(composeMailServiceExecutor));
+    }
+
+    public Observable<List<MailAddressUsage>> getLastReceivedFromAddresses(User currentUser, int limit) {
+        return Observable.<List<MailAddressUsage>>create((subscriber) -> {
+            subscriber.onStart();
+            try {
+                subscriber.onNext(composeMailService.getLastReceivedFromAddresses(currentUser, limit));
+            } catch (Throwable e) {
+                subscriber.onError(e);
+            }
+            subscriber.onCompleted();
+        }).subscribeOn(Schedulers.from(composeMailServiceExecutor));
+    }
+
+    public Observable<List<MailAddressUsage>> getLastSendToAddresses(User currentUser, int limit) {
+        return Observable.<List<MailAddressUsage>>create((subscriber) -> {
+            subscriber.onStart();
+            try {
+                subscriber.onNext(composeMailService.getLastSendToAddresses(currentUser, limit));
             } catch (Throwable e) {
                 subscriber.onError(e);
             }
