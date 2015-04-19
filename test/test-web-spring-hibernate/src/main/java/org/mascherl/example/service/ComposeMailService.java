@@ -29,7 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -101,7 +103,7 @@ public class ComposeMailService {
         draftEntity.setBcc(mail.getBcc());
         draftEntity.setSubject(mail.getSubject());
         draftEntity.setMessageText(mail.getMessageText());
-        em.persist(draftEntity);
+        em.merge(draftEntity);
         em.flush();
     }
 

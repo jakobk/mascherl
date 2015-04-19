@@ -66,19 +66,19 @@ limitations under the License.
             </td>
             {{#showFrom}}
                 <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}>
-                    <a href="{{mailDetailLink}}/{{uuid}}">{{from}}</a>
+                    <a href="{{mailDetailLink}}/{{uuid}}" m-container="content">{{from}}</a>
                 </td>
             {{/showFrom}}
             {{#showTo}}
                 <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}>
-                    <a href="{{mailDetailLink}}/{{uuid}}">{{to}}{{^to}}No receiver{{/to}}</a>
+                    <a href="{{mailDetailLink}}/{{uuid}}" m-container="content">{{to}}{{^to}}No receiver{{/to}}</a>
                 </td>
             {{/showTo}}
             <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}>
-                <a href="{{mailDetailLink}}/{{uuid}}">{{subject}}{{^subject}}No subject{{/subject}}</a>
+                <a href="{{mailDetailLink}}/{{uuid}}" m-container="content">{{subject}}{{^subject}}No subject{{/subject}}</a>
             </td>
             <td{{#isUnread}} style="font-weight:bold;"{{/isUnread}}>
-                <a href="{{mailDetailLink}}/{{uuid}}">{{dateTime}}</a>
+                <a href="{{mailDetailLink}}/{{uuid}}" m-container="content">{{dateTime}}</a>
             </td>
         </tr>
     {{/mails}}

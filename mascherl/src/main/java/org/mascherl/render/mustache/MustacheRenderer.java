@@ -94,11 +94,9 @@ public class MustacheRenderer implements MascherlRenderer {
         mustache.execute(writer, scope).flush();
 
         if (!isPartial && page.getReplaceUrl() != null) {
-            writer.write(  // TODO jakobk: this won't work anymore (requireJS)
+            writer.write(
                     "<script>" +
-                            "window.mascherl.handleHistoryChange = false;" +
-                            "History.replaceState({\"container\": \"main\"}, null, \"" + page.getReplaceUrl() + "\");" +
-                            "window.mascherl.handleHistoryChange = true;" +
+                            "window.mascherlConfig.replaceUrl = \"" + page.getReplaceUrl() + "\";" +
                             "</script>\n");
             writer.flush();
         }

@@ -166,12 +166,13 @@ public class MailComposePage {
             @PathParam("mailUuid") String mailUuid,
             @Valid @ConvertGroup(from = Default.class, to = ComposeMailBean.Send.class) @BeanParam ComposeMailBean composeMailBean) {
         if (!validationResult.isValid()) {
+            List<String> validationErrorMessages = getValidationErrorMessages(validationResult);
             return compose(mailUuid)
                     .map((pageDef) -> Mascherl
                             .stay()
                             .renderContainer("messages")
                             .withPageDef(pageDef
-                                    .container("messages", (model) -> model.put("errorMsg", getValidationErrorMessages(validationResult)))));
+                                    .container("messages", (model) -> model.put("errorMsg", validationErrorMessages))));
         }
 
         User localUser = MascherlSession.getInstance().get("user", User.class);

@@ -26,6 +26,12 @@ define('mascherl', ['jquery', 'history'], function($, History) {
 
         mascherl.addNavigationHandlers("body");
 
+        if (typeof window.mascherlConfig.replaceUrl !== "undefined" && window.mascherlConfig.replaceUrl !== "") {
+            mascherl.handleHistoryChange = false;
+            History.replaceState({"container": "main"}, document.title, window.mascherlConfig.replaceUrl);
+            mascherl.handleHistoryChange = true;
+        }
+
         $(window).triggerHandler("mascherlresponse", {
             container: "main",
             pageUrl: History.getShortUrl(History.getState().url),

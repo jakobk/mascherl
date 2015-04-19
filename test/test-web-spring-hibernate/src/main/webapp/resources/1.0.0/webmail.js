@@ -23,7 +23,7 @@ define(['jquery', 'history', 'mascherl', 'bootstrap'], function($, History, masc
             }
 
             if (data.pageGroup === "MailComposePage") {
-                composePageLoaded();
+                composePageLoaded(data.container);
             } else if (data.pageGroup === "MailDetailPage") {
                 detailPageLoaded();
             } else if (data.pageGroup === "MailInboxPage") {
@@ -36,17 +36,19 @@ define(['jquery', 'history', 'mascherl', 'bootstrap'], function($, History, masc
         mascherl.boot();
     });
 
-    function composePageLoaded() {
-        $("#backBtn").click(function() {
-            var formData = $("#composeForm").serialize();
+    function composePageLoaded(container) {
+        if (container === "content" || container === "main") {
+            $("#backBtn").click(function () {
+                var formData = $("#composeForm").serialize();
 
-            var lastState = History.getStateByIndex(-2);
-            if (typeof lastState !== "undefined") {
-                formData += "&returnTo=" + encodeURIComponent(History.getShortUrl(lastState.url));
-            }
+                var lastState = History.getStateByIndex(-2);
+                if (typeof lastState !== "undefined") {
+                    formData += "&returnTo=" + encodeURIComponent(History.getShortUrl(lastState.url));
+                }
 
-            mascherl.submitData("/mail/save/" + $(this).attr("data-uuid"), formData, "content");
-        });
+                mascherl.submitData("/mail/save/" + $(this).attr("data-uuid"), formData, "content");
+            });
+        }
     }
 
     function detailPageLoaded() {
