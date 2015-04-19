@@ -72,6 +72,21 @@ limitations under the License.
         </div>
 {{/mail}}
 
+<script>
+    require(['jquery', 'mascherl'], function($, mascherl) {
+        $("#backBtn").click(function () {
+            var formData = $("#composeForm").serialize();
+
+            var lastState = History.getStateByIndex(-2);
+            if (typeof lastState !== "undefined") {
+                formData += "&returnTo=" + encodeURIComponent(History.getShortUrl(lastState.url));
+            }
+
+            mascherl.submitData("/mail/save/" + $(this).attr("data-uuid"), formData, "content");
+        });
+    });
+</script>
+
 {{/pageContent}}
 
 {{/ ../pageTemplate}}

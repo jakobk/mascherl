@@ -73,6 +73,14 @@ limitations under the License.
 </form>
 {{/bean}}
 
+<script>
+    require(['jquery', 'mascherl'], function($, mascherl) {
+        $('#inputCountry').change(function() {
+            mascherl.submitData('/signup/selectCountry', $(this).serialize(), 'stateContainer')
+        });
+    });
+</script>
+
 {{/dialogContent}}
 
 {{/ signupDialog}}

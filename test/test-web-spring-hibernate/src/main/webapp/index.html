@@ -31,9 +31,10 @@ limitations under the License.
     </script>
 </head>
 <body>
-{{$main}}{{/main}}
+<script src="/webjars/requirejs/2.1.17/require.min.js"></script>
+<script src="/resources/1.0.0/main.js"></script>
 
-<script data-main="/resources/1.0.0/main.js" src="/webjars/requirejs/2.1.17/require.min.js"></script>
+{{$main}}{{/main}}
 
 <script id="error" type="text/x-error-template">
     <nav class="navbar navbar-inverse">
