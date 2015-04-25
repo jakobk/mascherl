@@ -52,15 +52,8 @@ limitations under the License.
 {{/mail}}
 
 <script>
-    require(['jquery', 'mascherl'], function($, mascherl) {
-        $("#deleteBtn").click(function() {
-            var lastState = History.getStateByIndex(-2);
-            var data = $.makeArray([]);
-            if (typeof lastState !== "undefined") {
-                data.push("returnTo=" + History.getShortUrl(lastState.url));
-            }
-            mascherl.submitData("/mail/" + $(this).attr("data-uuid") + "/delete", data.join("&"), "content");
-        });
+    require(['mailDetail'], function(mailDetail) {
+        mailDetail.pageContentLoaded();
     });
 </script>
 

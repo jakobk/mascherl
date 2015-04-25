@@ -101,31 +101,8 @@ limitations under the License.
 </nav>
 
 <script>
-    require(['jquery', 'mascherl', 'webmail'], function($, mascherl, webmail) {
-        $("#refreshBtn").click(function() {
-            mascherl.navigate(window.location.href, "content");
-        });
-        $("#composeBtn").click(function() {
-            mascherl.submitData("/mail/compose", "", "content");
-        });
-        $("#deleteBtn").click(function() {
-            var data = $.map($("input.messageSelect:checked"), function (checkbox, i) {
-                return "mailUuid=" + $(checkbox).attr("data-uuid");
-            });
-            var pageParameter = webmail.getParameterByName("page");
-            if (pageParameter !== "") {
-                data.push("page=" + pageParameter);
-            }
-            data.push("mailType=" + $(this).attr("data-mail-type"));
-            mascherl.submitData("/mail/delete", data.join("&"), "content");
-        });
-
-        $("#messageSelectAll").click(function() {
-            $(".messageSelect").prop("checked", $(this).prop("checked"));
-        });
-        $(".messageSelect").click(function() {
-            $("#messageSelectAll").prop("checked", false);
-        });
+    require(['mailInbox'], function(mailInbox) {
+        mailInbox.pageContentLoaded();
     });
 </script>
 

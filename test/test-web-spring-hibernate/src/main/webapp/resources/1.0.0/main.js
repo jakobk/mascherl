@@ -19,6 +19,9 @@
 require.config({
     paths: {
         webmail: '/resources/1.0.0/webmail',
+        mailCompose: '/resources/1.0.0/mailCompose',
+        mailDetail: '/resources/1.0.0/mailDetail',
+        mailInbox: '/resources/1.0.0/mailInbox',
         mascherl: '/mascherl/1.0.0/js/mascherl',
         jquery: '/webjars/jquery/2.1.3/jquery.min',
         history: '/webjars/historyjs/1.8.0/scripts/bundled/html5/jquery.history',
