@@ -65,6 +65,7 @@ public class MailService {
                 .getSingleResult();
     }
 
+    @Transactional
     public List<Mail> getMailsForUser(User currentUser, MailType mailType, int offset, int pageSize) {
         List<MailEntity> resultList = em.createQuery(
                 "select m " +

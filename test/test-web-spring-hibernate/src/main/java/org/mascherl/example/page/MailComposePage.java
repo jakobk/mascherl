@@ -93,7 +93,7 @@ public class MailComposePage {
         User localUser = MascherlSession.getInstance().get("user", User.class);
 
         Observable<List<MailAddressUsage>> sendToAddressesObservable =
-                composeMailServiceAsync.getLastSendToAddresses(localUser, RECEIVER_HINT_MAX_ADDRESSES)
+                composeMailService.getLastSendToAddressesAsync(localUser, RECEIVER_HINT_MAX_ADDRESSES).toList()
                         .timeout(500, TimeUnit.MILLISECONDS, Observable.just(Collections.emptyList()))
                         .onErrorReturn((throwable) -> Collections.emptyList());
         Observable<List<MailAddressUsage>> receivedAddressesObservable =

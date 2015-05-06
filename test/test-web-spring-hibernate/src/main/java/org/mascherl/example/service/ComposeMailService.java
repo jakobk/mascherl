@@ -15,6 +15,8 @@
  */
 package org.mascherl.example.service;
 
+import com.github.pgasync.ConnectionPool;
+import com.github.pgasync.ConnectionPoolBuilder;
 import org.hibernate.jpa.QueryHints;
 import org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime;
 import org.jadira.usertype.dateandtime.threeten.columnmapper.TimestampColumnZonedDateTimeMapper;
@@ -27,17 +29,20 @@ import org.mascherl.example.entity.MailEntity;
 import org.mascherl.example.entity.UserEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import rx.Observable;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceUnit;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.mascherl.example.service.convert.MailConverter.convertToDomain;
 
@@ -51,6 +56,25 @@ public class ComposeMailService {
 
     @PersistenceContext
     private EntityManager em;
+
+    private ConnectionPool db;
+
+    @PostConstruct
+    public void init() {
+        db = new ConnectionPoolBuilder()
+                .hostname("localhost")
+                .port(5432)
+                .database("niotest")
+                .username("postgres")
+                .password("postgres")
+                .poolSize(20)
+                .build();
+    }
+
+    @PreDestroy
+    public void close() {
+        db.close();
+    }
 
     @Transactional
     public String composeNewMail(User currentUser) {
@@ -135,8 +159,45 @@ public class ComposeMailService {
                 .map(row ->
                         new MailAddressUsage(
                                 new MailAddress((String) row[0]),
-                                convertToZonedDateTime(dateTimeColumnMapper, (Timestamp) row[1])))
+                                convertToZonedDateTimeHibernate(dateTimeColumnMapper, (Timestamp) row[1])))
                 .collect(Collectors.toList());
+    }
+
+    public Observable<MailAddressUsage> getLastSendToAddressesAsync(User currentUser, int limit) {
+        return Observable.<MailAddressUsage>create((subscriber) -> {
+            db.query("select distinct mto.address, m.datetime " +
+                            "from mail m " +
+                            "join mail_to mto on mto.mail_uuid = m.uuid " +
+                            "where m.user_uuid = $1 " +
+                            "and m.mail_type = $2 " +
+                            "and not exists (" +
+                            "   select 1 from mail m2 " +
+                            "   join mail_to mto2 on mto2.mail_uuid = m2.uuid " +
+                            "   where m2.user_uuid = $1 " +
+                            "   and m2.mail_type = $2 " +
+                            "   and mto2.address = mto.address " +
+                            "   and m2.datetime > m.datetime " +
+                            ") " +
+                            "order by m.datetime desc " +
+                            "limit $3",
+                    Arrays.asList(currentUser.getUuid(), MailType.SENT.name(), limit),
+                    result -> {
+                        try {
+                            subscriber.onStart();
+                            TimestampColumnZonedDateTimeMapper dateTimeColumnMapper = new PersistentZonedDateTime().getColumnMapper();
+                            StreamSupport.stream(result.spliterator(), false)
+                                    .map(row ->
+                                            new MailAddressUsage(
+                                                    new MailAddress(row.getString(0)),
+                                                    dateTimeColumnMapper.fromNonNullValue(row.getTimestamp(1))))
+                                    .forEach(subscriber::onNext);
+                            subscriber.onCompleted();
+                        } catch (Exception e) {
+                            subscriber.onError(e);
+                        }
+                    },
+                    subscriber::onError);
+        });
     }
 
     public List<MailAddressUsage> getLastReceivedFromAddresses(User currentUser, int limit) {
@@ -163,7 +224,8 @@ public class ComposeMailService {
                 .getResultList();
     }
 
-    private static ZonedDateTime convertToZonedDateTime(TimestampColumnZonedDateTimeMapper mapper, Timestamp dbTimestamp) {
+    private static ZonedDateTime convertToZonedDateTimeHibernate(TimestampColumnZonedDateTimeMapper mapper, Timestamp dbTimestamp) {
+        // only needed when querying with hibernate, in order to fix a time zone conversion bug
         return mapper.fromNonNullValue(dbTimestamp)
                 .withZoneSameLocal(ZoneId.of("Z"))
                 .withZoneSameInstant(ZoneId.systemDefault());

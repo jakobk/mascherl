@@ -28,7 +28,7 @@ import java.time.LocalDate;
  * @author Jakob Korherr
  */
 @Entity
-@Table(name = "user")
+@Table(name = "webmail_user")
 public class UserEntity extends BaseEntity {
 
     @Column(name = "email", length = 255)
