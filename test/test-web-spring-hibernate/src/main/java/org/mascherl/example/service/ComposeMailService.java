@@ -34,7 +34,10 @@ import rx.Observable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
+import javax.persistence.async.AsyncEntityManager;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -58,6 +61,9 @@ public class ComposeMailService {
     @PersistenceContext
     private EntityManager em;
 
+    @PersistenceUnit
+    private EntityManagerFactory emf;
+
     private ConnectionPool db;
 
     @PostConstruct
@@ -70,6 +76,25 @@ public class ComposeMailService {
                 .password("postgres")
                 .poolSize(20)
                 .build();
+
+        // just some dummy values or syntax correctness
+        String uuid = "uuid";
+        User currentUser = new User("Jakob", "Korherr", "jakobk@apache.org");
+
+        // TODO do not use CompletableFuture in API, and use callbacks instead --> code is really blown up here
+        AsyncEntityManager aem = emf.createAsyncEntityManager();
+        aem.beginTransaction()
+                .thenCompose(tx -> tx.createQuery(
+                    "select m " +
+                    "from MailEntity m " +
+                            "where m.uuid = :uuid " +
+                            "and m.user.uuid = :userUuid", MailEntity.class))
+                .thenCompose(query ->
+                    query.setParameter("uuid", uuid)
+                            .setParameter("userUuid", currentUser.getUuid())
+                            .setHint(QueryHints.HINT_READONLY, Boolean.TRUE)
+                            .getResultList())
+                .thenAccept(list -> list.stream().forEach(System.out::println));
     }
 
     @PreDestroy

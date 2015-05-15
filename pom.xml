@@ -33,7 +33,7 @@
     <properties>
         <jackson.version>2.5.1</jackson.version>
         <spring.version>4.0.5.RELEASE</spring.version>
-        <hibernate.version>4.3.8.Final</hibernate.version>
+        <hibernate.version>5.0.0-SNAPSHOT</hibernate.version>
     </properties>
 
     <build>
@@ -191,8 +191,8 @@
             <!-- hibernate -->
             <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.1-api</artifactId>
-                <version>1.0.0.Final</version>
+                <artifactId>hibernate-jpa-2.1-api-async</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
