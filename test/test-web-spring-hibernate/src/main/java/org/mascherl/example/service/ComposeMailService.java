@@ -41,6 +41,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -198,6 +199,43 @@ public class ComposeMailService {
                     },
                     subscriber::onError);
         });
+    }
+
+    public CompletableFuture<List<MailAddressUsage>> getLastSendToAddressesAsync2(User currentUser, int limit) {
+        CompletableFuture<List<MailAddressUsage>> completableFuture = new CompletableFuture<>();
+        db.query("select distinct mto.address, m.datetime " +
+                        "from mail m " +
+                        "join mail_to mto on mto.mail_uuid = m.uuid " +
+                        "where m.user_uuid = $1 " +
+                        "and m.mail_type = $2 " +
+                        "and not exists (" +
+                        "   select 1 from mail m2 " +
+                        "   join mail_to mto2 on mto2.mail_uuid = m2.uuid " +
+                        "   where m2.user_uuid = $1 " +
+                        "   and m2.mail_type = $2 " +
+                        "   and mto2.address = mto.address " +
+                        "   and m2.datetime > m.datetime " +
+                        ") " +
+                        "order by m.datetime desc " +
+                        "limit $3",
+                Arrays.asList(currentUser.getUuid(), MailType.SENT.name(), limit),
+                result -> {
+                    try {
+                        TimestampColumnZonedDateTimeMapper dateTimeColumnMapper = new PersistentZonedDateTime().getColumnMapper();
+                        List<MailAddressUsage> usages = StreamSupport.stream(result.spliterator(), false)
+                                .map(row ->
+                                        new MailAddressUsage(
+                                                new MailAddress(row.getString(0)),
+                                                dateTimeColumnMapper.fromNonNullValue(row.getTimestamp(1))))
+                                .collect(Collectors.toList());
+                        completableFuture.complete(usages);
+                    } catch (Exception e) {
+                        completableFuture.completeExceptionally(e);
+                    }
+                },
+                completableFuture::completeExceptionally);
+
+        return completableFuture;
     }
 
     public List<MailAddressUsage> getLastReceivedFromAddresses(User currentUser, int limit) {
