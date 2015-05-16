@@ -15,8 +15,17 @@
  */
 package org.mascherl.example.service;
 
+import com.github.mauricio.async.db.Configuration;
+import com.github.mauricio.async.db.Connection;
+import com.github.mauricio.async.db.ResultSet;
+import com.github.mauricio.async.db.postgresql.PostgreSQLConnection;
+import com.github.mauricio.async.db.postgresql.column.PostgreSQLColumnDecoderRegistry;
+import com.github.mauricio.async.db.postgresql.column.PostgreSQLColumnEncoderRegistry;
+import com.github.mauricio.async.db.util.ExecutorServiceUtils;
+import com.github.mauricio.async.db.util.NettyUtils;
 import com.github.pgasync.ConnectionPool;
 import com.github.pgasync.ConnectionPoolBuilder;
+import io.netty.buffer.PooledByteBufAllocator;
 import org.hibernate.jpa.QueryHints;
 import org.jadira.usertype.dateandtime.threeten.PersistentZonedDateTime;
 import org.jadira.usertype.dateandtime.threeten.columnmapper.TimestampColumnZonedDateTimeMapper;
@@ -30,6 +39,12 @@ import org.mascherl.example.entity.UserEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rx.Observable;
+import scala.Some;
+import scala.collection.JavaConversions;
+import scala.compat.java8.FutureConverters;
+import scala.compat.java8.OptionConverters;
+import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -37,18 +52,21 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
-import javax.persistence.async.AsyncEntityManager;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.mascherl.example.service.convert.MailConverter.convertToDomain;
+import static scala.compat.java8.JFunction.func;
 
 /**
  * Service for composing mails.
@@ -81,20 +99,20 @@ public class ComposeMailService {
         String uuid = "uuid";
         User currentUser = new User("Jakob", "Korherr", "jakobk@apache.org");
 
-        // TODO do not use CompletableFuture in API, and use callbacks instead --> code is really blown up here
-        AsyncEntityManager aem = emf.createAsyncEntityManager();
-        aem.beginTransaction()
-                .thenCompose(tx -> tx.createQuery(
-                    "select m " +
-                    "from MailEntity m " +
-                            "where m.uuid = :uuid " +
-                            "and m.user.uuid = :userUuid", MailEntity.class))
-                .thenCompose(query ->
-                    query.setParameter("uuid", uuid)
-                            .setParameter("userUuid", currentUser.getUuid())
-                            .setHint(QueryHints.HINT_READONLY, Boolean.TRUE)
-                            .getResultList())
-                .thenAccept(list -> list.stream().forEach(System.out::println));
+
+//        AsyncEntityManager aem = emf.createAsyncEntityManager();
+//        aem.beginTransaction()
+//                .thenCompose(tx -> tx.createQuery(
+//                        "select m " +
+//                                "from MailEntity m " +
+//                                "where m.uuid = :uuid " +
+//                                "and m.user.uuid = :userUuid", MailEntity.class))
+//                .thenCompose(query ->
+//                    query.setParameter("uuid", uuid)
+//                            .setParameter("userUuid", currentUser.getUuid())
+//                            .setHint(QueryHints.HINT_READONLY, Boolean.TRUE)
+//                            .getResultList())
+//                .thenAccept(list -> list.stream().forEach(System.out::println));
     }
 
     @PreDestroy
@@ -116,6 +134,53 @@ public class ComposeMailService {
     }
 
     public Mail openDraft(String uuid, User currentUser) {
+
+        FiniteDuration fiveSeconds = Duration.apply(5l, TimeUnit.SECONDS);
+        Configuration configuration = new Configuration(
+                "postgres",
+                "localhost",
+                5432,
+                new Some<>("postgres"),
+                new Some<>("niotest"),
+                StandardCharsets.UTF_8,
+                16777216,
+                PooledByteBufAllocator.DEFAULT,
+                fiveSeconds,
+                fiveSeconds);
+
+        PostgreSQLConnection postgreSQLConnection = new PostgreSQLConnection(
+                configuration,
+                PostgreSQLColumnEncoderRegistry.Instance(),
+                PostgreSQLColumnDecoderRegistry.Instance(),
+                NettyUtils.DefaultEventLoopGroup(),
+                ExecutorServiceUtils.CachedExecutionContext());
+
+        CompletableFuture<Connection> future = new CompletableFuture<>();
+        postgreSQLConnection.connect().onComplete(func((tryConnection) -> {
+            if (tryConnection.isSuccess()) {
+                future.complete(tryConnection.get());
+            } else {
+                future.completeExceptionally(tryConnection.failed().get());
+            }
+            return future;
+        }), FutureConverters.globalExecutionContext());
+        future.whenComplete((connection, throwable) -> {
+            System.out.println(throwable);
+            System.out.println(connection);
+        });
+
+        FutureConverters.toJava(postgreSQLConnection.connect()
+                .flatMap(func(connection -> connection.sendPreparedStatement("SELECT m.uuid from mail m where m.uuid = ?", JavaConversions.asScalaBuffer(Arrays.asList(uuid)))), FutureConverters.globalExecutionContext())
+                .flatMap(func(result -> {
+                    OptionConverters.toJava(result.rows()).ifPresent((ResultSet rs) -> System.out.println(rs.head().apply(0)));
+                    return postgreSQLConnection.disconnect();
+                }), FutureConverters.globalExecutionContext()))
+                .whenComplete((connection, throwable) -> {
+                    System.out.println(throwable);
+                    System.out.println(connection);
+                });
+
+
         List<MailEntity> resultList = em.createQuery(
                 "select m " +
                         "from MailEntity m " +
