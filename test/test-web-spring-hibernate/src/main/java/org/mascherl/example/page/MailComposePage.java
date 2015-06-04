@@ -48,7 +48,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.mascherl.example.page.PageModelConverter.convertToPageModelForEdit;
@@ -151,10 +153,17 @@ public class MailComposePage {
 
     @POST
     @Path("/mail/compose")
-    public Observable<MascherlAction> composeNew() {
+    public CompletableFuture<MascherlAction> composeNew() {
         String mailUuid = composeMailService.composeNewMail(user);
-        return compose(mailUuid)
-                .map((pageDef) -> Mascherl
+
+        Observable<MascherlPage> composeObservable = compose(mailUuid);
+        CompletableFuture<MascherlPage> completableFuture = new CompletableFuture<>();
+        composeObservable.subscribe(
+                completableFuture::complete,
+                completableFuture::completeExceptionally);
+
+        return completableFuture
+                .thenApply((pageDef) -> Mascherl
                         .navigate(UriBuilder.fromMethod(getClass(), "compose").build(mailUuid))
                         .renderContainer("content")
                         .withPageDef(pageDef));

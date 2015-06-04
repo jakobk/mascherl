@@ -25,6 +25,9 @@ import rx.internal.util.ScalarSynchronousObservable;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,29 +58,59 @@ public class CxfObservableInvoker extends JAXRSInvoker {
             if (!contentsList.isEmpty()) {
                 Object responseEntity = contentsList.get(0);
                 if (responseEntity instanceof Observable) {
-                    Observable<?> observable = (Observable<?>) responseEntity;
-
-                    if (observable instanceof ScalarSynchronousObservable) {
-                        ScalarSynchronousObservable syncObservable = (ScalarSynchronousObservable) observable;
-                        return new MessageContentsList(syncObservable.get());  // as if the method returned the value directly
-                    } else {
-                        // start asynchronous processing
-                        AsyncResponseImpl asyncResponse = new AsyncResponseImpl(exchange.getInMessage());
-                        asyncResponse.suspendContinuationIfNeeded();
-                        observable
-                                .subscribe(
-                                        (entity) -> asyncResponse.resume(entity),
-                                        (error) -> {
-                                            logger.log(Level.WARNING, "Resuming suspended request with exception", error);
-                                            asyncResponse.resume(error);
-                                        }
-                                );
-                        return new MessageContentsList(Collections.singletonList(null));  // as if the method returned void
-                    }
+                    return handleObservable(exchange, (Observable<?>) responseEntity);
+                } else if (responseEntity instanceof CompletableFuture) {
+                    return handleCompletableFuture(exchange, (CompletableFuture) responseEntity);
                 }
             }
         }
         return result;
+    }
+
+    private Object handleObservable(Exchange exchange, Observable<?> observable) {
+        if (observable instanceof ScalarSynchronousObservable) {
+            ScalarSynchronousObservable syncObservable = (ScalarSynchronousObservable) observable;
+            return new MessageContentsList(syncObservable.get());  // as if the method returned the value directly
+        } else {
+            // start asynchronous processing
+            AsyncResponseImpl asyncResponse = new AsyncResponseImpl(exchange.getInMessage());
+            asyncResponse.suspendContinuationIfNeeded();
+            observable
+                    .subscribe(
+                            (entity) -> asyncResponse.resume(entity),
+                            (error) -> {
+                                logger.log(Level.WARNING, "Resuming suspended request with exception", error);
+                                asyncResponse.resume(error);
+                            }
+                    );
+            return new MessageContentsList(Collections.singletonList(null));  // as if the method returned void
+        }
+    }
+
+    private Object handleCompletableFuture(Exchange exchange, CompletableFuture<?> future) {
+        if (future.isDone()) {
+            try {
+                return new MessageContentsList(future.get());  // as if the method returned the value directly
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            } catch (CancellationException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            // start asynchronous processing
+            AsyncResponseImpl asyncResponse = new AsyncResponseImpl(exchange.getInMessage());
+            asyncResponse.suspendContinuationIfNeeded();
+            future.whenComplete((entity, error) -> {
+                if (entity != null) {
+                    asyncResponse.resume(entity);
+                } else {
+                    logger.log(Level.WARNING, "Resuming suspended request with exception", error);
+                    asyncResponse.resume(error);
+                }
+            });
+            return new MessageContentsList(Collections.singletonList(null));  // as if the method returned void
+        }
     }
 
 }

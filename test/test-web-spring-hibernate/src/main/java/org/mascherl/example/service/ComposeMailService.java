@@ -134,51 +134,50 @@ public class ComposeMailService {
     }
 
     public Mail openDraft(String uuid, User currentUser) {
-
-        FiniteDuration fiveSeconds = Duration.apply(5l, TimeUnit.SECONDS);
-        Configuration configuration = new Configuration(
-                "postgres",
-                "localhost",
-                5432,
-                new Some<>("postgres"),
-                new Some<>("niotest"),
-                StandardCharsets.UTF_8,
-                16777216,
-                PooledByteBufAllocator.DEFAULT,
-                fiveSeconds,
-                fiveSeconds);
-
-        PostgreSQLConnection postgreSQLConnection = new PostgreSQLConnection(
-                configuration,
-                PostgreSQLColumnEncoderRegistry.Instance(),
-                PostgreSQLColumnDecoderRegistry.Instance(),
-                NettyUtils.DefaultEventLoopGroup(),
-                ExecutorServiceUtils.CachedExecutionContext());
-
-        CompletableFuture<Connection> future = new CompletableFuture<>();
-        postgreSQLConnection.connect().onComplete(func((tryConnection) -> {
-            if (tryConnection.isSuccess()) {
-                future.complete(tryConnection.get());
-            } else {
-                future.completeExceptionally(tryConnection.failed().get());
-            }
-            return future;
-        }), FutureConverters.globalExecutionContext());
-        future.whenComplete((connection, throwable) -> {
-            System.out.println(throwable);
-            System.out.println(connection);
-        });
-
-        FutureConverters.toJava(postgreSQLConnection.connect()
-                .flatMap(func(connection -> connection.sendPreparedStatement("SELECT m.uuid from mail m where m.uuid = ?", JavaConversions.asScalaBuffer(Arrays.asList(uuid)))), FutureConverters.globalExecutionContext())
-                .flatMap(func(result -> {
-                    OptionConverters.toJava(result.rows()).ifPresent((ResultSet rs) -> System.out.println(rs.head().apply(0)));
-                    return postgreSQLConnection.disconnect();
-                }), FutureConverters.globalExecutionContext()))
-                .whenComplete((connection, throwable) -> {
-                    System.out.println(throwable);
-                    System.out.println(connection);
-                });
+//        FiniteDuration fiveSeconds = Duration.apply(5l, TimeUnit.SECONDS);
+//        Configuration configuration = new Configuration(
+//                "postgres",
+//                "localhost",
+//                5432,
+//                new Some<>("postgres"),
+//                new Some<>("niotest"),
+//                StandardCharsets.UTF_8,
+//                16777216,
+//                PooledByteBufAllocator.DEFAULT,
+//                fiveSeconds,
+//                fiveSeconds);
+//
+//        PostgreSQLConnection postgreSQLConnection = new PostgreSQLConnection(
+//                configuration,
+//                PostgreSQLColumnEncoderRegistry.Instance(),
+//                PostgreSQLColumnDecoderRegistry.Instance(),
+//                NettyUtils.DefaultEventLoopGroup(),
+//                ExecutorServiceUtils.CachedExecutionContext());
+//
+//        CompletableFuture<Connection> future = new CompletableFuture<>();
+//        postgreSQLConnection.connect().onComplete(func((tryConnection) -> {
+//            if (tryConnection.isSuccess()) {
+//                future.complete(tryConnection.get());
+//            } else {
+//                future.completeExceptionally(tryConnection.failed().get());
+//            }
+//            return future;
+//        }), FutureConverters.globalExecutionContext());
+//        future.whenComplete((connection, throwable) -> {
+//            System.out.println(throwable);
+//            System.out.println(connection);
+//        });
+//
+//        FutureConverters.toJava(postgreSQLConnection.connect()
+//                .flatMap(func(connection -> connection.sendPreparedStatement("SELECT m.uuid from mail m where m.uuid = ?", JavaConversions.asScalaBuffer(Arrays.asList(uuid)))), FutureConverters.globalExecutionContext())
+//                .flatMap(func(result -> {
+//                    OptionConverters.toJava(result.rows()).ifPresent((ResultSet rs) -> System.out.println(rs.head().apply(0)));
+//                    return postgreSQLConnection.disconnect();
+//                }), FutureConverters.globalExecutionContext()))
+//                .whenComplete((connection, throwable) -> {
+//                    System.out.println(throwable);
+//                    System.out.println(connection);
+//                });
 
 
         List<MailEntity> resultList = em.createQuery(
