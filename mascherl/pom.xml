@@ -129,4 +129,82 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>optimized</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>2.10</version>
+                        <executions>
+                            <execution>
+                                <id>unpack-webjars</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <includeGroupIds>org.webjars</includeGroupIds>
+                                    <outputDirectory>${project.build.directory}/webjars</outputDirectory>
+                                    <includes>META-INF/resources/webjars/**/*</includes>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>unpack-r.js</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.webjars</groupId>
+                                            <artifactId>requirejs-node</artifactId>
+                                            <version>2.1.16</version>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/webjars</outputDirectory>
+                                    <includes>META-INF/resources/webjars/**/*</includes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.webjars</groupId>
+                                <artifactId>requirejs-node</artifactId>
+                                <version>${requirejs.node.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>com.github.bringking</groupId>
+                        <artifactId>requirejs-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>optimize</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <configFile>${basedir}/src/main/optimize/build-require-config.js</configFile>
+                            <optimizerParameters>
+                                <parameter>baseUrl=${project.build.sourceDirectory}/../resources/META-INF/resources/mascherl/1.0.0/js</parameter>
+                                <parameter>name=mascherl</parameter>
+                                <parameter>out=${project.build.outputDirectory}/META-INF/resources/mascherl/1.0.0/js/mascherl-bundle.min.js</parameter>
+                            </optimizerParameters>
+                            <filterConfig>true</filterConfig>
+                            <optimizerFile>${project.build.directory}/webjars/META-INF/resources/webjars/requirejs-node/2.1.16/r.js</optimizerFile>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
