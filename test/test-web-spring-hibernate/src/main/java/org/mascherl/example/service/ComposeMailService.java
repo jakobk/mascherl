@@ -133,6 +133,7 @@ public class ComposeMailService {
         return mailEntity.getUuid();
     }
 
+    @Transactional
     public Mail openDraft(String uuid, User currentUser) {
 //        FiniteDuration fiveSeconds = Duration.apply(5l, TimeUnit.SECONDS);
 //        Configuration configuration = new Configuration(
